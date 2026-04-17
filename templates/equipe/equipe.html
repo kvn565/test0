@@ -1,0 +1,849 @@
+{% extends "base.html" %}
+{% block title %}Mon équipe — {{ societe.nom }}{% endblock %}
+{% block page_title %}Mon équipe{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Gérez les employés et leurs droits d'accès</p>{% endblock %}
+{% block nav_equipe %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Badges poste ── */
+    .badge-poste {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.73rem;
+        font-weight: 500;
+    }
+    .badge-vendeur    { background:#e8f1ff; color:#0d3c8a; }
+    .badge-comptable  { background:#e8f8f0; color:#1a6b3a; }
+    .badge-magasinier { background:#fff8e5; color:#7d5a00; }
+    .badge-assistant  { background:#f3e8ff; color:#5b0d8a; }
+    .badge-autre      { background:#f0f2f5; color:#5a6a7a; }
+
+    /* ── Pastille actif/inactif ── */
+    .dot-actif   { width:9px; height:9px; border-radius:50%; background:#27ae60; display:inline-block; margin-right:6px; }
+    .dot-inactif { width:9px; height:9px; border-radius:50%; background:#e74c3c; display:inline-block; margin-right:6px; }
+
+    /* ── Groupes de droits ── */
+    .droits-group {
+        background: #f8fafc;
+        border: 1px solid #e8ecf0;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+    .droits-group-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #8a9aaa;
+        margin-bottom: 10px;
+    }
+    .droit-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f2f5;
+        font-size: 0.85rem;
+        color: #2c3e50;
+    }
+    .droit-item:last-child { border-bottom: none; }
+    .droit-item .form-check-input {
+        width: 18px; height: 18px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .droit-item label { cursor: pointer; flex: 1; }
+
+    /* ── Carte employé ── */
+    .employe-card {
+        background: #fff;
+        border: 1px solid #e8ecf0;
+        border-radius: 12px;
+        padding: 0;
+        overflow: hidden;
+        transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .employe-card:hover {
+        box-shadow: 0 6px 20px rgba(15,42,74,0.10);
+        transform: translateY(-1px);
+    }
+    .employe-card-header {
+        padding: 18px 20px 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    .employe-avatar {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        background: var(--bleu);
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    .employe-name { font-weight: 600; color: var(--bleu); font-size: 0.92rem; line-height: 1.2; }
+    .employe-username { font-size: 0.75rem; color: #8a9aaa; }
+    .employe-card-body { padding: 12px 20px 14px; }
+    .employe-droits-mini {
+        display: flex; flex-wrap: wrap; gap: 5px;
+        margin-top: 10px;
+    }
+    .droit-chip {
+        font-size: 0.68rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: #e8f1ff;
+        color: #0d3c8a;
+        font-weight: 500;
+    }
+    .droit-chip.inactif { background: #f0f2f5; color: #aaa; }
+    .employe-card-footer {
+        padding: 10px 20px;
+        background: #f9fafb;
+        border-top: 1px solid #f0f2f5;
+        display: flex; gap: 8px;
+    }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(10,25,45,0.65);
+        backdrop-filter: blur(3px);
+        z-index: 9000;
+        display: flex; align-items: center; justify-content: center;
+        padding: 16px;
+        animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    .modal-box {
+        background: #fff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 580px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+        animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform:translateY(16px); opacity:0 } to { transform:translateY(0); opacity:1 } }
+    .modal-header {
+        background: linear-gradient(135deg, var(--bleu), #1a3f6f);
+        padding: 22px 24px 18px;
+        border-radius: 16px 16px 0 0;
+    }
+    .modal-header h5 { color: #fff; font-family:'Playfair Display',serif; font-size:1.1rem; margin:0; }
+    .modal-header p  { color: rgba(255,255,255,0.65); font-size:0.8rem; margin:4px 0 0; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; background: #f8fafc; border-top:1px solid #e8ecf0; border-radius:0 0 16px 16px; display:flex; justify-content:flex-end; gap:10px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 576px) {
+        .employe-card-footer { flex-direction: column; }
+        .employe-card-footer .btn { width: 100%; text-align: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── En-tête + bouton ── #}
+    <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <span style="font-size:0.85rem;color:#8a9aaa;">
+                <i class="bi bi-people me-1"></i>
+                {{ employes.count }} employé{{ employes.count|pluralize }} dans votre équipe
+            </span>
+        </div>
+        <button class="btn btn-primary" onclick="ouvrirModalCreer()">
+            <i class="bi bi-person-plus me-2"></i>Nouvel employé
+        </button>
+    </div>
+
+    {# ── Alerte si aucun employé ── #}
+    {% if not employes %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5" style="color:#8a9aaa;">
+                <i class="bi bi-people fs-1 d-block mb-3" style="color:#c8d0da;"></i>
+                <p class="mb-1" style="font-weight:600;color:#5a6a7a;">Aucun employé pour l'instant</p>
+                <p style="font-size:0.85rem;">Ajoutez votre premier employé pour lui donner accès à l'application.</p>
+                <button class="btn btn-primary mt-2" onclick="ouvrirModalCreer()">
+                    <i class="bi bi-person-plus me-2"></i>Ajouter un employé
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Cartes employés ── #}
+    {% for emp in employes %}
+    <div class="col-sm-6 col-xl-4" id="card-emp-{{ emp.pk }}">
+        <div class="employe-card h-100">
+            <div class="employe-card-header">
+                <div class="employe-avatar">{{ emp.initiales }}</div>
+                <div style="flex:1;min-width:0;">
+                    <div class="employe-name">{{ emp.nom_complet }}</div>
+                    <div class="employe-username">@{{ emp.username }}</div>
+                </div>
+                <div>
+                    {% if emp.actif %}
+                    <span class="badge-active" style="font-size:0.72rem;">Actif</span>
+                    {% else %}
+                    <span class="badge-inactive" style="font-size:0.72rem;">Inactif</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="employe-card-body">
+                {# Poste #}
+                <div class="mb-2">
+                    {% if emp.type_poste == 'VENDEUR' %}
+                    <span class="badge-poste badge-vendeur"><i class="bi bi-shop me-1"></i>{{ emp.get_type_poste_display }}</span>
+                    {% elif emp.type_poste == 'COMPTABLE' %}
+                    <span class="badge-poste badge-comptable"><i class="bi bi-calculator me-1"></i>{{ emp.get_type_poste_display }}</span>
+                    {% elif emp.type_poste == 'MAGASINIER' %}
+                    <span class="badge-poste badge-magasinier"><i class="bi bi-box me-1"></i>{{ emp.get_type_poste_display }}</span>
+                    {% elif emp.type_poste == 'ASSISTANT' %}
+                    <span class="badge-poste badge-assistant"><i class="bi bi-person me-1"></i>{{ emp.get_type_poste_display }}</span>
+                    {% else %}
+                    <span class="badge-poste badge-autre"><i class="bi bi-person-badge me-1"></i>{{ emp.get_type_poste_display }}</span>
+                    {% endif %}
+                </div>
+
+                {# Chips droits actifs #}
+                <div class="employe-droits-mini">
+                    {% if emp.droit_stock_produit or emp.droit_stock_entree or emp.droit_stock_sortie or emp.droit_stock_categorie or emp.droit_stock_fournisseur %}
+                    <span class="droit-chip"><i class="bi bi-box me-1"></i>Stock</span>
+                    {% endif %}
+                    {% if emp.droit_facture_pnb or emp.droit_facture_fdnb or emp.droit_facture_particulier %}
+                    <span class="droit-chip"><i class="bi bi-receipt me-1"></i>Factures</span>
+                    {% endif %}
+                    {% if emp.droit_devis %}
+                    <span class="droit-chip"><i class="bi bi-file-text me-1"></i>Devis</span>
+                    {% endif %}
+                    {% if emp.droit_rapports %}
+                    <span class="droit-chip"><i class="bi bi-bar-chart me-1"></i>Rapports</span>
+                    {% endif %}
+                    {% if not emp.droit_stock_produit and not emp.droit_facture_pnb and not emp.droit_devis and not emp.droit_rapports %}
+                    <span class="droit-chip inactif">Aucun droit accordé</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="employe-card-footer">
+                <button class="btn btn-sm btn-primary flex-fill"
+                        onclick="ouvrirModalModifier({{ emp.pk }})"
+                        title="Modifier les droits">
+                    <i class="bi bi-sliders me-1"></i>Droits
+                </button>
+                <button class="btn btn-sm btn-outline-secondary"
+                        onclick="ouvrirModalMdp({{ emp.pk }}, '{{ emp.nom_complet|escapejs }}')"
+                        title="Changer le mot de passe">
+                    <i class="bi bi-key"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger"
+                        onclick="confirmerSuppression({{ emp.pk }}, '{{ emp.nom_complet|escapejs }}')"
+                        title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>{# /row #}
+
+
+{# ════════════════════════════════════════════
+   MODAL — CRÉER UN EMPLOYÉ
+════════════════════════════════════════════ #}
+<div class="modal-overlay" id="modalCreer" style="display:none;" onclick="fermerModalCreer(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div style="width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="bi bi-person-plus" style="color:#fff;font-size:1.2rem;"></i>
+            </div>
+            <h5>Nouvel employé</h5>
+            <p>Créer un compte et définir les droits d'accès</p>
+        </div>
+        <div class="modal-body">
+            <div id="creer-error" class="alert alert-danger d-none mb-3" style="font-size:0.83rem;"></div>
+
+            {# Informations personnelles #}
+            <div class="row g-3 mb-4">
+                <div class="col-12"><p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#8a9aaa;margin:0;">Informations personnelles</p></div>
+                <div class="col-md-4">
+                    <label class="form-label">Nom <span style="color:#e74c3c">*</span></label>
+                    <input type="text" class="form-control" id="c-nom" placeholder="DUPONT">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Post-nom <span style="color:#e74c3c">*</span></label>
+                    <input type="text" class="form-control" id="c-postnom" placeholder="MARIE">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Prénom <span style="color:#e74c3c">*</span></label>
+                    <input type="text" class="form-control" id="c-prenom" placeholder="Jean">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Poste <span style="color:#e74c3c">*</span></label>
+                    <select class="form-select" id="c-type_poste">
+                        {% for val, label in types_poste %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email (optionnel)</label>
+                    <input type="email" class="form-control" id="c-email" placeholder="jean@exemple.com">
+                </div>
+            </div>
+
+            {# Identifiants #}
+            <div class="row g-3 mb-4">
+                <div class="col-12"><p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#8a9aaa;margin:0;">Identifiants de connexion</p></div>
+                <div class="col-md-6">
+                    <label class="form-label">Nom d'utilisateur <span style="color:#e74c3c">*</span></label>
+                    <input type="text" class="form-control" id="c-username" placeholder="jean.dupont" autocomplete="off">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Mot de passe <span style="color:#e74c3c">*</span></label>
+                    <div style="position:relative;">
+                        <input type="password" class="form-control" id="c-password" placeholder="Minimum 8 caractères" autocomplete="new-password">
+                        <button type="button" onclick="toggleMdp('c-password', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#8a9aaa;cursor:pointer;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {# Droits d'accès #}
+            <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#8a9aaa;margin-bottom:12px;">Droits d'accès</p>
+
+            <div class="droits-group">
+                <div class="droits-group-title"><i class="bi bi-box me-1"></i>Stock</div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_stock_categorie">
+                    <label for="c-droit_stock_categorie">Gérer les catégories</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_stock_produit">
+                    <label for="c-droit_stock_produit">Voir et gérer les produits</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_stock_fournisseur">
+                    <label for="c-droit_stock_fournisseur">Gérer les fournisseurs</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_stock_entree">
+                    <label for="c-droit_stock_entree">Enregistrer des entrées de stock</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_stock_sortie">
+                    <label for="c-droit_stock_sortie">Enregistrer des sorties de stock</label>
+                </div>
+            </div>
+
+            <div class="droits-group">
+                <div class="droits-group-title"><i class="bi bi-receipt me-1"></i>Facturation</div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_facture_pnb">
+                    <label for="c-droit_facture_pnb">Facturation PNB (assujetti TVA)</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_facture_fdnb">
+                    <label for="c-droit_facture_fdnb">Facturation FDNB (non assujetti)</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_facture_particulier">
+                    <label for="c-droit_facture_particulier">Facturation particuliers</label>
+                </div>
+            </div>
+
+            <div class="droits-group">
+                <div class="droits-group-title"><i class="bi bi-grid me-1"></i>Autres modules</div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_devis">
+                    <label for="c-droit_devis">Créer et gérer les devis</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="c-droit_rapports" checked>
+                    <label for="c-droit_rapports">Accès aux rapports</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline-secondary" onclick="fermerModalCreer()">Annuler</button>
+            <button class="btn btn-primary" id="btn-creer" onclick="soumettreCreation()">
+                <i class="bi bi-person-check me-2"></i>Créer l'employé
+            </button>
+        </div>
+    </div>
+</div>
+
+
+{# ════════════════════════════════════════════
+   MODAL — MODIFIER LES DROITS
+════════════════════════════════════════════ #}
+<div class="modal-overlay" id="modalModifier" style="display:none;" onclick="fermerModalModifier(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div style="width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="bi bi-sliders" style="color:#fff;font-size:1.2rem;"></i>
+            </div>
+            <h5 id="modal-modifier-titre">Modifier les droits</h5>
+            <p id="modal-modifier-sous">Employé</p>
+        </div>
+        <div class="modal-body">
+            <div id="modifier-error" class="alert alert-danger d-none mb-3" style="font-size:0.83rem;"></div>
+            <input type="hidden" id="m-pk">
+
+            <div class="row g-3 mb-4">
+                <div class="col-12"><p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#8a9aaa;margin:0;">Informations de base</p></div>
+                <div class="col-md-4">
+                    <label class="form-label">Nom</label>
+                    <input type="text" class="form-control" id="m-nom">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Post-nom</label>
+                    <input type="text" class="form-control" id="m-postnom">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" class="form-control" id="m-prenom">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Poste</label>
+                    <select class="form-select" id="m-type_poste">
+                        {% for val, label in types_poste %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Statut du compte</label>
+                    <select class="form-select" id="m-actif">
+                        <option value="1">Actif</option>
+                        <option value="0">Inactif (bloqué)</option>
+                    </select>
+                </div>
+            </div>
+
+            <p style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#8a9aaa;margin-bottom:12px;">Droits d'accès</p>
+
+            <div class="droits-group">
+                <div class="droits-group-title"><i class="bi bi-box me-1"></i>Stock</div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_stock_categorie">
+                    <label for="m-droit_stock_categorie">Gérer les catégories</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_stock_produit">
+                    <label for="m-droit_stock_produit">Voir et gérer les produits</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_stock_fournisseur">
+                    <label for="m-droit_stock_fournisseur">Gérer les fournisseurs</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_stock_entree">
+                    <label for="m-droit_stock_entree">Enregistrer des entrées de stock</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_stock_sortie">
+                    <label for="m-droit_stock_sortie">Enregistrer des sorties de stock</label>
+                </div>
+            </div>
+
+            <div class="droits-group">
+                <div class="droits-group-title"><i class="bi bi-receipt me-1"></i>Facturation</div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_facture_pnb">
+                    <label for="m-droit_facture_pnb">Facturation PNB (assujetti TVA)</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_facture_fdnb">
+                    <label for="m-droit_facture_fdnb">Facturation FDNB (non assujetti)</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_facture_particulier">
+                    <label for="m-droit_facture_particulier">Facturation particuliers</label>
+                </div>
+            </div>
+
+            <div class="droits-group">
+                <div class="droits-group-title"><i class="bi bi-grid me-1"></i>Autres modules</div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_devis">
+                    <label for="m-droit_devis">Créer et gérer les devis</label>
+                </div>
+                <div class="droit-item">
+                    <input type="checkbox" class="form-check-input" id="m-droit_rapports">
+                    <label for="m-droit_rapports">Accès aux rapports</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline-secondary" onclick="fermerModalModifier()">Annuler</button>
+            <button class="btn btn-primary" id="btn-modifier" onclick="soumettreModification()">
+                <i class="bi bi-check-lg me-2"></i>Enregistrer
+            </button>
+        </div>
+    </div>
+</div>
+
+
+{# ════════════════════════════════════════════
+   MODAL — CHANGER MOT DE PASSE
+════════════════════════════════════════════ #}
+<div class="modal-overlay" id="modalMdp" style="display:none;" onclick="fermerModalMdp(event)">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:420px;">
+        <div class="modal-header">
+            <div style="width:40px;height:40px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="bi bi-key" style="color:#fff;font-size:1.2rem;"></i>
+            </div>
+            <h5>Changer le mot de passe</h5>
+            <p id="mdp-nom-employe">Employé</p>
+        </div>
+        <div class="modal-body">
+            <div id="mdp-error" class="alert alert-danger d-none mb-3" style="font-size:0.83rem;"></div>
+            <input type="hidden" id="mdp-pk">
+            <label class="form-label">Nouveau mot de passe <span style="color:#e74c3c">*</span></label>
+            <div style="position:relative;">
+                <input type="password" class="form-control" id="mdp-password" placeholder="Minimum 8 caractères" autocomplete="new-password">
+                <button type="button" onclick="toggleMdp('mdp-password', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#8a9aaa;cursor:pointer;">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline-secondary" onclick="fermerModalMdp()">Annuler</button>
+            <button class="btn btn-primary" onclick="soumettreMdp()">
+                <i class="bi bi-key me-2"></i>Enregistrer
+            </button>
+        </div>
+    </div>
+</div>
+
+
+{# Toast de confirmation #}
+<div id="toast-equipe" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:none;min-width:280px;">
+    <div style="background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:flex;align-items:center;gap:12px;border-left:4px solid #27ae60;">
+        <i class="bi bi-check-circle-fill text-success"></i>
+        <span id="toast-equipe-msg" style="font-size:0.85rem;color:#2c3e50;"></span>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+const URL_CREER    = "{% url 'equipe:creer' %}";
+const URL_BASE     = "/equipe/";   {# utilisé pour construire les URLs dynamiques #}
+
+// ── Toast ──────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast-equipe');
+    const msgEl = document.getElementById('toast-equipe-msg');
+    const border = toast.querySelector('div');
+    border.style.borderLeftColor = isError ? '#e74c3c' : '#27ae60';
+    border.querySelector('i').className = isError
+        ? 'bi bi-x-circle-fill text-danger'
+        : 'bi bi-check-circle-fill text-success';
+    msgEl.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 4000);
+}
+
+// ── Affichage/masquage mot de passe ───────────────────────────
+function toggleMdp(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.querySelector('i').className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        btn.querySelector('i').className = 'bi bi-eye';
+    }
+}
+
+// ── Helpers modals ─────────────────────────────────────────────
+function fermerModalCreer(e)   { if (!e || e.target === document.getElementById('modalCreer'))   document.getElementById('modalCreer').style.display   = 'none'; }
+function fermerModalModifier(e){ if (!e || e.target === document.getElementById('modalModifier')) document.getElementById('modalModifier').style.display = 'none'; }
+function fermerModalMdp(e)     { if (!e || e.target === document.getElementById('modalMdp'))      document.getElementById('modalMdp').style.display      = 'none'; }
+
+function ouvrirModalCreer() {
+    // Réinitialiser le formulaire
+    ['c-nom','c-postnom','c-prenom','c-email','c-username','c-password'].forEach(id => document.getElementById(id).value = '');
+    document.querySelectorAll('#modalCreer input[type=checkbox]').forEach(cb => {
+        cb.checked = cb.id === 'c-droit_rapports';
+    });
+    document.getElementById('creer-error').classList.add('d-none');
+    document.getElementById('modalCreer').style.display = 'flex';
+}
+
+function ouvrirModalModifier(pk) {
+    document.getElementById('m-pk').value = pk;
+    document.getElementById('modifier-error').classList.add('d-none');
+    document.getElementById('btn-modifier').disabled = true;
+    document.getElementById('btn-modifier').innerHTML = '<i class="bi bi-hourglass me-2"></i>Chargement...';
+
+    fetch(`/equipe/${pk}/info/`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('modal-modifier-titre').textContent = 'Droits de ' + data.nom_complet;
+            document.getElementById('modal-modifier-sous').textContent = '@' + data.username + ' — ' + data.type_poste_display;
+            document.getElementById('m-nom').value     = data.nom;
+            document.getElementById('m-postnom').value = data.postnom;
+            document.getElementById('m-prenom').value  = data.prenom;
+            document.getElementById('m-actif').value   = data.actif ? '1' : '0';
+
+            // Poste
+            const sel = document.getElementById('m-type_poste');
+            for (let opt of sel.options) { if (opt.value === data.type_poste) { opt.selected = true; break; } }
+
+            // Droits
+            const droits = ['droit_stock_categorie','droit_stock_produit','droit_stock_fournisseur',
+                            'droit_stock_entree','droit_stock_sortie','droit_facture_pnb',
+                            'droit_facture_fdnb','droit_facture_particulier','droit_devis','droit_rapports'];
+            droits.forEach(d => {
+                const cb = document.getElementById('m-' + d);
+                if (cb) cb.checked = !!data[d];
+            });
+
+            document.getElementById('btn-modifier').disabled = false;
+            document.getElementById('btn-modifier').innerHTML = '<i class="bi bi-check-lg me-2"></i>Enregistrer';
+            document.getElementById('modalModifier').style.display = 'flex';
+        })
+        .catch(() => showToast("Erreur lors du chargement.", true));
+}
+
+function ouvrirModalMdp(pk, nom) {
+    document.getElementById('mdp-pk').value = pk;
+    document.getElementById('mdp-nom-employe').textContent = nom;
+    document.getElementById('mdp-password').value = '';
+    document.getElementById('mdp-error').classList.add('d-none');
+    document.getElementById('modalMdp').style.display = 'flex';
+}
+
+// ── Création employé ───────────────────────────────────────────
+function soumettreCreation() {
+    const btn = document.getElementById('btn-creer');
+    const errEl = document.getElementById('creer-error');
+    errEl.classList.add('d-none');
+
+    const droits = ['droit_stock_categorie','droit_stock_produit','droit_stock_fournisseur',
+                    'droit_stock_entree','droit_stock_sortie','droit_facture_pnb',
+                    'droit_facture_fdnb','droit_facture_particulier','droit_devis','droit_rapports'];
+
+    const body = new URLSearchParams({
+        nom:        document.getElementById('c-nom').value.trim(),
+        postnom:    document.getElementById('c-postnom').value.trim(),
+        prenom:     document.getElementById('c-prenom').value.trim(),
+        username:   document.getElementById('c-username').value.trim(),
+        password:   document.getElementById('c-password').value,
+        type_poste: document.getElementById('c-type_poste').value,
+        email:      document.getElementById('c-email').value.trim(),
+    });
+    droits.forEach(d => {
+        const cb = document.getElementById('c-' + d);
+        if (cb) body.append(d, cb.checked ? '1' : '0');
+    });
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass me-2"></i>Création...';
+
+    fetch(URL_CREER, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-person-check me-2"></i>Créer l\'employé';
+        if (data.success) {
+            fermerModalCreer();
+            showToast(data.message);
+            // Ajouter la carte sans recharger la page
+            ajouterCarteEmploye(data.employe);
+            mettreAJourCompteur(1);
+        } else {
+            errEl.textContent = data.error || 'Erreur inconnue.';
+            errEl.classList.remove('d-none');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-person-check me-2"></i>Créer l\'employé';
+        errEl.textContent = 'Erreur réseau. Veuillez réessayer.';
+        errEl.classList.remove('d-none');
+    });
+}
+
+// ── Modification droits ────────────────────────────────────────
+function soumettreModification() {
+    const pk  = document.getElementById('m-pk').value;
+    const btn = document.getElementById('btn-modifier');
+    const errEl = document.getElementById('modifier-error');
+    errEl.classList.add('d-none');
+
+    const droits = ['droit_stock_categorie','droit_stock_produit','droit_stock_fournisseur',
+                    'droit_stock_entree','droit_stock_sortie','droit_facture_pnb',
+                    'droit_facture_fdnb','droit_facture_particulier','droit_devis','droit_rapports'];
+
+    const body = new URLSearchParams({
+        nom:        document.getElementById('m-nom').value.trim(),
+        postnom:    document.getElementById('m-postnom').value.trim(),
+        prenom:     document.getElementById('m-prenom').value.trim(),
+        type_poste: document.getElementById('m-type_poste').value,
+        actif:      document.getElementById('m-actif').value,
+    });
+    droits.forEach(d => {
+        const cb = document.getElementById('m-' + d);
+        if (cb) body.append(d, cb.checked ? '1' : '0');
+    });
+
+    btn.disabled = true;
+
+    fetch(`/equipe/${pk}/modifier/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        if (data.success) {
+            fermerModalModifier();
+            showToast(data.message);
+            // Recharger uniquement la carte concernée
+            setTimeout(() => location.reload(), 800);
+        } else {
+            errEl.textContent = data.error || 'Erreur inconnue.';
+            errEl.classList.remove('d-none');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        errEl.textContent = 'Erreur réseau.';
+        errEl.classList.remove('d-none');
+    });
+}
+
+// ── Changer mot de passe ───────────────────────────────────────
+function soumettreMdp() {
+    const pk  = document.getElementById('mdp-pk').value;
+    const mdp = document.getElementById('mdp-password').value;
+    const errEl = document.getElementById('mdp-error');
+    errEl.classList.add('d-none');
+
+    fetch(`/equipe/${pk}/mdp/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `nouveau_mot_de_passe=${encodeURIComponent(mdp)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            fermerModalMdp();
+            showToast(data.message);
+        } else {
+            errEl.textContent = data.error || 'Erreur inconnue.';
+            errEl.classList.remove('d-none');
+        }
+    })
+    .catch(() => {
+        errEl.textContent = 'Erreur réseau.';
+        errEl.classList.remove('d-none');
+    });
+}
+
+// ── Supprimer employé ──────────────────────────────────────────
+function confirmerSuppression(pk, nom) {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${nom} ?\nCette action est irréversible.`)) return;
+
+    fetch(`/equipe/${pk}/supprimer/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById(`card-emp-${pk}`);
+            if (card) {
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.remove(), 300);
+            }
+            showToast(data.message);
+            mettreAJourCompteur(-1);
+        } else {
+            showToast(data.error || 'Erreur.', true);
+        }
+    })
+    .catch(() => showToast('Erreur réseau.', true));
+}
+
+// ── Helpers DOM ────────────────────────────────────────────────
+function mettreAJourCompteur(delta) {
+    const el = document.querySelector('.row.g-4 span[style*="8a9aaa"]');
+    if (!el) return;
+    const match = el.textContent.match(/(\d+)/);
+    if (match) {
+        const n = parseInt(match[1]) + delta;
+        el.innerHTML = `<i class="bi bi-people me-1"></i>${n} employé${n > 1 ? 's' : ''} dans votre équipe`;
+    }
+}
+
+function ajouterCarteEmploye(emp) {
+    const row = document.querySelector('.row.g-4');
+    const col = document.createElement('div');
+    col.className = 'col-sm-6 col-xl-4';
+    col.id = `card-emp-${emp.id}`;
+    col.innerHTML = `
+        <div class="employe-card h-100">
+            <div class="employe-card-header">
+                <div class="employe-avatar">${emp.initiales}</div>
+                <div style="flex:1;min-width:0;">
+                    <div class="employe-name">${emp.nom_complet}</div>
+                    <div class="employe-username">@${emp.username}</div>
+                </div>
+                <span class="badge-active" style="font-size:0.72rem;">Actif</span>
+            </div>
+            <div class="employe-card-body">
+                <div class="mb-2">
+                    <span class="badge-poste badge-autre"><i class="bi bi-person-badge me-1"></i>${emp.type_poste_display}</span>
+                </div>
+                <div class="employe-droits-mini">
+                    <span class="droit-chip inactif">Aucun droit accordé</span>
+                </div>
+            </div>
+            <div class="employe-card-footer">
+                <button class="btn btn-sm btn-primary flex-fill" onclick="ouvrirModalModifier(${emp.id})">
+                    <i class="bi bi-sliders me-1"></i>Droits
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="ouvrirModalMdp(${emp.id}, '${emp.nom_complet}')">
+                    <i class="bi bi-key"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="confirmerSuppression(${emp.id}, '${emp.nom_complet}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>`;
+    row.appendChild(col);
+}
+
+// Fermeture modals avec Escape
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        fermerModalCreer(); fermerModalModifier(); fermerModalMdp();
+    }
+});
+</script>
+{% endblock %}

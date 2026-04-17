@@ -1,0 +1,118 @@
+{% extends "superadmin/base_superadmin.html" %}
+{% block title %}{{ titre }} — Administration{% endblock %}
+{% block page_title %}{{ titre }}{% endblock %}
+{% block page_subtitle %}
+{% if societe %}
+<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">NIF : {{ societe.nif }}</p>
+{% else %}
+<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Une clé d'essai 14 jours sera activée automatiquement</p>
+{% endif %}
+{% endblock %}
+{% block breadcrumb %}
+<span class="sep">›</span> <a href="{% url 'superadmin:societes_liste' %}">Sociétés</a>
+{% if societe %}<span class="sep">›</span> {{ societe.nom|truncatechars:20 }}{% endif %}
+<span class="sep">›</span> {% if societe %}Modifier{% else %}Nouvelle{% endif %}
+{% endblock %}
+{% block nav_societes %}{% if not societe %}active{% endif %}{% endblock %}
+{% block nav_societe_creer %}{% if not societe %}active{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        {# ── Infos clé d'essai (création uniquement) ── #}
+        {% if not societe %}
+        <div class="alert alert-info mb-4" style="border-left:4px solid #3498db;">
+            <div class="d-flex gap-3">
+                <i class="bi bi-info-circle-fill fs-5" style="color:#3498db;flex-shrink:0;margin-top:2px;"></i>
+                <div>
+                    <strong>Comment ça fonctionne ?</strong>
+                    <ol class="mb-0 mt-2" style="font-size:0.85rem;padding-left:18px;">
+                        <li>Vous saisissez le <strong>nom</strong> et le <strong>NIF exact</strong> de la société</li>
+                        <li>Une clé d'essai <strong>14 jours</strong> est activée automatiquement</li>
+                        <li>Le chef se rend sur <code>/setup/</code> et entre son NIF pour s'inscrire</li>
+                        <li>Après l'essai, le chef contacte l'admin pour recevoir une clé payante</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-building me-2" style="color:var(--or);"></i>
+                {{ titre }}
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {# ── Nom ── #}
+                    <div class="mb-4">
+                        <label class="form-label" for="{{ form.nom.id_for_label }}">
+                            Nom de la société <span style="color:#e74c3c;">*</span>
+                        </label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}
+                        <div style="color:#e74c3c;font-size:0.8rem;margin-top:5px;">
+                            <i class="bi bi-x-circle me-1"></i>{{ form.nom.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# ── NIF ── #}
+                    <div class="mb-4">
+                        <label class="form-label" for="{{ form.nif.id_for_label }}">
+                            NIF (Numéro d'Identification Fiscale) <span style="color:#e74c3c;">*</span>
+                        </label>
+                        {{ form.nif }}
+                        {% if form.nif.help_text %}
+                        <div style="font-size:0.78rem;color:#8a9aaa;margin-top:5px;">
+                            <i class="bi bi-info-circle me-1"></i>{{ form.nif.help_text }}
+                        </div>
+                        {% endif %}
+                        {% if form.nif.errors %}
+                        <div style="color:#e74c3c;font-size:0.8rem;margin-top:5px;">
+                            <i class="bi bi-x-circle me-1"></i>{{ form.nif.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# ── Erreurs globales ── #}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+                    {% endif %}
+
+                    {# ── Boutons ── #}
+                    <div class="d-flex gap-3 mt-4 pt-2" style="border-top:1px solid #f0f2f5;">
+                        <button type="submit" class="btn btn-gold">
+                            <i class="bi bi-{% if societe %}check-circle{% else %}plus-circle{% endif %} me-2"></i>
+                            {% if societe %}Enregistrer les modifications{% else %}Créer et activer l'essai{% endif %}
+                        </button>
+                        <a href="{% if societe %}{% url 'superadmin:societe_detail' societe.pk %}{% else %}{% url 'superadmin:societes_liste' %}{% endif %}"
+                           class="btn btn-outline-secondary">
+                            Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# ── Infos modification ── #}
+        {% if societe %}
+        <div class="card mt-4" style="background:#fff8e5;border:1px solid rgba(201,168,76,0.3);">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex gap-3 align-items-start">
+                    <i class="bi bi-exclamation-triangle" style="color:var(--or);font-size:1.1rem;flex-shrink:0;margin-top:2px;"></i>
+                    <div style="font-size:0.83rem;color:#7d5a00;">
+                        <strong>Modification du NIF</strong> — Si vous modifiez le NIF d'une société dont le chef est
+                        déjà inscrit, il ne pourra plus accéder à son compte. À faire avec précaution.
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

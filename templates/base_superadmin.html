@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Administration — WIBABI{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bleu:       #0f2a4a;
+            --bleu-clair: #1a3f6f;
+            --or:         #c9a84c;
+            --or-clair:   #e8c97a;
+            --gris:       #f4f6f9;
+            --texte:      #2c3e50;
+            --danger:     #e74c3c;
+            --succes:     #27ae60;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--gris);
+            color: var(--texte);
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR SUPERADMIN */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 260px; height: 100vh;
+            background: var(--bleu);
+            display: flex; flex-direction: column;
+            z-index: 1000;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.25);
+        }
+
+        .sidebar-logo {
+            padding: 24px 24px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-logo .logo-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(201,168,76,0.15);
+            border: 1px solid rgba(201,168,76,0.3);
+            border-radius: 6px;
+            padding: 3px 10px;
+            margin-bottom: 10px;
+        }
+        .sidebar-logo .logo-badge span {
+            color: var(--or);
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .sidebar-logo .logo-title {
+            font-family: 'Playfair Display', serif;
+            color: #fff;
+            font-size: 1.25rem;
+            line-height: 1.2;
+        }
+        .sidebar-logo .logo-sub {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.72rem;
+        }
+
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+
+        .nav-section {
+            padding: 14px 20px 4px;
+            color: rgba(255,255,255,0.35);
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .nav-link-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 20px;
+            color: rgba(255,255,255,0.68);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-link-item:hover,
+        .nav-link-item.active {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+            border-left-color: var(--or);
+        }
+        .nav-link-item i { font-size: 1.05rem; width: 22px; flex-shrink: 0; }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: var(--or);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem;
+            color: var(--bleu);
+        }
+        .user-name { color: #fff; font-size: 0.85rem; font-weight: 500; }
+        .user-role { color: var(--or); font-size: 0.7rem; }
+
+        /* CONTENU PRINCIPAL */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e8ecf0;
+            padding: 0 28px;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .page-content { padding: 28px; flex: 1; }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.sidebar-open { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- SIDEBAR SUPERADMIN -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-badge">
+            <i class="bi bi-shield-check" style="color:var(--or);"></i>
+            <span>Superadmin</span>
+        </div>
+        <div class="logo-title">WIBABI</div>
+        <div class="logo-sub">Panneau d'administration</div>
+    </div>
+
+    <nav class="sidebar-nav">
+
+        <div class="nav-section">Vue générale</div>
+        <a href="{% url 'superadmin:dashboard' %}" class="nav-link-item {% block nav_dashboard %}{% endblock %}">
+            <i class="bi bi-speedometer2"></i> Tableau de bord
+        </a>
+
+        <div class="nav-section">Sociétés</div>
+        <a href="{% url 'superadmin:societes_liste' %}" class="nav-link-item {% block nav_societes %}{% endblock %}">
+            <i class="bi bi-building"></i> Toutes les sociétés
+        </a>
+        <a href="{% url 'superadmin:societe_gestion_liste' %}" class="nav-link-item {% block nav_societe_gestion %}{% endblock %}">
+            <i class="bi bi-gear-wide-connected"></i> Gestion des Sociétés
+        </a>
+        <a href="{% url 'superadmin:societe_creer' %}" class="nav-link-item {% block nav_societe_creer %}{% endblock %}">
+            <i class="bi bi-plus-circle"></i> Nouvelle société
+        </a>
+
+        <div class="nav-section">Licences</div>
+        <a href="{% url 'superadmin:liste_cles' %}" class="nav-link-item {% block nav_cles %}{% endblock %}">
+            <i class="bi bi-key"></i> Toutes les clés
+        </a>
+        <a href="{% url 'superadmin:creer_cle' %}" class="nav-link-item {% block nav_cle_creer %}{% endblock %}">
+            <i class="bi bi-plus-circle"></i> Nouvelle clé
+        </a>
+
+        <div class="nav-section">Utilisateurs</div>
+        <a href="{% url 'superadmin:utilisateurs' %}" class="nav-link-item {% block nav_utilisateurs %}{% endblock %}">
+            <i class="bi bi-people"></i> Tous les utilisateurs
+        </a>
+
+        <div class="nav-section">Système</div>
+        <a href="{% url 'superadmin:backup' %}" class="nav-link-item {% block nav_backup %}{% endblock %}">
+            <i class="bi bi-cloud-arrow-down"></i> Sauvegardes
+        </a>
+        <a href="{% url 'superadmin:reinitialisation' %}" class="nav-link-item {% block nav_reinit %}{% endblock %}" style="color:#e74c3c;">
+            <i class="bi bi-arrow-counterclockwise"></i> Réinitialisation
+        </a>
+
+    </nav>
+
+    <div class="sidebar-back">
+        <a href="{% url 'accueil' %}" class="nav-link-item">
+            <i class="bi bi-arrow-left-circle"></i> Retour à l'application
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.initiales }}</div>
+            <div>
+                <div class="user-name">{{ user.nom_complet|truncatechars:22 }}</div>
+                <div class="user-role">Superadministrateur</div>
+            </div>
+        </div>
+        <a href="{% url 'accounts:logout' %}" class="nav-link-item mt-2" style="padding-left:0;">
+            <i class="bi bi-box-arrow-right"></i> Déconnexion
+        </a>
+    </div>
+</div>
+
+<!-- CONTENU PRINCIPAL -->
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="btn-hamburger" onclick="toggleSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="topbar-badge">
+                <i class="bi bi-shield-check"></i> Administration
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <span style="font-size:0.8rem;color:#8a9aaa;">
+                <i class="bi bi-clock me-1"></i>{% now "d/m/Y H:i" %}
+            </span>
+            <a href="{% url 'accounts:profil' %}" style="color:var(--texte);">
+                <i class="bi bi-person-circle me-1"></i>{{ user.nom }}
+            </a>
+        </div>
+    </div>
+
+    <div class="page-content">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<!-- Overlay pour mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('sidebar-open');
+        overlay.classList.toggle('sidebar-open');
+    }
+
+    // Fermer le menu mobile en cliquant sur un lien
+    document.querySelectorAll('.sidebar .nav-link-item').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 992) toggleSidebar();
+        });
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

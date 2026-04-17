@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{{ titre }} — WIBABI{% endblock %}
+{% block nav_clients %}active{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div style="font-size:0.8rem;color:#8a9aaa;margin-bottom:18px;">
+        <a href="{% url 'clients:liste' %}" style="color:#8a9aaa;text-decoration:none;">Clients</a>
+        <span style="margin:0 6px;">›</span>
+        <a href="{% url 'clients:types' %}" style="color:#8a9aaa;text-decoration:none;">Types</a>
+        <span style="margin:0 6px;">›</span>
+        <span style="color:var(--bleu);">{{ titre }}</span>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span>
+                <i class="bi bi-person-badge me-2" style="color:var(--or);"></i>{{ titre }}
+            </span>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label">Nom du type <span style="color:#e74c3c;">*</span></label>
+                    {{ form.nom }}
+                    {% if form.nom.errors %}
+                    <div style="color:#e74c3c;font-size:0.78rem;margin-top:5px;">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ form.nom.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div style="font-size:0.76rem;color:#aab;margin-top:6px;">
+                        Ex : Particulier, Entreprise, ONG, Institution publique...
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;padding-top:16px;border-top:1px solid #f0f2f5;">
+                    <button type="submit" class="btn btn-gold">
+                        <i class="bi bi-check-circle me-2"></i>
+                        {% if mode == 'modifier' %}Enregistrer{% else %}Créer le type{% endif %}
+                    </button>
+                    <a href="{% url 'clients:types' %}" class="btn btn-outline-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if mode == 'modifier' and type_client %}
+    <div style="margin-top:10px;padding:10px 14px;background:#fafbfc;border-radius:8px;font-size:0.76rem;color:#aab;">
+        <i class="bi bi-people me-1"></i>{{ type_client.nb_clients }} client{{ type_client.nb_clients|pluralize }} utilisent ce type
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

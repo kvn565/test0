@@ -1,0 +1,102 @@
+{% extends "rapports/base_rapport.html" %}
+{% block corps_rapport %}
+
+<div class="totaux-grid cols-4">
+    <div class="total-card">
+        <div class="tc-icon" style="background:#e0f2fe;"><i class="bi bi-hash" style="color:#0284c7;"></i></div>
+        <div class="tc-val">{{ nb|default:"0" }}</div>
+        <div class="tc-lbl">Nb lignes vendues</div>
+    </div>
+    <div class="total-card">
+        <div class="tc-icon" style="background:#f0fdf4;"><i class="bi bi-cash" style="color:#16a34a;"></i></div>
+        <div class="tc-val">{{ total_ht|default:"0"|floatformat:0 }}</div>
+        <div class="tc-lbl">Total HT</div>
+    </div>
+    <div class="total-card">
+        <div class="tc-icon" style="background:#fef9c3;"><i class="bi bi-percent" style="color:#b45309;"></i></div>
+        <div class="tc-val">{{ total_tva|default:"0"|floatformat:0 }}</div>
+        <div class="tc-lbl">Total TVA</div>
+    </div>
+    <div class="total-card" style="border-left:3px solid var(--primary);">
+        <div class="tc-icon" style="background:#e8f5ee;"><i class="bi bi-cash-stack" style="color:var(--primary);"></i></div>
+        <div class="tc-val" style="color:var(--primary);">{{ total_ttc|default:"0"|floatformat:0 }}</div>
+        <div class="tc-lbl">Total TTC</div>
+    </div>
+</div>
+
+<div class="result-card">
+    <div class="result-header">
+        <div class="rh-title">
+            <i class="bi bi-calculator" style="color:#b45309;"></i>
+            Détail du stock vendu
+        </div>
+        <span class="rh-count">{{ nb|default:"0" }} ligne(s)</span>
+    </div>
+    <div class="table-wrap">
+        <table class="t-custom">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date facture</th>
+                    <th>N° Facture</th>
+                    <th>Client</th>
+                    <th>Type</th>
+                    <th>Désignation</th>
+                    <th>TVA %</th>
+                    <th>Qté</th>
+                    <th>P.U. TTC</th>
+                    <th>Montant HT</th>
+                    <th>TVA</th>
+                    <th>Montant TTC</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in lignes %}
+                <tr>
+                    <td style="color:var(--text-muted); font-size:11px;">{{ forloop.counter }}</td>
+                    <td><strong>{{ l.facture.date_facture|date:"d/m/Y" }}</strong></td>
+                    <td style="font-family:'DM Mono',monospace; font-size:12px; color:var(--primary);">
+                        {{ l.facture.numero }}
+                    </td>
+                    <td>{{ l.facture.client.nom|default:"—" }}</td>
+                    <td>
+                        {% if l.produit %}
+                            <span class="badge-stock badge-ok">Produit</span>
+                        {% elif l.service %}
+                            <span class="badge-stock" style="background:#f3e8ff; color:#7c3aed;">Service</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight:600;">{{ l.designation }}</td>
+                    <td style="font-family:'DM Mono',monospace; font-size:12px;">{{ l.taux_tva }}%</td>
+                    <td style="font-family:'DM Mono',monospace; font-weight:700;">{{ l.quantite }}</td>
+                    <td style="font-family:'DM Mono',monospace;">{{ l.prix_vente_tvac|floatformat:2 }}</td>
+                    <td style="font-family:'DM Mono',monospace;">{{ l.montant_ht|floatformat:2 }}</td>
+                    <td style="font-family:'DM Mono',monospace; color:var(--text-muted);">{{ l.montant_tva|floatformat:2 }}</td>
+                    <td style="font-family:'DM Mono',monospace; font-weight:700; color:var(--primary);">
+                        {{ l.montant_ttc|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="12" class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>Aucune ligne trouvée pour ces critères.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if lignes %}
+            <tfoot>
+                <tr>
+                    <td colspan="9" style="text-align:right; font-weight:700;">TOTAL</td>
+                    <td style="font-family:'DM Mono',monospace;">{{ total_ht|floatformat:2 }}</td>
+                    <td style="font-family:'DM Mono',monospace; color:var(--text-muted);">{{ total_tva|floatformat:2 }}</td>
+                    <td style="font-family:'DM Mono',monospace; color:var(--primary); font-weight:700;">{{ total_ttc|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+{% endblock %}

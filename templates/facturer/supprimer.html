@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer {{ facture.numero }} — WIBABI{% endblock %}
+{% block nav_facturer %}active{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-xl-5">
+
+        {# Fil d’Ariane #}
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb bg-transparent p-0 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'facturer:liste' %}" class="text-muted text-decoration-none">
+                        <i class="bi bi-receipt me-1"></i>Factures
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'facturer:detail' facture.pk %}" class="text-muted text-decoration-none">
+                        {{ facture.numero }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-danger" aria-current="page">
+                    Supprimer
+                </li>
+            </ol>
+        </nav>
+
+        {# Carte de confirmation #}
+        <div class="card border-danger shadow-sm">
+            <div class="card-body p-5 text-center">
+
+                {# Icône d’avertissement #}
+                <div class="mb-5">
+                    <div style="width:90px;height:90px;background:#fdecea;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size:3rem;color:#dc3545;"></i>
+                    </div>
+                </div>
+
+                <h4 class="card-title mb-4 fw-bold text-danger">
+                    Supprimer cette facture ?
+                </h4>
+
+                <p class="text-muted mb-4 lead">
+                    Cette action est <strong>irréversible</strong> et supprimera définitivement la facture.
+                </p>
+
+                {# Alerte si suppression interdite (déjà envoyée OBR) #}
+                {% if facture.statut_obr == 'ENVOYE' %}
+                    <div class="alert alert-warning mb-5" role="alert">
+                        <i class="bi bi-shield-lock-fill me-2 fs-4"></i>
+                        <strong>Suppression interdite :</strong><br>
+                        Cette facture a déjà été enregistrée auprès de l'OBR.<br>
+                        Toute suppression est bloquée pour des raisons de conformité fiscale.
+                    </div>
+
+                    <a href="{% url 'facturer:detail' facture.pk %}" class="btn btn-outline-secondary btn-lg px-5">
+                        <i class="bi bi-arrow-left me-2"></i>Retour à la facture
+                    </a>
+
+                {% else %}
+                    {# Récapitulatif facture #}
+                    <div class="bg-light border rounded p-4 mb-5 text-start mx-auto" style="max-width: 420px;">
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Numéro :</strong>
+                            <span class="fw-bold text-primary">{{ facture.numero }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Client :</strong>
+                            <span>{{ facture.client.nom|default:"Client divers" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Date :</strong>
+                            <span>{{ facture.date_facture|date:"d/m/Y" }} à {{ facture.heure_facture|time:"H:i" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total TTC :</strong>
+                            <span class="fw-bold text-primary">{{ facture.total_ttc|floatformat:0 }} {{ facture.devise|default:"BIF" }}</span>
+                        </div>
+                    </div>
+
+                    {# Formulaire de suppression #}
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                            <button type="submit" class="btn btn-danger btn-lg px-5">
+                                <i class="bi bi-trash me-2"></i>Oui, supprimer définitivement
+                            </button>
+                            <a href="{% url 'facturer:detail' facture.pk %}" class="btn btn-outline-secondary btn-lg px-5">
+                                <i class="bi bi-arrow-left me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+
+                    <p class="text-muted small mt-4">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Cette facture est encore modifiable car elle n’a pas été envoyée à l’OBR.
+                    </p>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

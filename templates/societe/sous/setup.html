@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration initiale — OBR Facturation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f0f9ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+        .setup-card {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 660px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .setup-header {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            padding: 28px 28px 24px;
+            text-align: center;
+        }
+        .setup-header-icon {
+            width: 56px; height: 56px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px;
+        }
+        .setup-header h1 { color: white; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+        .setup-header p  { color: rgba(255,255,255,0.8); font-size: 13px; }
+        .setup-body { padding: 28px; }
+        .section-title {
+            font-size: 11.5px; font-weight: 700; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.6px;
+            margin: 20px 0 12px; padding-bottom: 6px;
+            border-bottom: 1.5px solid #e2e8f0;
+        }
+        .section-title:first-child { margin-top: 0; }
+        .row { display: flex; gap: 14px; flex-wrap: wrap; }
+        .col-12 { flex: 0 0 100%; }
+        .col-6  { flex: 1 1 calc(50% - 7px); min-width: 120px; }
+        .col-4  { flex: 1 1 calc(40% - 7px); min-width: 120px; }
+        .col-2  { flex: 1 1 calc(20% - 7px); min-width: 80px; }
+        .form-group { margin-bottom: 0; }
+        label {
+            display: block;
+            font-size: 12.5px; font-weight: 600; color: #374151;
+            margin-bottom: 5px;
+        }
+        label .req { color: #ef4444; }
+        input, select, textarea {
+            width: 100%; padding: 9px 12px;
+            border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: 13.5px; color: #1e293b;
+            background: white; transition: border-color .2s;
+            outline: none;
+        }
+        input:focus, select:focus { border-color: #0ea5e9; }
+        .btn-submit {
+            width: 100%; padding: 12px;
+            background: #0ea5e9; color: white;
+            border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer; margin-top: 24px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background .2s;
+        }
+        .btn-submit:hover { background: #0284c7; }
+        .alert-success {
+            background: #f0fdf4; border: 1.5px solid #bbf7d0;
+            color: #15803d; border-radius: 8px; padding: 10px 14px;
+            font-size: 13px; display: flex; align-items: center; gap: 8px;
+            margin-bottom: 16px;
+        }
+        .alert-error {
+            background: #fef2f2; border: 1.5px solid #fecaca;
+            color: #dc2626; border-radius: 8px; padding: 10px 14px;
+            font-size: 13px; margin-bottom: 4px;
+        }
+        .step-badge {
+            background: rgba(255,255,255,0.15);
+            color: white; border-radius: 20px;
+            font-size: 11.5px; padding: 3px 10px;
+            display: inline-block; margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="setup-card">
+
+    <!-- Header -->
+    <div class="setup-header">
+        <div class="setup-header-icon">
+            <i class="bi bi-building-fill" style="color:white; font-size:22px;"></i>
+        </div>
+        <span class="step-badge"><i class="bi bi-gear me-1"></i> Configuration initiale</span>
+        <h1>Configurer votre société</h1>
+        <p>Cette étape est obligatoire avant de pouvoir accéder à l'application.</p>
+    </div>
+
+    <div class="setup-body">
+
+        {% if messages %}
+        {% for msg in messages %}
+        <div class="alert-success"><i class="bi bi-check-circle-fill"></i> {{ msg }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Identité -->
+            <div class="section-title"><i class="bi bi-building me-1"></i> Identité légale</div>
+            <div class="row" style="margin-bottom:14px;">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Nom de la société <span class="req">*</span></label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}<div class="alert-error">{{ form.nom.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom:14px;">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>NIF <span class="req">*</span></label>
+                        {{ form.nif }}
+                        {% if form.nif.errors %}<div class="alert-error">{{ form.nif.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Registre de commerce <span class="req">*</span></label>
+                        {{ form.registre }}
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom:14px;">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Téléphone <span class="req">*</span></label>
+                        {{ form.telephone }}
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Boîte postale</label>
+                        {{ form.boite_postal }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adresse -->
+            <div class="section-title"><i class="bi bi-geo-alt me-1"></i> Adresse</div>
+            <div class="row" style="margin-bottom:14px;">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Province <span class="req">*</span></label>
+                        {{ form.province }}
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Commune / Commerce <span class="req">*</span></label>
+                        {{ form.commune }}
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom:14px;">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Quartier <span class="req">*</span></label>
+                        {{ form.quartier }}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="form-group">
+                        <label>Avenue <span class="req">*</span></label>
+                        {{ form.avenue }}
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>N°</label>
+                        {{ form.numero }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fiscalité -->
+            <div class="section-title"><i class="bi bi-calculator me-1"></i> Fiscalité</div>
+            <div class="row" style="margin-bottom:14px;">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Centre fiscal <span class="req">*</span></label>
+                        {{ form.centre_fiscale }}
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom:0;">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Assujetti TVA <span class="req">*</span></label>
+                        {{ form.assujeti_tva }}
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Assujetti à la TC <span class="req">*</span></label>
+                        {{ form.assujeti_tc }}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-check-lg"></i> Enregistrer et continuer vers la connexion
+            </button>
+        </form>
+
+    </div>
+</div>
+</body>
+</html>

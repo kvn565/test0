@@ -1,0 +1,47 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Créer une clé — Administration{% endblock %}
+{% block page_title %}Créer une clé de licence{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Clé indépendante, à assigner ensuite à une société</p>{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span><a href="{% url 'superadmin:liste_cles' %}">Clés</a><span class="sep">›</span>Créer{% endblock %}
+{% block nav_cle_creer %}active{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-key me-2" style="color:var(--or);"></i>Nouvelle clé de licence</div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-4">
+                        <label class="form-label" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span style="color:#e74c3c;">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div style="font-size:0.78rem;color:#8a9aaa;margin-top:5px;">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div style="color:#e74c3c;font-size:0.8rem;margin-top:5px;">
+                            <i class="bi bi-x-circle me-1"></i>{{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+                    {% endif %}
+                    <div class="d-flex gap-3 pt-3" style="border-top:1px solid #f0f2f5;">
+                        <button type="submit" class="btn btn-gold">
+                            <i class="bi bi-key-fill me-2"></i>Créer la clé
+                        </button>
+                        <a href="{% url 'superadmin:liste_cles' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

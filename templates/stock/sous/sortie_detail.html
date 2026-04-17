@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Détail Sortie Stock{% endblock %}
+{% block breadcrumb_parent %}Sorties Stock{% endblock %}
+{% block breadcrumb_current %}Détail{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Détail Sortie Stock</div>
+        <div class="page-subtitle">{{ sortie.produit.designation }} — {{ sortie.date_sortie|date:"d/m/Y" }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'stock:sortie_modifier' sortie.pk %}" class="btn-outline-custom">
+            <i class="bi bi-pencil"></i> Modifier
+        </a>
+        <a href="{% url 'stock:sorties' %}" class="btn-outline-custom">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-12 col-lg-7">
+        <div class="card">
+            <div style="padding:24px;">
+
+                <!-- En-tête -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:44px; height:44px; background:#fee2e2; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <i class="bi bi-box-arrow-up" style="color:#dc2626; font-size:18px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:16px; font-weight:700;">{{ sortie.produit.designation }}</div>
+                            <div style="font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace;">{{ sortie.produit.code }}</div>
+                        </div>
+                    </div>
+                    <span style="font-family:'DM Mono',monospace; font-size:13px; font-weight:700; background:#fee2e2; color:#991b1b; padding:4px 12px; border-radius:6px;">
+                        {{ sortie.type_sortie }}
+                    </span>
+                </div>
+
+                {% for label, valeur, icon in rows %}
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi {{ icon }} me-2"></i>{{ label }}</span>
+                    <span style="font-weight:600;">{{ valeur }}</span>
+                </div>
+                {% endfor %}
+
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-123 me-2"></i>Code</span>
+                    <span>{{ sortie.code|default:"—" }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-calendar me-2"></i>Date</span>
+                    <span style="font-weight:600;">{{ sortie.date_sortie|date:"d/m/Y" }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-stack me-2"></i>Qté stock (entrée)</span>
+                    <span style="font-family:'DM Mono',monospace;">{{ sortie.entree_stock.quantite }} {{ sortie.produit.unite }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-dash-circle me-2"></i>Quantité sortie</span>
+                    <span style="font-family:'DM Mono',monospace; font-weight:700; font-size:16px; color:#dc2626;">
+                        -{{ sortie.quantite }} {{ sortie.produit.unite }}
+                    </span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-tag me-2"></i>Prix unitaire</span>
+                    <span style="font-family:'DM Mono',monospace; font-weight:600;">{{ sortie.prix|floatformat:0 }} {{ sortie.produit.devise }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:14px 0; font-size:15px; font-weight:700;">
+                    <span>Montant total</span>
+                    <span style="font-family:'DM Mono',monospace; color:#dc2626; font-size:18px;">
+                        {{ sortie.montant_total|floatformat:0 }} {{ sortie.produit.devise }}
+                    </span>
+                </div>
+
+                {% if sortie.commentaire %}
+                <div style="background:var(--body-bg); border-radius:8px; padding:12px 14px; border:1.5px solid var(--border-color); margin-bottom:12px;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;"><i class="bi bi-chat-left-text me-1"></i> Commentaire</div>
+                    <div style="font-size:13.5px;">{{ sortie.commentaire }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Statut OBR -->
+                <div style="background:var(--body-bg); border-radius:10px; padding:14px 16px; border:1.5px solid var(--border-color);">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-muted);">STATUT OBR</span>
+                        {% if sortie.statut_obr == 'ENVOYE' %}
+                            <span class="status-badge badge-success"><i class="bi bi-check2"></i> Envoyé</span>
+                        {% elif sortie.statut_obr == 'EN_ATTENTE' %}
+                            <span class="status-badge badge-warning"><i class="bi bi-hourglass-split"></i> En attente</span>
+                        {% elif sortie.statut_obr == 'ECHEC' %}
+                            <span class="status-badge badge-danger"><i class="bi bi-x"></i> Échec</span>
+                        {% else %}
+                            <span class="status-badge badge-neutral">Non concerné</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted);">
+                        {% if sortie.message_obr %}{{ sortie.message_obr }}{% else %}Pas encore envoyé à l'OBR{% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Fournisseurs{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            {% if fournisseur %}✏️ Modifier un fournisseur{% else %}➕ Nouveau fournisseur{% endif %}
+        </div>
+        <div class="page-subtitle">
+            {% if fournisseur %}
+                Modification de « {{ fournisseur.nom }} »
+            {% else %}
+                Remplissez les informations du fournisseur
+            {% endif %}
+        </div>
+    </div>
+    <a href="{% url 'fournisseurs:liste' %}" class="btn-outline-custom">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-7 col-lg-5">
+        <div class="card">
+            <div style="padding:24px;">
+
+                <!-- Icône + titre -->
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;
+                            padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+                    <div style="width:44px; height:44px; background:#f0faf5; border-radius:10px;
+                                display:flex; align-items:center; justify-content:center;
+                                border:1.5px solid #bbdfc9; flex-shrink:0;">
+                        <i class="bi bi-truck" style="color:var(--primary); font-size:19px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:15px; font-weight:700;">{{ titre }}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">
+                            {% if fournisseur %}
+                                Modifiez les champs puis enregistrez
+                            {% else %}
+                                Les champs marqués <span style="color:#dc2626;">*</span> sont obligatoires
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Nom -->
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">
+                            Nom du fournisseur <span class="required">*</span>
+                        </label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px; display:flex; align-items:center; gap:5px;">
+                            <i class="bi bi-exclamation-circle"></i> {{ form.nom.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Adresse -->
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Adresse</label>
+                        {{ form.adresse }}
+                        {% if form.adresse.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px; display:flex; align-items:center; gap:5px;">
+                            <i class="bi bi-exclamation-circle"></i> {{ form.adresse.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Téléphone -->
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Téléphone</label>
+                        {{ form.telephone }}
+                        {% if form.telephone.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px; display:flex; align-items:center; gap:5px;">
+                            <i class="bi bi-exclamation-circle"></i> {{ form.telephone.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if fournisseur %}
+                    <!-- Infos lecture seule pour modification -->
+                    <div style="background:var(--body-bg); border-radius:8px; padding:10px 14px;
+                                margin-top:4px; margin-bottom:16px; font-size:12px; color:var(--text-muted);">
+                        <i class="bi bi-clock"></i>
+                        Enregistré le {{ fournisseur.date_creation|date:"d/m/Y à H:i" }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Boutons -->
+                    <div style="display:flex; gap:10px; margin-top:24px;">
+                        <a href="{% url 'fournisseurs:liste' %}"
+                           class="btn-outline-custom" style="flex:1; justify-content:center;">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn-primary-custom"
+                                style="flex:1; justify-content:center;">
+                            <i class="bi bi-check-lg"></i> {{ action }}
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        {% if fournisseur %}
+        <!-- Lien suppression depuis le formulaire de modification -->
+        <div style="text-align:center; margin-top:14px;">
+            <a href="{% url 'fournisseurs:supprimer' fournisseur.pk %}"
+               style="font-size:12.5px; color:#dc2626; text-decoration:none;">
+                <i class="bi bi-trash"></i> Supprimer ce fournisseur
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

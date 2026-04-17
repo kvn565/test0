@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Types de clients{% endblock %}
+{% block content %}
+<h2>Types de clients</h2>
+<a href="{% url 'clients:creer_type' %}" class="btn-primary-custom mb-3">Ajouter un type</a>
+<table class="table table-custom">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for type in types %}
+        <tr>
+            <td>{{ type.nom }}</td>
+            <td>
+                <a href="{% url 'clients:edit_type' type.pk %}" class="btn-sm-icon"><i class="bi bi-pencil"></i></a>
+                <a href="{% url 'clients:delete_type' type.pk %}" class="btn-sm-icon danger"><i class="bi bi-trash"></i></a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2">Aucun type trouvé.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer le produit{% endblock %}
+{% block breadcrumb_parent %}Produits{% endblock %}
+{% block breadcrumb_current %}Supprimer{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0" style="border-top: 4px solid #ef4444;">
+            <div class="card-body text-center p-4">
+
+                <!-- Icône danger -->
+                <div class="mb-4">
+                    <div class="bg-danger-subtle rounded-circle d-inline-flex align-items-center justify-content-center" style="width:80px; height:80px;">
+                        <i class="bi bi-trash-fill text-danger" style="font-size:2.5rem;"></i>
+                    </div>
+                </div>
+
+                <h4 class="mb-3 text-danger fw-bold">Supprimer ce produit ?</h4>
+                <p class="text-muted mb-4">
+                    Vous êtes sur le point de supprimer définitivement :
+                </p>
+
+                <!-- Carte produit -->
+                <div class="bg-light rounded p-3 mb-4 text-start border">
+                    <h6 class="fw-bold mb-2">{{ produit.designation }}</h6>
+                    <div class="small text-muted">
+                        <i class="bi bi-upc me-1"></i> Code : <code>{{ produit.code }}</code><br>
+                        <i class="bi bi-tag me-1"></i> Catégorie : {{ produit.categorie.nom|default:"—" }}<br>
+                        <i class="bi bi-globe me-1"></i> Origine :
+                        {% if produit.est_importe %}
+                            <span class="badge bg-info-subtle text-info">Importé</span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success">Local</span>
+                        {% endif %}<br>
+                        <i class="bi bi-currency-dollar me-1"></i> Prix : {{ produit.prix_vente|floatformat:2 }} {{ produit.devise }}
+                    </div>
+                </div>
+
+                <!-- Avertissement -->
+                <div class="alert alert-warning mb-4 text-start small">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Attention :</strong> Cette action est <strong>irréversible</strong>.<br>
+                    Si des entrées/sorties de stock ou des factures sont liées à ce produit, elles pourraient être affectées ou devenir incohérentes.
+                </div>
+
+                <!-- Erreurs globales (ex: bloqué par stock) -->
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary flex-fill">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-danger flex-fill">
+                            <i class="bi bi-trash"></i> Oui, supprimer définitivement
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'produits:liste' %}" class="text-muted small">
+                <i class="bi bi-arrow-left"></i> Retour à la liste des produits
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

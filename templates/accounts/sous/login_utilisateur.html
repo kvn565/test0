@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Employé — WIBABI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root { --bleu:#0f2a4a; --or:#c9a84c; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            background: #f0f3f7;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        .wrapper {
+            display: flex;
+            width: 100%; max-width: 820px;
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(15,42,74,0.15);
+        }
+
+        /* ── CÔTÉ INFO ── */
+        .info-side {
+            width: 300px; flex-shrink: 0;
+            background: var(--bleu);
+            padding: 40px 32px;
+            display: flex; flex-direction: column; gap: 32px;
+        }
+        .info-logo {
+            font-family: 'Playfair Display', serif;
+            color: var(--or); font-size: 1.3rem;
+        }
+        .info-logo small { display: block; color: rgba(255,255,255,0.35); font-size:0.7rem; font-family:'DM Sans',sans-serif; letter-spacing:0.1em; text-transform:uppercase; margin-top:4px; }
+        .info-steps { flex: 1; }
+        .info-steps h3 { color: rgba(255,255,255,0.85); font-size: 0.82rem; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .step {
+            display: flex; gap: 14px; margin-bottom: 20px;
+        }
+        .step-num {
+            width: 28px; height: 28px;
+            background: rgba(201,168,76,0.15);
+            border: 1px solid rgba(201,168,76,0.35);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--or); font-size: 0.75rem; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step-text { color: rgba(255,255,255,0.55); font-size: 0.8rem; line-height: 1.6; }
+        .step-text strong { color: rgba(255,255,255,0.85); display: block; margin-bottom: 2px; }
+        .info-contact { color: rgba(255,255,255,0.3); font-size: 0.75rem; line-height: 1.7; }
+
+        /* ── CÔTÉ FORMULAIRE ── */
+        .form-side { flex: 1; padding: 48px 40px; }
+        .form-header { margin-bottom: 32px; }
+        .form-header h1 { font-family:'Playfair Display',serif; font-size:1.6rem; color:var(--bleu); margin-bottom:6px; }
+        .form-header p { color: #8a9aaa; font-size: 0.85rem; }
+
+        .field-group { margin-bottom: 18px; }
+        .field-group label { display: block; font-size: 0.78rem; font-weight: 600; color: #5a6a7a; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .field-wrap { position: relative; }
+        .field-wrap i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #b0bcc8; font-size: 0.95rem; }
+        .field-wrap input {
+            width: 100%;
+            border: 1.5px solid #dde3ea;
+            border-radius: 10px;
+            padding: 12px 12px 12px 40px;
+            font-size: 0.88rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+        }
+        .field-wrap input:focus { border-color: var(--or); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); outline: none; }
+
+        .btn-connect {
+            width: 100%;
+            background: var(--bleu);
+            border: none; color: #fff;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            margin-top: 6px;
+        }
+        .btn-connect:hover { background: #1a3f6f; }
+
+        .back-row { margin-top: 20px; text-align: center; }
+        .back-row a { color: #8a9aaa; font-size: 0.82rem; text-decoration: none; }
+        .back-row a:hover { color: var(--bleu); }
+
+        .error-box { background:#fdecea; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:0.83rem; color:#b71c1c; }
+
+        @media(max-width:640px) { .info-side { display:none; } }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- Info -->
+    <div class="info-side">
+        <div class="info-logo">
+            WIBABI
+            <small>Espace Employé</small>
+        </div>
+        <div class="info-steps">
+            <h3>Comment accéder</h3>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <strong>Identifiants</strong>
+                    Reçus de votre chef de société lors de la création de votre compte.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <strong>Licence active</strong>
+                    Votre société doit avoir une licence valide pour vous connecter.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <strong>Accès limité</strong>
+                    Vous accédez uniquement aux modules autorisés par votre directeur.
+                </div>
+            </div>
+        </div>
+        <div class="info-contact">
+            Problème de connexion ?<br>
+            Contactez votre chef de société.
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="form-side">
+        <div class="form-header">
+            <h1>Connexion Employé</h1>
+            <p>Accédez à votre espace de travail</p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="error-box">
+            {% for error in form.non_field_errors %}
+            <div><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="field-group">
+                <label>Nom d'utilisateur</label>
+                <div class="field-wrap">
+                    <i class="bi bi-person"></i>
+                    <input type="text" name="username"
+                           value="{{ form.username.value|default:'' }}"
+                           placeholder="Votre identifiant" autofocus autocomplete="username">
+                </div>
+                {% if form.username.errors %}<small class="text-danger">{{ form.username.errors.0 }}</small>{% endif %}
+            </div>
+
+            <div class="field-group">
+                <label>Mot de passe</label>
+                <div class="field-wrap">
+                    <i class="bi bi-lock"></i>
+                    <input type="password" name="password"
+                           placeholder="Votre mot de passe" autocomplete="current-password">
+                </div>
+                {% if form.password.errors %}<small class="text-danger">{{ form.password.errors.0 }}</small>{% endif %}
+            </div>
+
+            <button type="submit" class="btn-connect">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+            </button>
+        </form>
+
+        <div class="back-row">
+            <a href="{% url 'accounts:login' %}"><i class="bi bi-arrow-left me-1"></i>Retour à la connexion générale</a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div style="position:fixed;top:20px;right:20px;z-index:9999;width:300px;">
+    {% for message in messages %}
+    <div style="background:#fff;border-radius:10px;padding:12px 16px;margin-bottom:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);border-left:4px solid #c9a84c;font-size:0.83rem;">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+</body>
+</html>

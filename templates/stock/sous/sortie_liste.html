@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Sorties Stock{% endblock %}
+{% block breadcrumb_parent %}Stock{% endblock %}
+{% block breadcrumb_current %}Sorties stock{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Sorties Stock</div>
+        <div class="page-subtitle">{{ stats.total }} sortie{{ stats.total|pluralize }} enregistrée{{ stats.total|pluralize }}</div>
+    </div>
+    <a href="{% url 'stock:sortie_nouveau' %}" class="btn-primary-custom">
+        <i class="bi bi-plus-lg"></i> Nouvelle sortie
+    </a>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="stat-icon" style="background:#fee2e2; color:#991b1b; width:34px; height:34px; font-size:14px;"><i class="bi bi-box-arrow-up"></i></div>
+            <div><div class="stat-value" style="font-size:20px;">{{ stats.total }}</div><div class="stat-label">Total</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="stat-icon" style="background:#fef9c3; color:#854d0e; width:34px; height:34px; font-size:14px;"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="stat-value" style="font-size:20px;">{{ stats.en_attente }}</div><div class="stat-label">En attente OBR</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="stat-icon" style="background:#dcfce7; color:#15803d; width:34px; height:34px; font-size:14px;"><i class="bi bi-check-circle"></i></div>
+            <div><div class="stat-value" style="font-size:20px;">{{ stats.envoyes }}</div><div class="stat-label">Envoyés OBR</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="padding:12px 14px;">
+            <div class="stat-icon" style="background:#fee2e2; color:#991b1b; width:34px; height:34px; font-size:14px;"><i class="bi bi-x-circle"></i></div>
+            <div><div class="stat-value" style="font-size:20px;">{{ stats.echecs }}</div><div class="stat-label">Échecs</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="card mb-3">
+    <div style="padding:14px 18px;">
+        <form method="get" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <div style="position:relative; flex:1; min-width:200px; max-width:320px;">
+                <i class="bi bi-search" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px;"></i>
+                <input type="text" name="q" value="{{ q }}"
+                       placeholder="Produit, code, réf..."
+                       class="form-control-custom" style="padding-left:34px;">
+            </div>
+            <select name="type" class="form-control-custom" style="width:auto; min-width:160px;">
+                <option value="">Tous les types</option>
+                {% for val, label in types %}
+                <option value="{{ val }}" {% if type_mvt == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="statut" class="form-control-custom" style="width:auto; min-width:160px;">
+                <option value="">Tous statuts OBR</option>
+                {% for val, label in statuts %}
+                <option value="{{ val }}" {% if statut == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-primary-custom">Filtrer</button>
+            {% if q or statut or type_mvt %}
+            <a href="{% url 'stock:sorties' %}" class="btn-outline-custom"><i class="bi bi-x-lg"></i> Effacer</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Tableau -->
+<div class="card">
+    {% if sorties %}
+    <div style="overflow-x:auto;">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Code</th>
+                    <th>Produit</th>
+                    <th>T.</th>
+                    <th>Qté stock</th>
+                    <th>Qté sortie</th>
+                    <th>Prix unit.</th>
+                    <th>Montant</th>
+                    <th>Date</th>
+                    <th>Statut OBR</th>
+                    <th>Message OBR</th>
+                    <th style="text-align:center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sorties %}
+                <tr>
+                    <!-- Type -->
+                    <td>
+                        <span style="font-family:'DM Mono',monospace; font-size:11.5px; font-weight:700;
+                                     background:#fee2e2; color:#991b1b; padding:2px 7px; border-radius:5px;">
+                            {{ s.type_sortie }}
+                        </span>
+                    </td>
+                    <!-- Code -->
+                    <td style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted);">
+                        {{ s.code|default:"—" }}
+                    </td>
+                    <!-- Produit -->
+                    <td>
+                        <div style="font-weight:600; font-size:13px;">{{ s.produit.designation }}</div>
+                        <div style="font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace;">{{ s.produit.code }}</div>
+                    </td>
+                    <!-- Type produit -->
+                    <td>
+                        {% if s.produit.origine == 'LOCAL' %}
+                        <span style="font-size:10.5px; font-weight:600; background:#f0fdf4; color:#15803d; padding:2px 6px; border-radius:4px;">L</span>
+                        {% else %}
+                        <span style="font-size:10.5px; font-weight:600; background:#fef9c3; color:#854d0e; padding:2px 6px; border-radius:4px;">I</span>
+                        {% endif %}
+                    </td>
+                    <!-- Quantité en stock (calculée) -->
+                    <td style="font-family:'DM Mono',monospace; font-size:12.5px; color:var(--text-muted);">
+                        {{ s.entree_stock.quantite }} {{ s.produit.unite }}
+                    </td>
+                    <!-- Quantité sortie -->
+                    <td style="font-family:'DM Mono',monospace; font-size:13px; font-weight:600; color:#dc2626;">
+                        -{{ s.quantite }} {{ s.produit.unite }}
+                    </td>
+                    <!-- Prix -->
+                    <td style="font-family:'DM Mono',monospace; font-size:12.5px;">
+                        {{ s.prix|floatformat:0 }} {{ s.produit.devise }}
+                    </td>
+                    <!-- Montant total -->
+                    <td style="font-family:'DM Mono',monospace; font-size:12.5px; font-weight:600;">
+                        {{ s.montant_total|floatformat:0 }} {{ s.produit.devise }}
+                    </td>
+                    <!-- Date -->
+                    <td style="font-size:12px; color:var(--text-muted);">{{ s.date_sortie|date:"d/m/Y" }}</td>
+                    <!-- Statut OBR -->
+                    <td>
+                        {% if s.statut_obr == 'ENVOYE' %}
+                            <span class="status-badge badge-success"><i class="bi bi-check2"></i> Envoyé</span>
+                        {% elif s.statut_obr == 'EN_ATTENTE' %}
+                            <span class="status-badge badge-warning"><i class="bi bi-hourglass-split"></i> Attente</span>
+                        {% elif s.statut_obr == 'ECHEC' %}
+                            <span class="status-badge badge-danger"><i class="bi bi-x"></i> Échec</span>
+                        {% else %}
+                            <span class="status-badge badge-neutral">—</span>
+                        {% endif %}
+                    </td>
+                    <!-- Message OBR -->
+                    <td style="max-width:140px;">
+                        {% if s.message_obr %}
+                        <span style="font-size:11.5px; color:{% if s.statut_obr == 'ENVOYE' %}#15803d{% elif s.statut_obr == 'ECHEC' %}#dc2626{% else %}var(--text-muted){% endif %};">
+                            {{ s.message_obr|truncatechars:40 }}
+                        </span>
+                        {% else %}
+                        <span style="font-size:11.5px; color:var(--text-muted);">Pas encore envoyé</span>
+                        {% endif %}
+                    </td>
+                    <!-- Actions -->
+                    <td style="text-align:center;">
+                        <div style="display:flex; gap:5px; justify-content:center;">
+                            <a href="{% url 'stock:sortie_detail' s.pk %}" class="btn-sm-icon"
+                               title="Voir" style="background:#e0f2fe; color:#075985; border-color:#bae6fd;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'stock:sortie_modifier' s.pk %}" class="btn-sm-icon" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'stock:sortie_supprimer' s.pk %}" class="btn-sm-icon danger" title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:60px 20px;">
+        <div style="width:64px; height:64px; background:#fff1f2; border-radius:16px;
+                    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+            <i class="bi bi-box-arrow-up" style="font-size:28px; color:#fca5a5;"></i>
+        </div>
+        <div style="font-size:15px; font-weight:700; margin-bottom:6px;">
+            {% if q or statut or type_mvt %}Aucun résultat{% else %}Aucune sortie enregistrée{% endif %}
+        </div>
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">
+            {% if not q and not statut and not type_mvt %}Enregistrez votre première sortie de stock{% endif %}
+        </div>
+        {% if not q and not statut and not type_mvt %}
+        <a href="{% url 'stock:sortie_nouveau' %}" class="btn-primary-custom">
+            <i class="bi bi-plus-lg"></i> Nouvelle sortie
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Clé générée — {{ cle.societe.nom }}{% endblock %}
+{% block breadcrumb_parent %}{{ cle.societe.nom }}{% endblock %}
+{% block breadcrumb_current %}Clé d'activation{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Clé d'activation générée</div>
+        <div class="page-subtitle">Transmettez cette clé à {{ cle.societe.nom }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'superadmin:societe_detail' cle.societe.pk %}" class="btn-outline-custom">
+            <i class="bi bi-arrow-left"></i> Retour à la société
+        </a>
+        <a href="{% url 'superadmin:cle_generer' cle.societe.pk %}" class="btn-outline-custom">
+            <i class="bi bi-plus"></i> Nouvelle clé
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+        <!-- ✅ Succès -->
+        <div style="background:linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #22c55e; border-radius:14px; padding:28px; text-align:center; margin-bottom:20px;">
+            <div style="width:56px; height:56px; background:#22c55e; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                <i class="bi bi-check-lg" style="color:white; font-size:24px;"></i>
+            </div>
+            <div style="font-size:16px; font-weight:700; color:#15803d; margin-bottom:6px;">Clé générée avec succès !</div>
+            <div style="font-size:13px; color:#166534;">Valide du {{ cle.date_debut|date:"d/m/Y" }} au {{ cle.date_fin|date:"d/m/Y" }}</div>
+        </div>
+
+        <!-- Clé à distribuer -->
+        <div class="card" style="border:2px solid var(--primary);">
+            <div style="padding:24px; text-align:center;">
+
+                <div style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">
+                    CLÉ D'ACTIVATION
+                </div>
+
+                <!-- La clé visible -->
+                <div id="cle-display" style="
+                    font-family:'DM Mono', monospace;
+                    font-size:26px;
+                    font-weight:700;
+                    color:var(--primary);
+                    background:var(--body-bg);
+                    border:2px dashed #a3c9b0;
+                    border-radius:10px;
+                    padding:16px 24px;
+                    letter-spacing:3px;
+                    margin:12px 0;
+                    user-select:all;
+                ">{{ cle.cle_visible }}</div>
+
+                <!-- Bouton copier -->
+                <button onclick="copierCle()" class="btn-primary-custom" style="margin-top:8px;" id="btn-copier">
+                    <i class="bi bi-clipboard" id="icon-copier"></i> Copier la clé
+                </button>
+
+                <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border-color);">
+                    <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px;">
+                        <span style="color:var(--text-muted);">Société</span>
+                        <span style="font-weight:600;">{{ cle.societe.nom }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px;">
+                        <span style="color:var(--text-muted);">NIF</span>
+                        <span style="font-family:'DM Mono',monospace; font-weight:600;">{{ cle.societe.nif }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:6px;">
+                        <span style="color:var(--text-muted);">Valide du</span>
+                        <span style="font-weight:600;">{{ cle.date_debut|date:"d/m/Y" }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+                        <span style="color:var(--text-muted);">Valide jusqu'au</span>
+                        <span style="font-weight:600;">{{ cle.date_fin|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message à envoyer au client -->
+        <div class="card" style="margin-top:16px;">
+            <div style="padding:18px;">
+                <div style="font-size:13px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                    <i class="bi bi-envelope" style="color:var(--primary);"></i>
+                    Message à envoyer au client
+                </div>
+                <div id="msg-client" style="
+                    background:var(--body-bg);
+                    border-radius:8px;
+                    padding:14px;
+                    font-size:13px;
+                    line-height:1.7;
+                    border:1px solid var(--border-color);
+                    white-space:pre-line;
+                    color:var(--text-main);
+                ">Bonjour,
+
+Voici votre clé d'activation pour l'application OBR Facturation :
+
+🔑 Clé : {{ cle.cle_visible }}
+
+Société : {{ cle.societe.nom }}
+Valide du : {{ cle.date_debut|date:"d/m/Y" }} au {{ cle.date_fin|date:"d/m/Y" }}
+
+Pour activer : connectez-vous à votre compte → Ma Société → Activation licence → saisissez la clé.
+
+⚠️ Cette clé est personnelle et ne peut pas être utilisée pour une autre société.
+
+Cordialement,</div>
+                <button onclick="copierMessage()" class="btn-outline-custom" style="margin-top:10px; font-size:12px;">
+                    <i class="bi bi-clipboard"></i> Copier le message
+                </button>
+            </div>
+        </div>
+
+        <!-- Avertissement -->
+        <div class="alert-obr warning" style="margin-top:12px;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                <strong>Important :</strong> Notez ou transmettez cette clé maintenant.
+                Elle ne sera plus affichée en clair par la suite.
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function copierCle() {
+    const cle = '{{ cle.cle_visible }}';
+    navigator.clipboard.writeText(cle).then(() => {
+        const btn = document.getElementById('btn-copier');
+        const icon = document.getElementById('icon-copier');
+        btn.innerHTML = '<i class="bi bi-check2"></i> Copié !';
+        btn.style.background = '#22c55e';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="bi bi-clipboard" id="icon-copier"></i> Copier la clé';
+            btn.style.background = '';
+        }, 2000);
+    });
+}
+
+function copierMessage() {
+    const msg = document.getElementById('msg-client').innerText;
+    navigator.clipboard.writeText(msg).then(() => {
+        alert('Message copié !');
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

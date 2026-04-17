@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Entrées Stock{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">{% if entree %}✏️ Modifier une entrée{% else %}➕ Nouvelle entrée stock{% endif %}</div>
+        <div class="page-subtitle">{% if entree %}Modification de l'entrée #{{ entree.pk }}{% else %}Enregistrer un mouvement d'entrée{% endif %}</div>
+    </div>
+    <a href="{% url 'stock:entrees' %}" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Retour</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div style="padding:24px;">
+
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+                    <div style="width:44px; height:44px; background:#f0f4ff; border-radius:10px; display:flex; align-items:center; justify-content:center; border:1.5px solid #c3cfe8; flex-shrink:0;">
+                        <i class="bi bi-box-arrow-in-down" style="color:var(--primary); font-size:19px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:15px; font-weight:700;">{{ titre }}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">Les champs marqués <span style="color:#dc2626;">*</span> sont obligatoires</div>
+                    </div>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+
+                        <!-- Type d'entrée -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Type d'entrée <span class="required">*</span></label>
+                                {{ form.type_entree }}
+                                {% if form.type_entree.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.type_entree.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- N° Réquisition -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">N° Réquisition / Réf.</label>
+                                {{ form.numero_ref }}
+                                {% if form.numero_ref.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.numero_ref.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Date d'entrée <span class="required">*</span></label>
+                                {{ form.date_entree }}
+                                {% if form.date_entree.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.date_entree.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Fournisseur -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Fournisseur</label>
+                                {{ form.fournisseur }}
+                                {% if form.fournisseur.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.fournisseur.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Produit -->
+                        <div class="col-12">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Produit <span class="required">*</span></label>
+                                {{ form.produit }}
+                                {% if form.produit.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.produit.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Quantité -->
+                        <div class="col-12 col-md-4">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Quantité <span class="required">*</span></label>
+                                {{ form.quantite }}
+                                {% if form.quantite.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.quantite.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Prix de revient -->
+                        <div class="col-12 col-md-4">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Prix de revient <span class="required">*</span></label>
+                                {{ form.prix_revient }}
+                                {% if form.prix_revient.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.prix_revient.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Prix de vente -->
+                        <div class="col-12 col-md-4">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Prix de vente actuel <span class="required">*</span></label>
+                                {{ form.prix_vente_actuel }}
+                                {% if form.prix_vente_actuel.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.prix_vente_actuel.errors.0 }}</div>{% endif %}
+                                <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Mettra à jour le prix du produit</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {% if entree %}
+                    <div style="background:var(--body-bg); border-radius:8px; padding:10px 14px; margin-top:8px; font-size:12px; color:var(--text-muted);">
+                        <i class="bi bi-clock"></i> Enregistré le {{ entree.date_creation|date:"d/m/Y à H:i" }}
+                    </div>
+                    {% endif %}
+
+                    <div style="display:flex; gap:10px; margin-top:24px;">
+                        <a href="{% url 'stock:entrees' %}" class="btn-outline-custom" style="flex:1; justify-content:center;">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn-primary-custom" style="flex:1; justify-content:center;">
+                            <i class="bi bi-check-lg"></i> {{ action }}
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        {% if entree %}
+        <div style="text-align:center; margin-top:14px;">
+            <a href="{% url 'stock:entree_supprimer' entree.pk %}" style="font-size:12.5px; color:#dc2626; text-decoration:none;">
+                <i class="bi bi-trash"></i> Supprimer cette entrée
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

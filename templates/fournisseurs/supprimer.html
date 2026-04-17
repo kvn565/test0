@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer le fournisseur{% endblock %}
+{% block breadcrumb_parent %}Fournisseurs{% endblock %}
+{% block breadcrumb_current %}Supprimer{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-5 col-lg-4">
+        <div class="card" style="border-top:3px solid #ef4444;">
+            <div style="padding:28px; text-align:center;">
+
+                <!-- Icône -->
+                <div style="width:56px; height:56px; background:#fee2e2; border-radius:50%;
+                            display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                    <i class="bi bi-trash" style="color:#dc2626; font-size:22px;"></i>
+                </div>
+
+                <div style="font-size:16px; font-weight:700; margin-bottom:6px;">
+                    Supprimer ce fournisseur ?
+                </div>
+                <div style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                    Vous êtes sur le point de supprimer définitivement :
+                </div>
+
+                <!-- Infos fournisseur -->
+                <div style="background:#f9fafb; border:1.5px solid var(--border-color);
+                            border-radius:8px; padding:14px 16px; margin-bottom:16px; text-align:left;">
+                    <div style="font-weight:700; font-size:14px; color:#1e293b;">
+                        {{ fournisseur.nom }}
+                    </div>
+                    {% if fournisseur.telephone %}
+                    <div style="font-size:12.5px; color:var(--text-muted); margin-top:5px;">
+                        <i class="bi bi-telephone"></i> {{ fournisseur.telephone }}
+                    </div>
+                    {% endif %}
+                    {% if fournisseur.adresse %}
+                    <div style="font-size:12.5px; color:var(--text-muted); margin-top:3px;">
+                        <i class="bi bi-geo-alt"></i> {{ fournisseur.adresse }}
+                    </div>
+                    {% endif %}
+                    <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">
+                        <i class="bi bi-clock"></i>
+                        Enregistré le {{ fournisseur.date_creation|date:"d/m/Y" }}
+                    </div>
+                </div>
+
+                <!-- Avertissement -->
+                <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:8px;
+                            padding:10px 14px; margin-bottom:20px; text-align:left;
+                            font-size:12.5px; color:#92400e;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong> Attention</strong> — cette action est irréversible.
+                    Les entrées de stock liées à ce fournisseur pourraient être affectées.
+                </div>
+
+                <!-- Boutons -->
+                <form method="post">
+                    {% csrf_token %}
+                    <div style="display:flex; gap:10px;">
+                        <a href="{% url 'fournisseurs:liste' %}"
+                           class="btn-outline-custom" style="flex:1; justify-content:center;">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                        <button type="submit"
+                                style="flex:1; background:#dc2626; color:white; border:none;
+                                       padding:10px 16px; border-radius:8px; font-size:13px;
+                                       font-weight:600; cursor:pointer; display:flex;
+                                       align-items:center; justify-content:center; gap:6px;
+                                       transition:opacity 0.15s;"
+                                onmouseover="this.style.opacity='0.85'"
+                                onmouseout="this.style.opacity='1'">
+                            <i class="bi bi-trash"></i> Oui, supprimer
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Retour vers modifier -->
+        <div style="text-align:center; margin-top:12px;">
+            <a href="{% url 'fournisseurs:modifier' fournisseur.pk %}"
+               style="font-size:13px; color:var(--text-muted); text-decoration:none;">
+                <i class="bi bi-arrow-left"></i> Retour au fournisseur
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

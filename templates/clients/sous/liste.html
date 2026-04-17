@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Liste des clients{% endblock %}
+{% block content %}
+<h2>Liste des clients</h2>
+<a href="{% url 'clients:creer' %}" class="btn-primary-custom mb-3">Ajouter un client</a>
+<table class="table table-custom">
+    <thead>
+        <tr>
+            <th>Date création</th>
+            <th>Nom</th>
+            <th>NIF</th>
+            <th>Assujeti TVA</th>
+            <th>Resident / Adresse</th>
+            <th>Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+        <tr>
+            <td>{{ client.date_creation }}</td>
+            <td>{{ client.nom }}</td>
+            <td>{{ client.nif }}</td>
+            <td>{{ client.get_assujeti_tva_display }}</td>
+            <td>{{ client.resident }}</td>
+            <td>{{ client.type_client.nom }}</td>
+            <td>
+                <a href="{% url 'clients:edit' client.pk %}" class="btn-sm-icon"><i class="bi bi-pencil"></i></a>
+                <a href="{% url 'clients:delete' client.pk %}" class="btn-sm-icon danger"><i class="bi bi-trash"></i></a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">Aucun client trouvé.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'base_superadmin.html' %}   {# On hérite de ton base superadmin si tu veux garder la cohérence #}
+{% block title %}Connexion Superadmin — WIBABI{% endblock %}
+
+{% block content %}
+<div class="login-wrap" style="max-width:960px; margin:40px auto;">
+
+    <!-- Panneau gauche -->
+    <div class="login-left" style="background:linear-gradient(155deg, #0f2a4a 0%, #1a3f6f 100%); width:360px; padding:60px 40px; color:white; border-radius:18px 0 0 18px;">
+        <div style="width:80px;height:80px;background:rgba(201,168,76,0.2);border:3px solid rgba(201,168,76,0.4);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#c9a84c;margin-bottom:30px;">
+            <i class="bi bi-shield-lock"></i>
+        </div>
+        <h2 style="font-family:'Playfair Display',serif; color:white; margin-bottom:12px;">Superadmin</h2>
+        <p style="opacity:0.85; line-height:1.6;">Accès restreint à l'administration centrale du système Facturation OBR</p>
+        
+        <div style="margin-top:50px; background:rgba(255,255,255,0.1); padding:18px; border-radius:12px; text-align:center;">
+            <small style="display:block; color:rgba(255,255,255,0.6);">WIBABI v1.0</small>
+            <small style="color:#c9a84c;">Office Burundais des Recettes</small>
+        </div>
+    </div>
+
+    <!-- Panneau droit -->
+    <div style="flex:1; background:#fff; padding:50px 45px; border-radius:0 18px 18px 0;">
+        <h3 style="font-family:'Playfair Display',serif; color:#0f2a4a; margin-bottom:8px;">Connexion</h3>
+        <p style="color:#8a9aaa; margin-bottom:30px;">Entrez vos identifiants superadmin</p>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="bi bi-x-circle-fill me-2"></i>
+            {{ form.non_field_errors.0 }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'admin:login' %}">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label class="form-label">Nom d'utilisateur</label>
+                <div class="input-icon-wrap position-relative">
+                    <i class="bi bi-person position-absolute" style="left:16px;top:50%;transform:translateY(-50%);color:#8a9aaa;"></i>
+                    {{ form.username }}
+                </div>
+            </div>
+
+            <div class="mb-4 position-relative">
+                <label class="form-label">Mot de passe</label>
+                <div class="input-icon-wrap position-relative">
+                    <i class="bi bi-lock position-absolute" style="left:16px;top:50%;transform:translateY(-50%);color:#8a9aaa;"></i>
+                    {{ form.password }}
+                    <i class="bi bi-eye toggle-password position-absolute" id="togglePwd" onclick="togglePassword()" style="right:16px;top:50%;transform:translateY(-50%);cursor:pointer;color:#8a9aaa;"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3" style="background:#0f2a4a; border:none; font-weight:600;">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
+            </button>
+
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+
+        <div style="text-align:center; margin-top:30px; font-size:0.85rem; color:#8a9aaa;">
+            Vous n'êtes pas superadmin ? 
+            <a href="{% url 'accounts:login' %}" style="color:#c9a84c;">Aller à la connexion standard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword() {
+    const input = document.querySelector('input[name="password"]');
+    const icon = document.getElementById('togglePwd');
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace("bi-eye", "bi-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.replace("bi-eye-slash", "bi-eye");
+    }
+}
+</script>
+{% endblock %}

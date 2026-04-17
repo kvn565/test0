@@ -1,0 +1,347 @@
+{% extends "superadmin/base_superadmin.html" %}
+{% block title %}Dashboard — Administration{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Vue globale du système</p>{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── Alerte essais expirant bientôt ── #}
+    {% if essai_expirant %}
+    <div class="col-12">
+        <div class="alert alert-warning d-flex align-items-center gap-3" style="border-left:4px solid #f39c12;">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <div>
+                <strong>{{ essai_expirant|length }} essai(s) expirent dans moins de 3 jours.</strong>
+                <a href="{% url 'superadmin:liste_cles' %}?statut=ACTIVE" class="ms-2" style="color:inherit;">Voir les clés →</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Sociétés sans clé active ── #}
+    {% if societes_sans_cle %}
+    <div class="col-12">
+        <div class="alert alert-danger d-flex align-items-center gap-3" style="border-left:4px solid #e74c3c;">
+            <i class="bi bi-x-octagon-fill fs-5"></i>
+            <div>
+                <strong>{{ societes_sans_cle|length }} société(s) sans licence active :</strong>
+                {% for s in societes_sans_cle %}
+                <a href="{% url 'superadmin:societe_detail' s.pk %}" class="badge-inactive ms-1">{{ s.nom }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Statistiques ── #}
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:societes_liste' %}" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon blue"><i class="bi bi-building"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.total_societes }}</div>
+                    <div class="stat-label">Sociétés enregistrées</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:liste_cles' %}?statut=ACTIVE" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.licences_actives }}</div>
+                    <div class="stat-label">Licences actives</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:liste_cles' %}?statut=ACTIVE&type=essai" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon gold"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.essais_actifs }}</div>
+                    <div class="stat-label">Essais en cours</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:liste_cles' %}?statut=EXPIREE" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.licences_expirees }}</div>
+                    <div class="stat-label">Licences expirées</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:utilisateurs' %}" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon purple"><i class="bi bi-people"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.total_utilisateurs }}</div>
+                    <div class="stat-label">Utilisateurs totaux</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:liste_cles' %}?statut=DISPONIBLE" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon orange"><i class="bi bi-key"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.cles_disponibles }}</div>
+                    <div class="stat-label">Clés disponibles</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:utilisateurs' %}" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon blue"><i class="bi bi-person-badge"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.chefs_inscrits }}</div>
+                    <div class="stat-label">Chefs inscrits</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'superadmin:societes_liste' %}" class="card-link">
+            <div class="stat-card stat-card-link">
+                <div class="stat-icon gold"><i class="bi bi-clock-history"></i></div>
+                <div>
+                    <div class="stat-value">{{ stats.inscriptions_en_attente }}</div>
+                    <div class="stat-label">En attente inscription</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {# ── Expirations proches ── #}
+    {% if expiration_proche %}
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span><i class="bi bi-alarm me-2" style="color:var(--or);"></i>Expirations dans les 7 jours</span>
+                <a href="{% url 'superadmin:liste_cles' %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.75rem;">Voir tout</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead><tr>
+                        <th>Société</th><th>Plan</th><th>Expire dans</th><th></th>
+                    </tr></thead>
+                    <tbody>
+                        {% for cle in expiration_proche %}
+                        <tr>
+                            <td><a href="{% url 'superadmin:societe_detail' cle.societe.pk %}" class="text-decoration-none fw-500">{{ cle.societe.nom }}</a></td>
+                            <td>
+                                {% if cle.est_essai %}<span class="badge-essai">Essai</span>
+                                {% else %}<span class="badge-active">{{ cle.label_plan }}</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if cle.jours_restants <= 2 %}
+                                <span style="color:#e74c3c;font-weight:700;">{{ cle.jours_restants }}j ⚠️</span>
+                                {% else %}
+                                <span style="color:#f39c12;font-weight:600;">{{ cle.jours_restants }}j</span>
+                                {% endif %}
+                            </td>
+                            <td><a href="{% url 'superadmin:cle_generer' cle.societe.pk %}" class="btn btn-sm btn-gold" style="padding:3px 10px;font-size:0.75rem;">Renouveler</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Derniers audits ── #}
+    <div class="col-lg-{% if expiration_proche %}6{% else %}12{% endif %}">
+        <div class="card h-100">
+            <div class="card-header">
+                <span><i class="bi bi-journal-text me-2" style="color:var(--or);"></i>Dernières activités</span>
+            </div>
+            <div class="card-body p-0">
+                {% if derniers_audits %}
+                <table class="table mb-0">
+                    <thead><tr><th>Société</th><th>Action</th><th>Date</th></tr></thead>
+                    <tbody>
+                        {% for audit in derniers_audits %}
+                        <tr>
+                            <td><a href="{% url 'superadmin:societe_detail' audit.societe.pk %}" class="text-decoration-none">{{ audit.societe.nom|truncatechars:20 }}</a></td>
+                            <td style="font-size:0.8rem;color:#5a6a7a;">{{ audit.message|truncatechars:45 }}</td>
+                            <td style="font-size:0.78rem;color:#8a9aaa;white-space:nowrap;">{{ audit.date_action|date:"d/m H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-4 text-center" style="color:#8a9aaa;font-size:0.85rem;">
+                    <i class="bi bi-journal-x fs-3 d-block mb-2"></i>Aucune activité récente.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════
+       ACCÈS RAPIDES — SOCIÉTÉS
+    ══════════════════════════════════════ #}
+    <div class="col-12"><div class="section-label"><i class="bi bi-building me-1"></i>Sociétés</div></div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'superadmin:societes_liste' %}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f1ff;"><i class="bi bi-building" style="color:#0d3c8a;"></i></div>
+                    <div class="dash-title">Toutes les sociétés</div>
+                    <div class="dash-sub">Liste &amp; gestion des sociétés</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'superadmin:societe_creer' %}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f1ff;"><i class="bi bi-plus-circle" style="color:#0d3c8a;"></i></div>
+                    <div class="dash-title">Nouvelle société</div>
+                    <div class="dash-sub">Enregistrer une nouvelle société</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {# ══════════════════════════════════════
+       ACCÈS RAPIDES — LICENCES
+    ══════════════════════════════════════ #}
+    <div class="col-12"><div class="section-label"><i class="bi bi-key me-1"></i>Licences</div></div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'superadmin:liste_cles' %}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#fff8e5;"><i class="bi bi-key" style="color:#7d5a00;"></i></div>
+                    <div class="dash-title">Toutes les clés</div>
+                    <div class="dash-sub">Gérer les clés d'activation</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'superadmin:creer_cle' %}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#fff8e5;"><i class="bi bi-plus-circle" style="color:#7d5a00;"></i></div>
+                    <div class="dash-title">Nouvelle clé</div>
+                    <div class="dash-sub">Générer une clé payante</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {# ══════════════════════════════════════
+       ACCÈS RAPIDES — UTILISATEURS
+    ══════════════════════════════════════ #}
+    <div class="col-12"><div class="section-label"><i class="bi bi-people me-1"></i>Utilisateurs</div></div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'superadmin:utilisateurs' %}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#f5e8ff;"><i class="bi bi-people" style="color:#5b0d8a;"></i></div>
+                    <div class="dash-title">Tous les utilisateurs</div>
+                    <div class="dash-sub">Comptes &amp; droits d'accès</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {# ══════════════════════════════════════
+       ACCÈS RAPIDES — SYSTÈME
+    ══════════════════════════════════════ #}
+    <div class="col-12"><div class="section-label"><i class="bi bi-gear me-1"></i>Système</div></div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'superadmin:backup' %}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f8f0;"><i class="bi bi-cloud-arrow-down" style="color:#1a6b3a;"></i></div>
+                    <div class="dash-title">Sauvegardes</div>
+                    <div class="dash-sub">Gérer les backups système</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{% url 'superadmin:reinitialisation' %}" class="card-link">
+            <div class="card dashboard-card dashboard-card-danger">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#fdecea;"><i class="bi bi-arrow-counterclockwise" style="color:#b71c1c;"></i></div>
+                    <div class="dash-title" style="color:#b71c1c;">Réinitialisation</div>
+                    <div class="dash-sub">Remise à zéro des données</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #8a9aaa;
+        margin-bottom: 4px;
+    }
+    .card-link { text-decoration: none; display: block; height: 100%; }
+
+    /* Stat cards cliquables */
+    .stat-card-link {
+        transition: box-shadow 0.2s, transform 0.15s;
+        cursor: pointer;
+    }
+    .stat-card-link:hover {
+        box-shadow: 0 8px 24px rgba(15,42,74,0.13);
+        transform: translateY(-2px);
+    }
+
+    /* Dashboard cards */
+    .dashboard-card {
+        transition: box-shadow 0.2s, transform 0.15s;
+        cursor: pointer;
+        height: 100%;
+    }
+    .dashboard-card:hover {
+        box-shadow: 0 8px 24px rgba(15,42,74,0.13);
+        transform: translateY(-2px);
+    }
+    .dashboard-card-danger:hover {
+        box-shadow: 0 8px 24px rgba(183,28,28,0.12);
+    }
+    .dash-icon {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 14px;
+        font-size: 1.2rem;
+    }
+    .dash-title { font-weight: 600; color: var(--bleu); margin-bottom: 2px; font-size: 0.92rem; }
+    .dash-sub   { font-size: 0.78rem; color: #a0adb8; }
+</style>
+{% endblock %}

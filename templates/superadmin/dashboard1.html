@@ -1,0 +1,216 @@
+{% extends "superadmin/base_superadmin.html" %}
+{% block title %}Dashboard — Administration{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Vue globale du système</p>{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── Alerte essais expirant bientôt ── #}
+    {% if essai_expirant %}
+    <div class="col-12">
+        <div class="alert alert-warning d-flex align-items-center gap-3" style="border-left:4px solid #f39c12;">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <div>
+                <strong>{{ essai_expirant|length }} essai(s) expirent dans moins de 3 jours.</strong>
+                <a href="{% url 'superadmin:liste_cles' %}?statut=ACTIVE" class="ms-2" style="color:inherit;">Voir les clés →</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Sociétés sans clé active ── #}
+    {% if societes_sans_cle %}
+    <div class="col-12">
+        <div class="alert alert-danger d-flex align-items-center gap-3" style="border-left:4px solid #e74c3c;">
+            <i class="bi bi-x-octagon-fill fs-5"></i>
+            <div>
+                <strong>{{ societes_sans_cle|length }} société(s) sans licence active :</strong>
+                {% for s in societes_sans_cle %}
+                <a href="{% url 'superadmin:societe_detail' s.pk %}" class="badge-inactive ms-1">{{ s.nom }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Statistiques ── #}
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-building"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.total_societes }}</div>
+                <div class="stat-label">Sociétés enregistrées</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.licences_actives }}</div>
+                <div class="stat-label">Licences actives</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon gold"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.essais_actifs }}</div>
+                <div class="stat-label">Essais en cours</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.licences_expirees }}</div>
+                <div class="stat-label">Licences expirées</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.total_utilisateurs }}</div>
+                <div class="stat-label">Utilisateurs totaux</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="bi bi-key"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.cles_disponibles }}</div>
+                <div class="stat-label">Clés disponibles</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-person-badge"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.chefs_inscrits }}</div>
+                <div class="stat-label">Chefs inscrits</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon gold"><i class="bi bi-clock-history"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.inscriptions_en_attente }}</div>
+                <div class="stat-label">En attente inscription</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Expirations proches ── #}
+    {% if expiration_proche %}
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span><i class="bi bi-alarm me-2" style="color:var(--or);"></i>Expirations dans les 7 jours</span>
+                <a href="{% url 'superadmin:liste_cles' %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.75rem;">Voir tout</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead><tr>
+                        <th>Société</th>
+                        <th>Plan</th>
+                        <th>Expire dans</th>
+                        <th></th>
+                    </tr></thead>
+                    <tbody>
+                        {% for cle in expiration_proche %}
+                        <tr>
+                            <td><a href="{% url 'superadmin:societe_detail' cle.societe.pk %}" class="text-decoration-none fw-500">{{ cle.societe.nom }}</a></td>
+                            <td>
+                                {% if cle.est_essai %}
+                                <span class="badge-essai">Essai</span>
+                                {% else %}
+                                <span class="badge-active">{{ cle.label_plan }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if cle.jours_restants <= 2 %}
+                                <span style="color:#e74c3c;font-weight:700;">{{ cle.jours_restants }}j ⚠️</span>
+                                {% else %}
+                                <span style="color:#f39c12;font-weight:600;">{{ cle.jours_restants }}j</span>
+                                {% endif %}
+                            </td>
+                            <td><a href="{% url 'superadmin:cle_generer' cle.societe.pk %}" class="btn btn-sm btn-gold" style="padding:3px 10px;font-size:0.75rem;">Renouveler</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Derniers audits ── #}
+    <div class="col-lg-{% if expiration_proche %}6{% else %}12{% endif %}">
+        <div class="card h-100">
+            <div class="card-header">
+                <span><i class="bi bi-journal-text me-2" style="color:var(--or);"></i>Dernières activités</span>
+            </div>
+            <div class="card-body p-0">
+                {% if derniers_audits %}
+                <table class="table mb-0">
+                    <thead><tr>
+                        <th>Société</th>
+                        <th>Action</th>
+                        <th>Date</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for audit in derniers_audits %}
+                        <tr>
+                            <td><a href="{% url 'superadmin:societe_detail' audit.societe.pk %}" class="text-decoration-none">{{ audit.societe.nom|truncatechars:20 }}</a></td>
+                            <td style="font-size:0.8rem;color:#5a6a7a;">{{ audit.message|truncatechars:45 }}</td>
+                            <td style="font-size:0.78rem;color:#8a9aaa;white-space:nowrap;">{{ audit.date_action|date:"d/m H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-4 text-center" style="color:#8a9aaa;font-size:0.85rem;">
+                    <i class="bi bi-journal-x fs-3 d-block mb-2"></i>Aucune activité récente.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Actions rapides ── #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-lightning me-2" style="color:var(--or);"></i>Actions rapides</div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'superadmin:societe_creer' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Nouvelle société
+                    </a>
+                    <a href="{% url 'superadmin:creer_cle' %}" class="btn btn-gold">
+                        <i class="bi bi-key me-2"></i>Créer une clé
+                    </a>
+                    <a href="{% url 'superadmin:societes_liste' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-building me-2"></i>Toutes les sociétés
+                    </a>
+                    <a href="{% url 'superadmin:utilisateurs' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-people me-2"></i>Utilisateurs
+                    </a>
+                    <a href="{% url 'superadmin:backup' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-cloud-arrow-down me-2"></i>Sauvegardes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

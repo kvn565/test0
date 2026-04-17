@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accès refusé — WIBABI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root { --bleu:#0f2a4a; --or:#c9a84c; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f0f3f7;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        .error-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 60px 48px;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(15,42,74,0.1);
+        }
+        .error-icon {
+            width: 90px; height: 90px;
+            background: #fdecea;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 28px;
+        }
+        .error-icon i { font-size: 2.2rem; color: #e74c3c; }
+        .error-code {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: var(--bleu);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .error-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--bleu);
+            margin-bottom: 12px;
+        }
+        .error-desc {
+            color: #8a9aaa;
+            font-size: 0.88rem;
+            line-height: 1.7;
+            margin-bottom: 36px;
+        }
+        .btn-home {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--bleu);
+            color: #fff; text-decoration: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 0.88rem; font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-home:hover { background: #1a3f6f; color: #fff; }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: #8a9aaa; text-decoration: none;
+            font-size: 0.85rem;
+            margin-left: 12px;
+            transition: color 0.2s;
+        }
+        .btn-back:hover { color: var(--bleu); }
+    </style>
+</head>
+<body>
+<div class="error-card">
+    <div class="error-icon">
+        <i class="bi bi-shield-x"></i>
+    </div>
+    <div class="error-code">403</div>
+    <div class="error-title">Accès refusé</div>
+    <p class="error-desc">
+        Vous n'avez pas les permissions nécessaires pour accéder à cette page.<br>
+        Contactez votre administrateur si vous pensez qu'il s'agit d'une erreur.
+    </p>
+    <div>
+        <a href="{% url 'accueil' %}" class="btn-home">
+            <i class="bi bi-house"></i> Retour à l'accueil
+        </a>
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Page précédente
+        </a>
+    </div>
+</div>
+</body>
+</html>

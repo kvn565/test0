@@ -1,0 +1,81 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Sauvegardes — Administration{% endblock %}
+{% block page_title %}Sauvegardes{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Gestion des sauvegardes de la base de données</p>{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span>Sauvegardes{% endblock %}
+{% block nav_backup %}active{% endblock %}
+{% block page_actions %}
+<form method="post" action="{% url 'superadmin:backup_creer' %}" onsubmit="return confirm('Créer une sauvegarde maintenant ?')">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-gold">
+        <i class="bi bi-cloud-arrow-down me-2"></i>Créer une sauvegarde
+    </button>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-12">
+        <div class="alert alert-info" style="border-left:4px solid #3498db;">
+            <div class="d-flex gap-3">
+                <i class="bi bi-info-circle-fill fs-5 flex-shrink-0" style="color:#3498db;margin-top:2px;"></i>
+                <div style="font-size:0.85rem;">
+                    Les sauvegardes contiennent toutes les données du système (sociétés, licences, utilisateurs, factures).
+                    Stockez-les dans un endroit sécurisé.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-archive me-2" style="color:var(--or);"></i>Sauvegardes disponibles</div>
+            <div class="card-body p-0">
+                {% if backups %}
+                <table class="table mb-0">
+                    <thead><tr>
+                        <th>Nom du fichier</th>
+                        <th>Date</th>
+                        <th>Taille</th>
+                        <th class="text-end">Action</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for backup in backups %}
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <i class="bi bi-file-earmark-zip" style="color:var(--or);font-size:1.1rem;"></i>
+                                    <span style="font-family:monospace;font-size:0.83rem;color:var(--bleu);">{{ backup.nom_fichier }}</span>
+                                </div>
+                            </td>
+                            <td style="font-size:0.83rem;color:#5a6a7a;">{{ backup.date_creation|date:"d/m/Y H:i" }}</td>
+                            <td style="font-size:0.83rem;color:#8a9aaa;">{{ backup.taille_formatee|default:"—" }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'superadmin:backup_telecharger' backup.pk %}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-download me-1"></i>Télécharger
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-5 text-center" style="color:#8a9aaa;">
+                    <i class="bi bi-cloud-slash fs-1 d-block mb-3" style="opacity:0.3;"></i>
+                    <p class="mb-3">Aucune sauvegarde disponible.</p>
+                    <form method="post" action="{% url 'superadmin:backup_creer' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-gold">
+                            <i class="bi bi-cloud-arrow-down me-2"></i>Créer la première sauvegarde
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Modifier {{ societe.nom }} — WIBABI{% endblock %}
+{% block nav_societe_gestion %}active{% endblock %}
+
+{% block page_title %}Modifier les paramètres de {{ societe.nom }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="bi bi-gear me-2 text-primary"></i>
+                    Modifier les paramètres de <strong>{{ societe.nom }}</strong>
+                </h5>
+                <small class="text-muted">NIF : {{ societe.nif }}</small>
+            </div>
+
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+
+                        <!-- Informations de gestion -->
+                        <div class="col-md-6">
+                            <h6 class="section-title mb-3">
+                                <i class="bi bi-person-badge me-1"></i>Informations de gestion
+                            </h6>
+                            {{ form.as_p }}
+                        </div>
+
+                        <!-- Configuration OBR -->
+                        <div class="col-md-6">
+                            <h6 class="section-title mb-3">
+                                <i class="bi bi-cloud-upload me-1"></i>Configuration API OBR (eBMS)
+                            </h6>
+                            {{ obr_form.as_p }}
+
+                            <div class="alert alert-warning mt-3 small">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Le mot de passe OBR est affiché en clair pour faciliter la modification.
+                                <strong>Ne laissez jamais cette page ouverte sans surveillance.</strong>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-5 pt-4 border-top d-flex justify-content-end gap-3">
+                        <a href="{% url 'superadmin:societe_gestion_liste' %}" 
+                           class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                        </a>
+                        <button type="submit" class="btn btn-gold px-4">
+                            <i class="bi bi-save me-2"></i>Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer le client{% endblock %}
+{% block content %}
+
+<style>
+  .breadcrumb-nav {
+    font-size: 0.85rem; color: #6c757d; margin-bottom: 6px;
+  }
+  .breadcrumb-nav a { color: #1b6ca8; text-decoration: none; font-weight: 500; }
+  .breadcrumb-nav a:hover { text-decoration: underline; }
+  .breadcrumb-nav span { margin: 0 6px; }
+
+  .delete-card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    overflow: hidden; max-width: 520px;
+  }
+  .delete-card-header {
+    background: linear-gradient(135deg, #7b1517, #c0392b);
+    padding: 16px 24px; color: #fff;
+    font-weight: 600; font-size: 0.95rem;
+  }
+  .delete-card-body { padding: 28px; }
+
+  .warning-icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+  .delete-title {
+    font-size: 1.2rem; font-weight: 700; color: #343a40; margin-bottom: 8px;
+  }
+  .delete-text { color: #6c757d; font-size: 0.93rem; margin-bottom: 0; }
+
+  .client-info-box {
+    background: #fff5f5; border: 1px solid #f5c6cb;
+    border-radius: 8px; padding: 14px 18px; margin: 18px 0;
+  }
+  .client-info-box .label {
+    font-size: 0.75rem; font-weight: 700; color: #adb5bd;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .client-info-box .value {
+    font-size: 1rem; font-weight: 700; color: #721c24; margin-top: 2px;
+  }
+  .client-info-box .meta {
+    font-size: 0.82rem; color: #856404; margin-top: 4px;
+  }
+
+  .alert-warning-custom {
+    background: #fff3cd; border: 1px solid #ffc107;
+    border-radius: 8px; padding: 12px 16px;
+    font-size: 0.87rem; color: #664d03; margin-bottom: 18px;
+  }
+
+  .form-actions { display: flex; gap: 12px; align-items: center; }
+  .btn-delete {
+    background: linear-gradient(135deg, #7b1517, #c0392b);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 10px 24px; font-weight: 700; font-size: 0.9rem;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-delete:hover { opacity: 0.9; }
+  .btn-cancel {
+    background: #fff; color: #6c757d;
+    border: 1px solid #dee2e6; border-radius: 8px;
+    padding: 10px 20px; font-weight: 600; font-size: 0.9rem;
+    text-decoration: none; transition: all 0.15s;
+  }
+  .btn-cancel:hover { background: #f8f9fa; color: #343a40; }
+</style>
+
+<!-- Fil d'ariane -->
+<div class="breadcrumb-nav">
+  <a href="{% url 'clients:liste' %}">👥 Clients</a>
+  <span>›</span>
+  <span>Supprimer</span>
+</div>
+
+<div class="delete-card">
+  <div class="delete-card-header">🗑️ Confirmation de suppression</div>
+  <div class="delete-card-body">
+    <span class="warning-icon">⚠️</span>
+    <p class="delete-title">Supprimer ce client ?</p>
+    <p class="delete-text">Cette action est <strong>irréversible</strong>. Le client sera définitivement retiré du système.</p>
+
+    <div class="client-info-box">
+      <div class="label">Client concerné</div>
+      <div class="value">{{ client.nom }}</div>
+      {% if client.type_client %}
+        <div class="meta">Type : {{ client.type_client.nom }}</div>
+      {% endif %}
+      {% if client.nif %}
+        <div class="meta">NIF : {{ client.nif }}</div>
+      {% endif %}
+    </div>
+
+    <div class="alert-warning-custom">
+      ⚠️ Les factures associées à ce client pourraient être affectées.
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-actions">
+        <button type="submit" class="btn-delete">🗑️ Oui, supprimer</button>
+        <a href="{% url 'clients:liste' %}" class="btn-cancel">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

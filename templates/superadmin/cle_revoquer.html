@@ -1,0 +1,74 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Révoquer la clé — Administration{% endblock %}
+{% block page_title %}Révoquer une clé{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span><a href="{% url 'superadmin:liste_cles' %}">Clés</a><span class="sep">›</span>Révoquer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="confirm-danger">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div style="width:48px;height:48px;background:#e74c3c;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="bi bi-x-circle-fill" style="color:#fff;font-size:1.3rem;"></i>
+                </div>
+                <div>
+                    <h5 style="color:#b71c1c;margin:0;font-family:'Playfair Display',serif;">Révoquer cette clé ?</h5>
+                    <p style="color:#c62828;font-size:0.82rem;margin:3px 0 0;">
+                        La société <strong>{{ cle.societe.nom }}</strong> perdra immédiatement l'accès à l'application.
+                    </p>
+                </div>
+            </div>
+
+            <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:20px;">
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.83rem;">
+                    <span style="color:#5a6a7a;">Clé</span>
+                    <span style="font-family:monospace;font-weight:700;">{{ cle.cle_visible }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.83rem;">
+                    <span style="color:#5a6a7a;">Plan</span>
+                    <span class="badge-{% if cle.est_essai %}essai{% else %}active{% endif %}">{{ cle.label_plan }}</span>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size:0.83rem;">
+                    <span style="color:#5a6a7a;">Expire le</span>
+                    <span>{{ cle.date_fin|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+
+            {% if form %}
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" style="color:#b71c1c;font-size:0.83rem;">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div style="color:#e74c3c;font-size:0.78rem;margin-top:4px;">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-danger flex-fill">
+                        <i class="bi bi-x-circle me-2"></i>Confirmer la révocation
+                    </button>
+                    <a href="{% url 'superadmin:cle_detail' cle.pk %}" class="btn btn-outline-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+            {% else %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-danger flex-fill">
+                        <i class="bi bi-x-circle me-2"></i>Confirmer la révocation
+                    </button>
+                    <a href="{% url 'superadmin:cle_detail' cle.pk %}" class="btn btn-outline-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,265 @@
+{% comment %}
+    Template d'impression Facture A4 - Format OBR Officiel
+    QR Code après identifiant + Points alignés verticalement + Anti-duplication
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ facture.numero }}</title>
+    <style>
+        @page { 
+            size: A4 portrait; 
+            margin: 0; 
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10.5pt;
+            color: #000;
+            background: #fff;
+            line-height: 1.4;
+        }
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 12mm 15mm 20mm 15mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Barre colorée */
+        .title-bar {
+            background-color: #0f2a4a;
+            color: white;
+            padding: 12px 0;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .facture-title {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .parties {
+            display: flex;
+            gap: 30px;
+            margin: 30px 0 35px 0;
+        }
+        .partie .title {
+            font-size: 10.5pt;
+            font-weight: bold;
+            color: #0f2a4a;
+            margin-bottom: 12px;
+        }
+        .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 175px;
+            vertical-align: top;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0 15px 0;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            font-size: 10.5pt;
+        }
+        th {
+            background-color: #0f2a4a;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        td:nth-child(2) { text-align: left; }
+
+        .total-row td {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+
+        .lettres {
+            margin: 20px 0 15px 0;
+            font-size: 10.5pt;
+            font-style: italic;
+        }
+
+        .identifiant {
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 10.5pt;
+            margin: 15px 0 18px 0;
+            word-break: break-all;
+        }
+
+        /* QR Code après identifiant, légèrement décalé à gauche */
+        .qr-container {
+            text-align: left;
+            margin: 10px 0 25px 20px;   /* décalé à gauche */
+        }
+        .qr-container img {
+            max-width: 125px;
+            border: 1px solid #ddd;
+        }
+
+        .signature {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 10.5pt;
+        }
+        .signature .line {
+            border-top: 1.5px solid #000;
+            width: 280px;
+            margin: 8px 0 6px auto;
+        }
+
+        /* Pied de page avec points parfaitement alignés */
+        .footer {
+            margin-top: 35px;
+            font-size: 10.5pt;
+            line-height: 1.35;
+            page-break-inside: avoid;   /* Évite la coupure */
+        }
+        .footer .title {
+            font-weight: bold;
+            color: #0f2a4a;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- Barre titre -->
+    <div class="title-bar">
+        <div class="facture-title">
+            FACTURE N° {{ facture.numero }} du {{ facture.date_facture|date:"Y-m-d" }} {{ facture.heure_facture|time:"H:i:s" }}
+        </div>
+    </div>
+
+    <!-- Identification Vendeur / Client -->
+    <div class="parties">
+        <div class="partie">
+            <div class="title">A. IDENTIFICATEUR DU VENDEUR</div>
+            <span class="label">Nom et prénom ou Raison sociale :</span> {{ societe.nom }}<br><br>
+            <span class="label">NIF :</span> {{ societe.nif|default:"—" }}<br>
+            <span class="label">Registre de commerce :</span> {{ societe.registre|default:"—" }}<br>
+            <span class="label">Tel :</span> {{ societe.telephone|default:"—" }}<br>
+            <span class="label">Email :</span> {{ societe.email_societe|default:"—" }}<br>
+            <span class="label">Commune :</span> {{ societe.commune|default:"—" }}<br>
+            <span class="label">Quartier :</span> {{ societe.quartier|default:"—" }}<br>
+            <span class="label">Avenue :</span> {{ societe.avenue|default:"—" }}<br>
+            <span class="label">No :</span> {{ societe.numero|default:"—" }}<br>
+            <span class="label">Assujetti à la TVA :</span> {% if societe.assujeti_tva %}Oui{% else %}Non{% endif %}<br>
+            <span class="label">Centre Fiscal :</span> {{ societe.centre_fiscale|default:"—" }}<br>
+            <span class="label">Forme Juridique :</span> {{ societe.forme|default:"—" }}<br>
+            <span class="label">Secteur d'activités :</span> {{ societe.secteur|default:"—" }}
+        </div>
+
+        <div class="partie">
+            <div class="title">B. IDENTIFICATEUR DU CLIENT</div>
+            <span class="label">Nom du client :</span> {{ facture.client.nom|default:"—" }}<br><br>
+            <span class="label">NIF :</span> {{ facture.client.nif|default:"—" }}<br>
+            <span class="label">Résident à :</span> {{ facture.client.adresse|default:"—" }}<br>
+            <span class="label">Assujetti à la TVA :</span> {% if facture.client.assujeti_tva %}Oui{% else %}Non{% endif %}
+        </div>
+    </div>
+
+    <p><strong>Doit ce qui suit</strong></p>
+
+    <!-- Tableau -->
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>DESCRIPTION</th>
+                <th>QTE</th>
+                <th>P.U HTVA</th>
+                <th>P.T HTVA</th>
+                <th>TVA</th>
+                <th>P.T TVAC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in lignes %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td style="text-align:left;">{{ ligne.designation }}</td>
+                <td>{{ ligne.quantite|floatformat:0 }}</td>
+                <td style="text-align:right;">{{ ligne.prix_ht|floatformat:2 }}</td>
+                <td style="text-align:right;">{{ ligne.montant_ht|floatformat:2 }}</td>
+                <td style="text-align:right;">{{ ligne.montant_tva|floatformat:2 }}</td>
+                <td style="text-align:right;">{{ ligne.montant_ttc|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="4" style="text-align:right; font-weight:bold;">Total</td>
+                <td style="text-align:right; font-weight:bold;">{{ facture.total_ht|floatformat:2 }}</td>
+                <td style="text-align:right; font-weight:bold;">{{ facture.total_tva|floatformat:2 }}</td>
+                <td style="text-align:right; font-weight:bold;">{{ facture.total_ttc|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Montant en lettres -->
+    <div class="lettres">
+        <strong>Nous disons :</strong> 
+        {{ montant_lettres|default:"Montant en lettres non disponible" }}
+    </div>
+
+    <!-- Identifiant -->
+    <div class="identifiant">
+        Identifiant : <strong>{{ facture.invoice_identifier|default:facture.numero_obr }}</strong>
+    </div>
+
+    <!-- QR Code après l'identifiant, légèrement décalé à gauche -->
+    <div class="qr-container">
+        {% if qr_code_url %}
+            <img src="{{ qr_code_url }}" alt="QR Code OBR" style="max-width: 125px; border: 1px solid #ddd;">
+        {% else %}
+            <p style="color:#999; font-size:9pt;">QR Code non disponible</p>
+        {% endif %}
+    </div>
+
+    <!-- Signature -->
+    <div class="signature">
+        <div class="line"></div>
+        <strong>Directeur Gérant</strong><br>
+        {{ societe.nom_complet_gerant|default:"NSAVYUMUREMYI Blaise" }}
+    </div>
+
+    <!-- Ligne de séparation + Pied de page avec points alignés -->
+    <hr style="border-top: 2px solid #0f2a4a; margin: 35px 0 18px 0; width: 100%;">
+    <div class="footer">
+        <div class="partie-footer">
+            <div class="title">A. IDENTIFICATEUR DU VENDEUR</div>
+            <div class="row"><span class="label">Nom et prénom ou Raison sociale :</span> <span>{{ societe.nom }}</span></div>
+            <div class="row"><span class="label">NIF </span> <span>{{ societe.nif|default:"—" }}</span></div>
+            <div class="row"><span class="label">Registre de commerce :</span> <span>{{ societe.registre|default:"—" }}</span></div>
+            <div class="row"><span class="label">Tel </span> <span>{{ societe.telephone|default:"—" }}</span></div>
+            <div class="row"><span class="label">Email </span> <span>{{ societe.email_societe|default:"—" }}</span></div>
+            <div class="row"><span class="label">Commune </span><span>{{ societe.commune|default:"—" }}</span></div>
+        </div>
+
+        <div class="partie-footer">
+            <div class="title">B. IDENTIFICATEUR DU CLIENT</div>
+            <div class="row"><span class="label">Nom du client :</span> <span>{{ facture.client.nom|default:"—" }}</span></div>
+            <div class="row"><span class="label">NIF :</span> <span>{{ facture.client.nif|default:"—" }}</span></div>
+            <div class="row"><span class="label">Résident à :</span> <span>{{ facture.client.adresse|default:"—" }}</span></div>
+            <div class="row"><span class="label">Assujetti à la TVA :</span> <span>{% if facture.client.assujeti_tva %}Oui{% else %}Non{% endif %}</span></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

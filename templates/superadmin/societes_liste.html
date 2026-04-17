@@ -1,0 +1,201 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Sociétés — Administration{% endblock %}
+{% block page_title %}Sociétés{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Gérer toutes les sociétés enregistrées</p>{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span> Sociétés{% endblock %}
+{% block nav_societes %}active{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'superadmin:societe_creer' %}" class="btn btn-gold">
+    <i class="bi bi-plus-circle me-2"></i>Nouvelle société
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── Filtres ── #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body py-3">
+                <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
+                    <div style="flex:1;min-width:200px;">
+                        <label class="form-label mb-1">Recherche</label>
+                        <input type="text" name="q" value="{{ q }}" class="form-control"
+                               placeholder="Nom ou NIF..." style="height:38px;">
+                    </div>
+                    <div style="min-width:160px;">
+                        <label class="form-label mb-1">Statut licence</label>
+                        <select name="statut" class="form-select" style="height:38px;">
+                            <option value="">Tous</option>
+                            <option value="active" {% if statut == 'active' %}selected{% endif %}>Active</option>
+                            <option value="essai"  {% if statut == 'essai'  %}selected{% endif %}>Essai</option>
+                            <option value="expiree"{% if statut == 'expiree'%}selected{% endif %}>Expirée</option>
+                        </select>
+                    </div>
+                    <div style="min-width:160px;">
+                        <label class="form-label mb-1">Plan</label>
+                        <select name="plan" class="form-select" style="height:38px;">
+                            <option value="">Tous les plans</option>
+                            {% for code, label in PLANS %}
+                            <option value="{{ code }}" {% if plan == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" style="height:38px;">
+                            <i class="bi bi-search me-1"></i>Filtrer
+                        </button>
+                        {% if q or statut or plan %}
+                        <a href="{% url 'superadmin:societes_liste' %}" class="btn btn-outline-secondary" style="height:38px;">
+                            Réinitialiser
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# ── Tableau des sociétés ── #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-building me-2" style="color:var(--or);"></i>
+                    {{ societes.paginator.count }} société{{ societes.paginator.count|pluralize }}
+                    {% if societes.paginator.num_pages > 1 %}
+                    — Page {{ societes.number }} sur {{ societes.paginator.num_pages }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="card-body p-0">
+                {% if societes %}
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Société</th>
+                                <th>NIF</th>
+                                <th>Chef</th>
+                                <th>Licence</th>
+                                <th>Expiration</th>
+                                <th>Enregistrée le</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in societes %}
+                            {% with cle=s.cle_active %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'superadmin:societe_detail' s.pk %}" 
+                                       class="text-decoration-none fw-500" style="color:var(--bleu);">
+                                        {{ s.nom }}
+                                    </a>
+                                    {% if not s.inscription_complete %}
+                                    <span class="badge bg-warning ms-2">En attente</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-family:monospace;">{{ s.nif }}</td>
+                                <td>
+                                    {% if s.chef %}
+                                        {{ s.chef.nom_complet|truncatechars:20 }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if cle %}
+                                        {% if cle.est_essai %}
+                                            <span class="badge bg-info">Essai</span>
+                                        {% else %}
+                                            <span class="badge bg-success">{{ cle.label_plan }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Aucune</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:0.85rem;">
+                                    {% if cle %}
+                                        {{ cle.date_fin|date:"d/m/Y" }}
+                                        <small class="text-muted">({{ cle.jours_restants }}j)</small>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:0.82rem;color:#8a9aaa;">{{ s.date_creation|date:"d/m/Y" }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'superadmin:societe_detail' s.pk %}" 
+                                       class="btn btn-sm btn-outline-secondary me-1" title="Détail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'superadmin:cle_generer' s.pk %}" 
+                                       class="btn btn-sm btn-gold me-1" title="Générer clé">
+                                        <i class="bi bi-key"></i>
+                                    </a>
+                                    <a href="{% url 'superadmin:societe_modifier' s.pk %}" 
+                                       class="btn btn-sm btn-outline-secondary" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-5 text-center text-muted">
+                    <i class="bi bi-building fs-1 mb-3" style="opacity:0.3;"></i>
+                    <p>Aucune société trouvée.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ====================== PAGINATION ====================== #}
+            {% if societes.paginator.num_pages > 1 %}
+            <div class="card-footer bg-white py-3">
+                <nav aria-label="Pagination des sociétés">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- Précédent -->
+                        {% if societes.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ societes.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if plan %}&plan={{ plan }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+                        {% endif %}
+
+                        <!-- Numéros de pages -->
+                        {% for num in societes.paginator.page_range %}
+                            {% if num == societes.number %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > societes.number|add:'-3' and num < societes.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if plan %}&plan={{ plan }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Suivant -->
+                        {% if societes.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ societes.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if plan %}&plan={{ plan }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

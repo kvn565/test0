@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% block title %}Liste des clients{% endblock %}
+{% block content %}
+
+<style>
+  .page-header {
+    background: linear-gradient(135deg, #0f4c75 0%, #1b6ca8 100%);
+    border-radius: 12px;
+    padding: 22px 28px;
+    margin-bottom: 22px;
+    color: #fff;
+  }
+  .page-header h2 { font-size: 1.45rem; font-weight: 700; margin: 0; }
+  .page-header p  { margin: 4px 0 0; opacity: 0.8; font-size: 0.88rem; }
+  .badge-count {
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .btn-new {
+    background: #fff;
+    color: #0f4c75;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-new:hover { background: #dbeeff; color: #0f4c75; }
+
+  /* Barre recherche */
+  .search-form { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .search-wrapper { position: relative; flex: 1; max-width: 400px; }
+  .search-wrapper .ico {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%); color: #6c757d; font-size: 0.95rem; pointer-events: none;
+  }
+  .search-wrapper input {
+    padding-left: 36px; padding-right: 12px;
+    border-radius: 8px; border: 1px solid #dee2e6;
+    height: 40px; width: 100%; font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-wrapper input:focus {
+    outline: none; border-color: #1b6ca8;
+    box-shadow: 0 0 0 3px rgba(27,108,168,0.15);
+  }
+  .btn-search {
+    height: 40px; padding: 0 20px; border-radius: 8px;
+    background: #1b6ca8; color: #fff; border: none;
+    font-weight: 600; font-size: 0.88rem; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-search:hover { background: #0f4c75; }
+  .btn-reset {
+    height: 40px; padding: 0 16px; border-radius: 8px;
+    background: #fff; color: #6c757d; border: 1px solid #dee2e6;
+    font-size: 0.88rem; text-decoration: none; display: flex;
+    align-items: center; transition: all 0.15s;
+  }
+  .btn-reset:hover { background: #f8f9fa; color: #343a40; }
+  .search-result-info { font-size: 0.85rem; color: #6c757d; }
+
+  /* Table */
+  .table-card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07); overflow: hidden;
+  }
+  .table { margin: 0; font-size: 0.91rem; }
+  .table thead th {
+    background: #f8f9fa; color: #495057;
+    font-weight: 600; font-size: 0.79rem;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecef; padding: 11px 14px;
+  }
+  .table tbody td { padding: 12px 14px; vertical-align: middle; border-color: #f1f3f5; }
+  .table tbody tr:hover { background: #f0f7ff; }
+
+  .nom-cell  { font-weight: 600; color: #0f4c75; }
+  .badge-tva {
+    display: inline-block; border-radius: 20px;
+    padding: 2px 10px; font-size: 0.78rem; font-weight: 600;
+  }
+  .badge-tva.oui { background: #d4edda; color: #155724; }
+  .badge-tva.non { background: #f8f9fa; color: #6c757d; }
+
+  .badge-type {
+    display: inline-block; background: #e8f0f9; color: #1b6ca8;
+    border-radius: 20px; padding: 2px 10px; font-size: 0.78rem; font-weight: 600;
+  }
+  .action-btns { display: flex; gap: 6px; justify-content: center; }
+  .btn-edit, .btn-del {
+    border-radius: 6px; padding: 5px 12px;
+    font-size: 0.8rem; font-weight: 600;
+    text-decoration: none; border: 1px solid;
+    transition: all 0.15s;
+  }
+  .btn-edit { background:#fff; border-color:#1b6ca8; color:#1b6ca8; }
+  .btn-edit:hover { background:#1b6ca8; color:#fff; }
+  .btn-del  { background:#fff; border-color:#dc3545; color:#dc3545; }
+  .btn-del:hover  { background:#dc3545; color:#fff; }
+
+  .empty-state { text-align:center; padding: 60px 20px; }
+  .empty-state .ico { font-size: 3rem; color:#ced4da; margin-bottom:12px; }
+  .empty-state h5 { color:#6c757d; font-weight:600; margin-bottom:6px; }
+  .empty-state p  { color:#adb5bd; font-size:0.9rem; }
+
+  .date-cell { font-size: 0.82rem; color: #6c757d; white-space: nowrap; }
+</style>
+
+<!-- En-tête -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h2>👥 Clients</h2>
+    <p>Gestion du portefeuille clients</p>
+  </div>
+  <div class="d-flex align-items-center gap-3">
+    <span class="badge-count">{{ total }} client{{ total|pluralize }}</span>
+    <a href="{% url 'clients:creer' %}" class="btn-new">＋ Nouveau client</a>
+  </div>
+</div>
+
+<!-- Formulaire de recherche (côté serveur) -->
+<form method="GET" action="" class="search-form">
+  <div class="search-wrapper">
+    <span class="ico">🔍</span>
+    <input
+      type="text"
+      name="q"
+      value="{{ q }}"
+      placeholder="Rechercher par nom, NIF, adresse..."
+      autocomplete="off"
+    >
+  </div>
+  <button type="submit" class="btn-search">Rechercher</button>
+  {% if q %}
+    <a href="{% url 'clients:liste' %}" class="btn-reset">✕ Effacer</a>
+  {% endif %}
+</form>
+
+{% if q %}
+  <p class="search-result-info mb-3">
+    <strong>{{ clients|length }}</strong> résultat{{ clients|length|pluralize }} pour « <em>{{ q }}</em> »
+  </p>
+{% endif %}
+
+<!-- Messages -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<!-- Tableau -->
+<div class="table-card">
+  {% if clients %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date création</th>
+        <th>Nom</th>
+        <th>NIF</th>
+        <th>TVA</th>
+        <th>Adresse / Résidence</th>
+        <th>Type</th>
+        <th style="text-align:center; width:140px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for client in clients %}
+      <tr>
+        <td class="date-cell">{{ client.date_creation|date:"d/m/Y" }}</td>
+        <td class="nom-cell">{{ client.nom }}</td>
+        <td>{{ client.nif|default:"—" }}</td>
+        <td>
+          {% if client.assujeti_tva %}
+            <span class="badge-tva oui">✔ Oui</span>
+          {% else %}
+            <span class="badge-tva non">Non</span>
+          {% endif %}
+        </td>
+        <td>{{ client.adresse|default:"—" }}</td>
+        <td>
+          {% if client.type_client %}
+            <span class="badge-type">{{ client.type_client.nom }}</span>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="action-btns">
+            <a href="{% url 'clients:edit' client.pk %}" class="btn-edit">✏️ Modifier</a>
+            <a href="{% url 'clients:delete' client.pk %}" class="btn-del">🗑 Supprimer</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="ico">📭</div>
+    {% if q %}
+      <h5>Aucun résultat trouvé</h5>
+      <p>Aucun client ne correspond à « {{ q }} ».</p>
+      <a href="{% url 'clients:liste' %}" class="btn btn-outline-secondary btn-sm px-4">Voir tous les clients</a>
+    {% else %}
+      <h5>Aucun client pour le moment</h5>
+      <p>Commencez par créer votre premier client.</p>
+      <a href="{% url 'clients:creer' %}" class="btn btn-primary btn-sm px-4">＋ Créer un client</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

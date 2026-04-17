@@ -1,0 +1,80 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Réinitialisation — Administration{% endblock %}
+{% block page_title %}Réinitialisation du système{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span>Réinitialisation{% endblock %}
+{% block nav_reinit %}active{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+
+        <div class="alert alert-danger mb-4" style="border-left:4px solid #e74c3c;">
+            <div class="d-flex gap-3">
+                <i class="bi bi-exclamation-octagon-fill fs-4 flex-shrink-0" style="margin-top:2px;"></i>
+                <div>
+                    <strong>Zone dangereuse</strong>
+                    <p class="mb-0 mt-1" style="font-size:0.85rem;">
+                        Cette action supprimera <strong>toutes les données</strong> du système :
+                        sociétés, licences, utilisateurs, factures, stocks. Cette opération est
+                        <strong>irréversible</strong>. Assurez-vous d'avoir une sauvegarde récente.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirm-danger">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div style="width:52px;height:52px;background:#e74c3c;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="bi bi-arrow-counterclockwise" style="color:#fff;font-size:1.4rem;"></i>
+                </div>
+                <div>
+                    <h5 style="color:#b71c1c;margin:0;font-family:'Playfair Display',serif;">Réinitialiser le système</h5>
+                    <p style="color:#c62828;font-size:0.82rem;margin:3px 0 0;">
+                        Tapez <code>REINITIALISER</code> pour confirmer
+                    </p>
+                </div>
+            </div>
+
+            <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:20px;font-size:0.83rem;color:#5a6a7a;">
+                <p class="mb-2"><strong>Ce qui sera supprimé :</strong></p>
+                <ul class="mb-0 ps-3" style="line-height:2;">
+                    <li>Toutes les sociétés et leurs données</li>
+                    <li>Toutes les licences et clés d'activation</li>
+                    <li>Tous les utilisateurs (sauf le superadmin)</li>
+                    <li>Toutes les factures et données métier</li>
+                    <li>Tous les fichiers de sauvegarde</li>
+                </ul>
+            </div>
+
+            <form method="post" action="{% url 'superadmin:reinitialisation_confirmer' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label" style="color:#b71c1c;font-weight:600;">Confirmation</label>
+                    <input type="text"
+                           name="confirmation"
+                           class="form-control confirm-input"
+                           placeholder="REINITIALISER"
+                           autocomplete="off"
+                           style="border:2px solid #f5c6cb;color:#b71c1c;">
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-danger flex-fill"
+                            onclick="return confirm('⚠️ DERNIÈRE CONFIRMATION : Toutes les données seront supprimées. Continuer ?')">
+                        <i class="bi bi-trash me-2"></i>Réinitialiser le système
+                    </button>
+                    <a href="{% url 'superadmin:dashboard' %}" class="btn btn-outline-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="{% url 'superadmin:backup' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-cloud-arrow-down me-2"></i>Faire une sauvegarde avant de continuer
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

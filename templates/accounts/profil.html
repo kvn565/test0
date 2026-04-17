@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Mon profil — WIBABI{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
+{% block nav_profil %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+
+    {# ── Avatar + infos rapides ── #}
+    <div class="col-lg-4">
+        <div class="card text-center">
+            <div class="card-body p-4">
+                <div style="width:80px;height:80px;border-radius:50%;background:var(--bleu);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.8rem;font-weight:700;color:#fff;">
+                    {{ user.initiales }}
+                </div>
+                <div style="font-weight:700;font-size:1.05rem;color:var(--bleu);">{{ user.nom_complet }}</div>
+                <div style="font-size:0.82rem;color:#8a9aaa;margin-top:3px;">@{{ user.username }}</div>
+                <div style="margin-top:10px;">
+                    <span class="badge-active" style="font-size:0.75rem;">{{ user.get_type_poste_display }}</span>
+                </div>
+                {% if user.societe %}
+                <div style="margin-top:16px;padding:12px 16px;background:#f4f6f9;border-radius:10px;font-size:0.83rem;color:#5a6a7a;">
+                    <i class="bi bi-building me-2" style="color:var(--or);"></i>
+                    {{ user.societe.nom }}
+                </div>
+                {% endif %}
+                <div style="margin-top:12px;font-size:0.78rem;color:#aab;">
+                    Membre depuis {{ user.date_creation|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+
+        {# ── Licence ── #}
+        {% if user.societe %}
+        {% with cle=user.societe.cle_active %}
+        <div class="card mt-3">
+            <div class="card-header"><i class="bi bi-key me-2" style="color:var(--or);"></i>Licence</div>
+            <div class="card-body" style="font-size:0.83rem;">
+                {% if cle %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:#5a6a7a;">Plan</span>
+                    <strong>
+                        {% if cle.est_essai %}<span class="badge-essai">Essai</span>
+                        {% else %}<span class="badge-active">{{ cle.label_plan }}</span>{% endif %}
+                    </strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:#5a6a7a;">Expire le</span>
+                    <strong>{{ cle.date_fin|date:"d/m/Y" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="color:#5a6a7a;">Jours restants</span>
+                    <strong style="color:{% if cle.jours_restants <= 3 %}#e74c3c{% elif cle.jours_restants <= 7 %}#f39c12{% else %}#27ae60{% endif %};">
+                        {{ cle.jours_restants }}j
+                    </strong>
+                </div>
+                <button onclick="ouvrirModalLicence()" class="btn btn-sm btn-outline-secondary w-100 mt-3">
+                    <i class="bi bi-key me-1"></i>Renouveler / Activer
+                </button>
+                {% else %}
+                <div class="text-center" style="color:#e74c3c;font-size:0.85rem;">
+                    <i class="bi bi-x-circle d-block fs-4 mb-2"></i>Aucune licence active
+                </div>
+                <button onclick="ouvrirModalLicence()" class="btn btn-sm btn-gold w-100 mt-2">
+                    <i class="bi bi-key-fill me-1"></i>Activer maintenant
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endwith %}
+        {% endif %}
+    </div>
+
+    {# ── Formulaires ── #}
+    <div class="col-lg-7">
+
+        {# ── Messages ── #}
+        {% if messages %}
+        {% for msg in messages %}
+        <div class="alert alert-{% if msg.tags == 'success' %}success{% else %}danger{% endif %} mb-3">
+            <i class="bi bi-{% if msg.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %} me-2"></i>
+            {{ msg }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {# ── Infos personnelles ── #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-person me-2" style="color:var(--or);"></i>Informations personnelles
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ profil_form.prenom.label }}</label>
+                            {{ profil_form.prenom }}
+                            {% if profil_form.prenom.errors %}<div style="color:#e74c3c;font-size:0.78rem;margin-top:4px;">{{ profil_form.prenom.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ profil_form.nom.label }}</label>
+                            {{ profil_form.nom }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ profil_form.postnom.label }}</label>
+                            {{ profil_form.postnom }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ profil_form.email.label }}</label>
+                            {{ profil_form.email }}
+                            {% if profil_form.email.errors %}<div style="color:#e74c3c;font-size:0.78rem;margin-top:4px;">{{ profil_form.email.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3" style="border-top:1px solid #f0f2f5;">
+                        <button type="submit" name="changer_profil" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# ── Mot de passe ── #}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-shield-lock me-2" style="color:var(--or);"></i>Changer de mot de passe
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ mdp_form.ancien_password.label }}</label>
+                        {{ mdp_form.ancien_password }}
+                        {% if mdp_form.ancien_password.errors %}<div style="color:#e74c3c;font-size:0.78rem;margin-top:4px;">{{ mdp_form.ancien_password.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ mdp_form.nouveau_password1.label }}</label>
+                        {{ mdp_form.nouveau_password1 }}
+                        <div style="font-size:0.76rem;color:#8a9aaa;margin-top:4px;">{{ mdp_form.nouveau_password1.help_text }}</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">{{ mdp_form.nouveau_password2.label }}</label>
+                        {{ mdp_form.nouveau_password2 }}
+                        {% if mdp_form.nouveau_password2.errors %}<div style="color:#e74c3c;font-size:0.78rem;margin-top:4px;">{{ mdp_form.nouveau_password2.errors.0 }}</div>{% endif %}
+                    </div>
+                    {% if mdp_form.non_field_errors %}
+                    <div class="alert alert-danger py-2 mb-3">{{ mdp_form.non_field_errors.0 }}</div>
+                    {% endif %}
+                    <div class="pt-3" style="border-top:1px solid #f0f2f5;">
+                        <button type="submit" name="changer_mdp" class="btn btn-outline-secondary">
+                            <i class="bi bi-shield-check me-2"></i>Changer le mot de passe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

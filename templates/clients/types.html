@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Types de clients — WIBABI{% endblock %}
+{% block nav_clients %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <div style="font-size:0.8rem;color:#8a9aaa;margin-bottom:4px;">
+                <a href="{% url 'clients:liste' %}" style="color:#8a9aaa;text-decoration:none;">
+                    <i class="bi bi-people me-1"></i>Clients
+                </a>
+                <span style="margin:0 6px;">›</span>
+                Types de clients
+            </div>
+            <h4 style="font-family:'Playfair Display',serif;color:var(--bleu);margin:0;">Types de clients</h4>
+            <p style="color:#8a9aaa;font-size:0.82rem;margin:3px 0 0;">{{ total }} type{{ total|pluralize }}</p>
+        </div>
+        <a href="{% url 'clients:creer_type' %}" class="btn btn-gold">
+            <i class="bi bi-plus-circle me-2"></i>Nouveau type
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="col-12">
+        {% for msg in messages %}
+        <div class="alert alert-{% if msg.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible">
+            {{ msg }}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="col-12">
+        {% if types %}
+        <div class="row g-3">
+            {% for type in types %}
+            <div class="col-sm-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body p-4" style="display:flex;align-items:center;gap:14px;">
+                        <div style="width:44px;height:44px;background:#e8f1ff;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="bi bi-person-badge" style="font-size:1.2rem;color:#0d3c8a;"></i>
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:600;color:var(--bleu);">{{ type.nom }}</div>
+                            <div style="font-size:0.76rem;color:#8a9aaa;margin-top:2px;">
+                                {{ type.nb_clients }} client{{ type.nb_clients|pluralize }}
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:6px;">
+                            <a href="{% url 'clients:modifier_type' type.pk %}"
+                               class="btn btn-sm btn-outline-secondary" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if type.nb_clients == 0 %}
+                            <a href="{% url 'clients:supprimer_type' type.pk %}"
+                               class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-secondary" disabled
+                                    title="{{ type.nb_clients }} client(s) associé(s)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center p-5">
+            <i class="bi bi-person-badge fs-1 d-block mb-3" style="opacity:0.2;"></i>
+            <p style="color:#8a9aaa;margin-bottom:20px;">Aucun type de client créé.</p>
+            <a href="{% url 'clients:creer_type' %}" class="btn btn-gold">
+                <i class="bi bi-plus-circle me-2"></i>Créer le premier type
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
