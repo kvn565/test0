@@ -1,0 +1,59 @@
+cat > .gitignore << 'EOF'
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+collected_static/
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Django migrations (ne pas ignorer les migrations !)
+# !**/migrations/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Coverage and testing
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+
+# Django specific
+*.sqlite3
+local_settings.py
+EOF
