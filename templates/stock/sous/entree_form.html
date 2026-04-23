@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Entrées Stock{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">{{ titre }}</div>
+    </div>
+    <a href="{% url 'stock:entrees' %}" class="btn-outline-custom">
+        <i class="bi bi-arrow-left"></i> Retour à la liste
+    </a>
+</div>
+
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+
+    <!-- Colonne gauche -->
+    <div class="col-12 col-lg-7">
+        <div class="card mb-3">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:28px; height:28px; background:var(--primary); border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-box-seam" style="color:white; font-size:12px;"></i>
+                    </div>
+                    Informations du mouvement
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Type d'entrée <span class="required">*</span></label>
+                            {{ form.type_entree }}
+                            {% if form.type_entree.errors %}
+                            <div style="color:#dc2626; font-size:12px; margin-top:3px;">{{ form.type_entree.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Date d'entrée <span class="required">*</span></label>
+                            {{ form.date_entree }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">N° Réquisition / Réf. fiche</label>
+                            {{ form.numero_ref }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Fournisseur</label>
+                            {{ form.fournisseur }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produit -->
+        <div class="card">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:28px; height:28px; background:#e0f2fe; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-bag" style="color:#075985; font-size:12px;"></i>
+                    </div>
+                    Produit & Quantité
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Produit <span class="required">*</span></label>
+                            {{ form.produit }}
+                            {% if form.produit.errors %}
+                            <div style="color:#dc2626; font-size:12px; margin-top:3px;">{{ form.produit.errors.0 }}</div>
+                            {% endif %}
+                            <!-- Badge type produit -->
+                            <div id="badge-type-produit" style="margin-top:6px; display:none;">
+                                <span id="badge-local" class="status-badge badge-success" style="display:none;">
+                                    <i class="bi bi-geo-alt"></i> Produit Local
+                                </span>
+                                <span id="badge-importe" class="status-badge badge-warning" style="display:none;">
+                                    <i class="bi bi-airplane"></i> Produit Importé
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Quantité <span class="required">*</span></label>
+                            {{ form.quantite }}
+                            {% if form.quantite.errors %}
+                            <div style="color:#dc2626; font-size:12px; margin-top:3px;">{{ form.quantite.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Prix de revient <span class="required">*</span></label>
+                            {{ form.prix_revient }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Prix de vente actuel <span class="required">*</span></label>
+                            {{ form.prix_vente_actuel }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colonne droite — Récapitulatif -->
+    <div class="col-12 col-lg-5">
+        <div class="card" style="position:sticky; top:80px;">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:18px;">
+                    <i class="bi bi-calculator me-2"></i> Récapitulatif
+                </div>
+
+                <div style="background:var(--body-bg); border-radius:10px; padding:16px; border:1.5px solid var(--border-color);">
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13px;">
+                        <span style="color:var(--text-muted);">Quantité</span>
+                        <span id="recap-qte" style="font-family:'DM Mono',monospace; font-weight:600;">—</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13px;">
+                        <span style="color:var(--text-muted);">Prix de revient unitaire</span>
+                        <span id="recap-pr" style="font-family:'DM Mono',monospace; font-weight:600;">—</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:10px 0; font-size:14px; font-weight:700;">
+                        <span>Montant total</span>
+                        <span id="recap-total" style="font-family:'DM Mono',monospace; color:var(--primary); font-size:16px;">—</span>
+                    </div>
+                </div>
+
+                <div class="alert-obr info" style="margin-top:14px;">
+                    <i class="bi bi-info-circle"></i>
+                    <div style="font-size:12px;">
+                        Le stock du produit sera <strong>mis à jour automatiquement</strong> après enregistrement.
+                        Le prix de vente actuel sera aussi mis à jour.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boutons -->
+    <div class="col-12">
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <a href="{% url 'stock:entrees' %}" class="btn-outline-custom">Annuler</a>
+            <button type="submit" class="btn-primary-custom">
+                <i class="bi bi-check-lg"></i> {{ action }}
+            </button>
+        </div>
+    </div>
+
+</div>
+</form>
+
+{% block extra_js %}
+<script>
+// Calcul automatique du montant total
+function calculer() {
+    const qte = parseFloat(document.querySelector('[name="quantite"]').value) || 0;
+    const pr  = parseFloat(document.querySelector('[name="prix_revient"]').value) || 0;
+    const total = qte * pr;
+
+    document.getElementById('recap-qte').textContent   = qte > 0 ? qte.toLocaleString('fr-FR') : '—';
+    document.getElementById('recap-pr').textContent    = pr > 0  ? pr.toLocaleString('fr-FR') : '—';
+    document.getElementById('recap-total').textContent = total > 0 ? total.toLocaleString('fr-FR', {minimumFractionDigits: 0}) + ' BIF' : '—';
+}
+
+document.querySelector('[name="quantite"]').addEventListener('input', calculer);
+document.querySelector('[name="prix_revient"]').addEventListener('input', calculer);
+
+// Données produits pour badge LOCAL/IMPORTE
+const produitsData = {
+    {% for p in form.produit.field.queryset %}
+    "{{ p.pk }}": "{{ p.origine }}",
+    {% endfor %}
+};
+
+document.getElementById('id_produit').addEventListener('change', function() {
+    const origine = produitsData[this.value];
+    const badge = document.getElementById('badge-type-produit');
+    const local = document.getElementById('badge-local');
+    const importe = document.getElementById('badge-importe');
+
+    if (origine) {
+        badge.style.display = 'block';
+        local.style.display   = origine === 'LOCAL'   ? 'inline-flex' : 'none';
+        importe.style.display = origine === 'IMPORTE' ? 'inline-flex' : 'none';
+    } else {
+        badge.style.display = 'none';
+    }
+});
+
+// Initialiser si déjà sélectionné (cas modification)
+document.getElementById('id_produit').dispatchEvent(new Event('change'));
+calculer();
+</script>
+{% endblock %}
+{% endblock %}

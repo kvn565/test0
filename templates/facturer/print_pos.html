@@ -1,0 +1,262 @@
+{% comment %}
+    Template Ticket POS 80mm - Optimisé pour imprimante thermique
+    QR Code placé à la fin (avant le message de remerciement)
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket {{ facture.numero }}</title>
+    <style>
+        @page {
+            size: 80mm auto;           /* Largeur fixe 80mm pour imprimantes POS */
+            margin: 4mm 3mm 5mm 3mm;   /* Marges optimisées pour imprimantes thermiques */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 9pt;
+            color: #000;
+            background: #fff;
+            line-height: 1.35;
+            width: 74mm;               /* Largeur utile après marges */
+        }
+
+        .ticket {
+            width: 100%;
+            max-width: 74mm;
+            margin: 0 auto;
+        }
+
+        .center { text-align: center; }
+        .right  { text-align: right; }
+        .bold   { font-weight: 700; }
+
+        .separateur { 
+            border-top: 1px dashed #000; 
+            margin: 6px 0; 
+        }
+        .double-sep { 
+            border-top: 2px solid #000; 
+            margin: 8px 0; 
+        }
+
+        .entreprise-nom { 
+            font-size: 11pt; 
+            font-weight: 800; 
+            text-align: center; 
+            margin-bottom: 4px;
+        }
+        .entreprise-sub { 
+            font-size: 8pt; 
+            text-align: center; 
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .facture-num { 
+            font-size: 10pt; 
+            font-weight: 800; 
+            text-align: center; 
+            margin: 8px 0 4px 0;
+        }
+
+        .facture-meta { 
+            font-size: 8.5pt; 
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .ligne-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        .ligne-table td { 
+            padding: 3px 2px; 
+            vertical-align: top; 
+            font-size: 8.8pt;
+        }
+        .designation { 
+            font-weight: 600; 
+            max-width: 48mm; 
+            word-break: break-word;
+        }
+        .sous-detail { 
+            font-size: 7.8pt; 
+            color: #444; 
+        }
+        .montant { 
+            text-align: right; 
+            font-weight: 600; 
+            white-space: nowrap; 
+        }
+
+        .totaux-pos td { 
+            padding: 2px 0; 
+            font-size: 9pt;
+        }
+        .totaux-pos td:last-child { text-align: right; }
+
+        .total-ttc-row td { 
+            font-size: 10.5pt; 
+            font-weight: 800; 
+            border-top: 2px solid #000; 
+            padding-top: 5px;
+        }
+
+        .lettres {
+            font-size: 8.2pt;
+            font-style: italic;
+            margin: 6px 0;
+        }
+
+        .qr-container {
+            text-align: center;
+            margin: 10px 0 8px 0;
+        }
+        .qr-container img {
+            max-width: 58px;           /* Taille adaptée au format ticket 80mm */
+            border: 1px solid #ddd;
+        }
+
+        .thankyou {
+            text-align: center;
+            font-size: 9.5pt;
+            font-weight: bold;
+            margin: 8px 0 6px 0;
+        }
+
+        .footer-ticket { 
+            text-align: center; 
+            font-size: 8pt; 
+            color: #333; 
+            line-height: 1.5; 
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="ticket">
+
+    <!-- En-tête Société -->
+    <div class="entreprise-nom">{{ societe.nom|upper }}</div>
+    <div class="entreprise-sub">
+        NIF : {{ societe.nif|default:"—" }}<br>
+        {% if societe.telephone %}Tél : {{ societe.telephone }}<br>{% endif %}
+        {% if societe.commune or societe.quartier %}
+            {{ societe.commune }}{% if societe.quartier %} — {{ societe.quartier }}{% endif %}
+        {% endif %}
+    </div>
+
+    <div class="double-sep"></div>
+
+    <!-- Référence Facture -->
+    <div class="facture-num">
+        {{ facture.get_type_facture_display }} N° {{ facture.numero }}
+    </div>
+
+    <div class="facture-meta center">
+        {{ facture.date_facture|date:"d/m/Y" }} &nbsp;&nbsp; {{ facture.heure_facture|time:"H:i" }}
+    </div>
+
+    <div class="separateur"></div>
+
+    <!-- Client -->
+    <div class="facture-meta">
+        <strong>Client :</strong> {{ facture.client.nom|default:"Client Divers" }}<br>
+        {% if facture.client.nif %}
+            NIF : {{ facture.client.nif }}<br>
+        {% endif %}
+        TVA : {% if facture.client.assujeti_tva %}Assujetti{% else %}Non assujetti{% endif %}
+    </div>
+
+    <div class="separateur"></div>
+
+    <!-- Lignes -->
+    <table class="ligne-table">
+        <thead>
+            <tr>
+                <th style="text-align:left;">Désignation</th>
+                <th style="text-align:right;">TTC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in lignes %}
+            <tr>
+                <td>
+                    <div class="designation">{{ ligne.designation }}</div>
+                    <div class="sous-detail">
+                        {{ ligne.quantite|floatformat:0 }} × {{ ligne.prix_vente_tvac|floatformat:0 }}
+                        {% if ligne.taux_tva and ligne.taux_tva > 0 %} • TVA {{ ligne.taux_tva }}%{% endif %}
+                    </div>
+                </td>
+                <td class="montant">{{ ligne.montant_ttc|floatformat:0 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="separateur"></div>
+
+    <!-- Totaux -->
+    <table class="totaux-pos" style="width:100%;">
+        <tr>
+            <td>Sous-total HT</td>
+            <td>{{ facture.total_ht|floatformat:0 }} {{ facture.devise }}</td>
+        </tr>
+        <tr>
+            <td>TVA</td>
+            <td>{{ facture.total_tva|floatformat:0 }} {{ facture.devise }}</td>
+        </tr>
+        <tr class="total-ttc-row">
+            <td><strong>TOTAL TTC</strong></td>
+            <td><strong>{{ facture.total_ttc|floatformat:0 }} {{ facture.devise }}</strong></td>
+        </tr>
+    </table>
+
+    {% if montant_lettres %}
+    <div class="lettres">
+        {{ montant_lettres }}
+    </div>
+    {% endif %}
+
+    <div class="separateur"></div>
+
+    <!-- Statut OBR -->
+    {% if facture.statut_obr == 'ENVOYE' %}
+        <div style="text-align:center; font-size:9pt; font-weight:bold; color:green;">
+            ✓ VALIDÉE OBR
+        </div>
+    {% else %}
+        <div style="text-align:center; font-size:8.5pt; color:#666;">
+            En attente validation OBR
+        </div>
+    {% endif %}
+
+    <div class="separateur"></div>
+
+    <!-- QR Code placé à la fin (comme demandé) -->
+    {% if qr_code_url %}
+    <div class="qr-container">
+        <img src="{{ qr_code_url }}" alt="QR Code OBR">
+    </div>
+    {% endif %}
+
+    <!-- Message de remerciement -->
+    <div class="thankyou">Merci pour votre confiance !</div>
+
+    <!-- Pied de ticket -->
+    <div class="footer-ticket">
+        {{ societe.nom }}<br>
+        NIF : {{ societe.nif|default:"—" }}<br>
+        {{ now|date:"d/m/Y H:i" }}
+    </div>
+
+</div>
+
+</body>
+</html>

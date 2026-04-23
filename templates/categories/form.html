@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}{{ titre }} — WIBABI{% endblock %}
+{% block nav_categories %}active{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+
+    {# ── Fil d'ariane ── #}
+    <div style="font-size:0.8rem;color:#8a9aaa;margin-bottom:18px;">
+        <a href="{% url 'categories:liste' %}" style="color:#8a9aaa;text-decoration:none;">
+            <i class="bi bi-tags me-1"></i>Catégories
+        </a>
+        <span style="margin:0 6px;">›</span>
+        <span style="color:var(--bleu);">{{ titre }}</span>
+    </div>
+
+    <div class="card">
+        {# ── En-tête ── #}
+        <div class="card-header">
+            <span>
+                <i class="bi bi-{% if mode == 'modifier' %}pencil{% else %}plus-circle{% endif %} me-2"
+                   style="color:var(--or);"></i>{{ titre }}
+            </span>
+            {% if mode == 'modifier' and categorie.nb_produits > 0 %}
+            <span style="background:#e8f1ff;color:#0d3c8a;border-radius:20px;padding:3px 10px;font-size:0.74rem;font-weight:600;">
+                <i class="bi bi-box-seam me-1"></i>{{ categorie.nb_produits }} produit{{ categorie.nb_produits|pluralize }}
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="card-body p-4">
+
+            {% if messages %}
+            {% for msg in messages %}
+            <div class="alert alert-{% if msg.tags == 'success' %}success{% else %}danger{% endif %} mb-3">
+                {{ msg }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                {# ── Nom ── #}
+                <div class="mb-4">
+                    <label class="form-label">
+                        Nom de la catégorie <span style="color:#e74c3c;">*</span>
+                    </label>
+                    {{ form.nom }}
+                    {% if form.nom.errors %}
+                    <div style="color:#e74c3c;font-size:0.78rem;margin-top:5px;">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ form.nom.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# ── Description ── #}
+                <div class="mb-4">
+                    <label class="form-label">Description <span style="color:#aab;font-weight:400;">(optionnel)</span></label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div style="color:#e74c3c;font-size:0.78rem;margin-top:5px;">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ form.description.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# ── Boutons ── #}
+                <div style="display:flex;gap:10px;padding-top:16px;border-top:1px solid #f0f2f5;">
+                    <button type="submit" class="btn btn-gold">
+                        <i class="bi bi-check-circle me-2"></i>
+                        {% if mode == 'modifier' %}Enregistrer les modifications{% else %}Créer la catégorie{% endif %}
+                    </button>
+                    <a href="{% url 'categories:liste' %}" class="btn btn-outline-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# ── Info si modification ── #}
+    {% if mode == 'modifier' and categorie %}
+    <div style="margin-top:12px;padding:12px 16px;background:#fafbfc;border-radius:10px;border:1px solid #eef0f4;font-size:0.78rem;color:#8a9aaa;">
+        <i class="bi bi-clock-history me-2"></i>
+        Créée le {{ categorie.date_creation|date:"d/m/Y" }} —
+        Dernière modification le {{ categorie.date_modification|date:"d/m/Y à H:i" }}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

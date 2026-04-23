@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Ma société — {{ societe.nom|default:"WIBABI" }}{% endblock %}
+{% block nav_societe %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {% if not societe %}
+    <div class="col-12">
+        <div class="card text-center p-5">
+            <i class="bi bi-building fs-1 mb-3" style="opacity:0.3;"></i>
+            <p style="color:#8a9aaa;">
+                {{ error|default:"Aucune société associée à votre compte." }}
+            </p>
+        </div>
+    </div>
+    {% else %}
+
+    {# ── En-tête société ── #}
+    <div class="col-12">
+        <div class="card" style="background:linear-gradient(135deg,var(--bleu) 0%,#1a3f6f 100%);border:none;color:#fff;">
+            <div class="card-body p-4 d-flex align-items-center gap-4">
+                <!-- Logo -->
+                <div style="width:80px;height:80px;border-radius:16px;overflow:hidden;flex-shrink:0;
+                            {% if societe.logo %}background:url('{{ societe.logo.url }}') center/cover;{% else %}background:rgba(201,168,76,0.25);border:3px solid rgba(201,168,76,0.5);{% endif %}">
+                    {% if not societe.logo %}
+                    <div class="h-100 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-building" style="font-size:2.2rem;color:var(--or);"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div style="flex:1;">
+                    <h3 style="font-family:'Playfair Display',serif;margin:0 0 6px;">{{ societe.nom }}</h3>
+                    <div class="d-flex flex-wrap gap-3" style="font-size:0.9rem;opacity:0.85;">
+                        <span><i class="bi bi-fingerprint me-1"></i>NIF : <strong>{{ societe.nif }}</strong></span>
+                        {% if societe.email_societe %}
+                        <span><i class="bi bi-envelope me-1"></i>{{ societe.email_societe }}</span>
+                        {% endif %}
+                        {% if societe.telephone %}
+                        <span><i class="bi bi-telephone me-1"></i>{{ societe.telephone }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    {% if societe.infos_completes %}
+                    <span class="badge bg-success px-3 py-2">
+                        <i class="bi bi-check-circle-fill me-1"></i>Profil complet
+                    </span>
+                    {% else %}
+                    <button onclick="ouvrirFormulaire()" class="btn btn-warning btn-sm">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Compléter le profil
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Identité légale ── #}
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-file-earmark-text me-2" style="color:var(--or);"></i>Identité légale</span>
+                <button onclick="ouvrirFormulaire()" class="btn btn-sm btn-gold">
+                    <i class="bi bi-pencil me-1"></i>Modifier
+                </button>
+            </div>
+            <div class="card-body p-0">
+                {% for label, valeur, icone in identity_rows %}
+                <div class="d-flex align-items-center px-4 py-3 border-bottom">
+                    <div class="me-3" style="width:34px;height:34px;background:#f0f2f5;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi {{ icone }}" style="color:#5a6a7a;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div class="text-uppercase text-secondary" style="font-size:0.72rem;letter-spacing:0.6px;">{{ label }}</div>
+                        <div style="font-weight:500;color:var(--bleu);">
+                            {% if label == "Email de la société" and valeur != "—" %}
+                                <a href="mailto:{{ valeur }}">{{ valeur }}</a>
+                            {% elif label == "Téléphone" and valeur != "—" %}
+                                <a href="tel:{{ valeur }}">{{ valeur }}</a>
+                            {% elif valeur == "Oui" %}
+                                <span class="badge bg-success">Oui</span>
+                            {% elif valeur == "Non" %}
+                                <span class="badge bg-secondary">Non</span>
+                            {% elif valeur == "—" or valeur == "" %}
+                                <span class="text-muted fst-italic">Non renseigné</span>
+                            {% else %}
+                                {{ valeur }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Adresse complète ── #}
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span><i class="bi bi-geo-alt me-2" style="color:var(--or);"></i>Adresse complète</span>
+            </div>
+            <div class="card-body p-0">
+                {% for label, valeur, icone in address_rows %}
+                <div class="d-flex align-items-center px-4 py-3 border-bottom">
+                    <div class="me-3" style="width:34px;height:34px;background:#f0f2f5;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi {{ icone }}" style="color:#5a6a7a;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div class="text-uppercase text-secondary" style="font-size:0.72rem;letter-spacing:0.6px;">{{ label }}</div>
+                        <div style="font-weight:500;color:var(--bleu);">
+                            {% if valeur == "—" or valeur == "" %}
+                                <span class="text-muted fst-italic">Non renseigné</span>
+                            {% else %}
+                                {{ valeur }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<!-- Modal de modification (inchangé) -->
+{% if societe and form %}
+<!-- ... ton modal reste identique ... -->
+{% endif %}
+
+{% endblock %}

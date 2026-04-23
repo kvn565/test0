@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Sociétés{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">{{ titre }}</div>
+        <div class="page-subtitle">Tous les champs marqués <span style="color:#dc2626;">*</span> sont obligatoires</div>
+    </div>
+    <a href="{% url 'superadmin:societes_liste' %}" class="btn-outline-custom">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+
+<div class="row g-3">
+
+    <!-- ── IDENTIFICATION ─────────────────────── -->
+    <div class="col-12">
+        <div class="card">
+            <div style="padding:16px 20px 8px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                    <div style="width:28px; height:28px; background:var(--primary); border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-building" style="color:white; font-size:13px;"></i>
+                    </div>
+                    Identification de la société
+                </div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Nom de la société <span class="required">*</span></label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}<div style="color:#dc2626;font-size:12px;margin-top:3px;">{{ form.nom.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">NIF <span class="required">*</span></label>
+                            {{ form.nif }}
+                            {% if form.nif.errors %}<div style="color:#dc2626;font-size:12px;margin-top:3px;">{{ form.nif.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Registre de Commerce (RC) <span class="required">*</span></label>
+                            {{ form.rc }}
+                            {% if form.rc.errors %}<div style="color:#dc2626;font-size:12px;margin-top:3px;">{{ form.rc.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Secteur d'activité <span class="required">*</span></label>
+                            {{ form.secteur_activite }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Forme juridique <span class="required">*</span></label>
+                            {{ form.forme_juridique }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Type contribuable</label>
+                            {{ form.tp_type }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Centre fiscal</label>
+                            {{ form.centre_fiscal }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ADRESSE ────────────────────────────── -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div style="padding:16px 20px 8px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                    <div style="width:28px; height:28px; background:#e0f2fe; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-geo-alt" style="color:#075985; font-size:13px;"></i>
+                    </div>
+                    Adresse
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Adresse (libre)</label>
+                            {{ form.adresse }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Province <span class="required">*</span></label>
+                            {{ form.province }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Commune <span class="required">*</span></label>
+                            {{ form.commune }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Quartier <span class="required">*</span></label>
+                            {{ form.quartier }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Avenue</label>
+                            {{ form.avenue }}
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">N°</label>
+                            {{ form.numero }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CONTACT + FISCAL ───────────────────── -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div style="padding:16px 20px 8px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                    <div style="width:28px; height:28px; background:#f0fdf4; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-telephone" style="color:#15803d; font-size:13px;"></i>
+                    </div>
+                    Contact & Régime fiscal
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Adresse e-mail <span class="required">*</span></label>
+                            {{ form.email }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Téléphone <span class="required">*</span></label>
+                            {{ form.telephone }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Assujetti TVA</label>
+                            {{ form.vat_taxpayer }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Assujetti TC</label>
+                            {{ form.ct_taxpayer }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Assujetti PFL</label>
+                            {{ form.tl_taxpayer }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Notes internes</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── IDENTIFIANTS eBMS OBR ──────────────── -->
+    <div class="col-12">
+        <div class="card">
+            <div style="padding:16px 20px 16px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                    <div style="width:28px; height:28px; background:#fef9c3; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-cloud-arrow-up" style="color:#854d0e; font-size:13px;"></i>
+                    </div>
+                    Identifiants eBMS OBR
+                    <span style="font-size:11px; color:var(--text-muted); font-weight:400; margin-left:4px;">(fournis par l'OBR, optionnel)</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Username eBMS</label>
+                            {{ form.obr_username }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Mot de passe eBMS</label>
+                            {{ form.obr_password }}
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">System ID eBMS</label>
+                            {{ form.system_id }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── BOUTONS ────────────────────────────── -->
+    <div class="col-12">
+        <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+            <a href="{% url 'superadmin:societes_liste' %}" class="btn-outline-custom">
+                <i class="bi bi-x-lg"></i> Annuler
+            </a>
+            <button type="submit" class="btn-primary-custom">
+                <i class="bi bi-check-lg"></i>
+                {% if societe %}Enregistrer les modifications{% else %}Créer la société{% endif %}
+            </button>
+        </div>
+    </div>
+
+</div><!-- row -->
+</form>
+{% endblock %}

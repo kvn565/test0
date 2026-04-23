@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}Clients — WIBABI{% endblock %}
+{% block nav_clients %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── En-tête ── #}
+    <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <h4 style="font-family:'Playfair Display',serif;color:var(--bleu);margin:0;">Clients</h4>
+            <p style="color:#8a9aaa;font-size:0.82rem;margin:3px 0 0;">
+                {{ total }} client{{ total|pluralize }} enregistré{{ total|pluralize }}
+            </p>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="{% url 'clients:types' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-list-ul me-2"></i>Types de clients
+            </a>
+            <a href="{% url 'clients:creer' %}" class="btn btn-gold">
+                <i class="bi bi-plus-circle me-2"></i>Nouveau client
+            </a>
+        </div>
+    </div>
+
+    {# ── Messages ── #}
+    {% if messages %}
+    <div class="col-12">
+        {% for msg in messages %}
+        <div class="alert alert-{% if msg.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible">
+            {{ msg }}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Filtres ── #}
+    <div class="col-12">
+        <form method="get">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                {# Recherche texte #}
+                <div style="flex:1;min-width:200px;">
+                    <input type="text" name="q" value="{{ q }}" class="form-control"
+                           placeholder="Rechercher par nom, NIF, adresse...">
+                </div>
+
+                {# Type de client #}
+                <div style="min-width:180px;">
+                    <select name="type" class="form-select">
+                        <option value="">Tous les types</option>
+                        {% for t in types %}
+                        <option value="{{ t.pk }}" {% if type_filtre == t.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ t.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {# Assujetti TVA #}
+                <div style="min-width:150px;">
+                    <select name="tva" class="form-select">
+                        <option value="">TVA — tous</option>
+                        <option value="1" {% if tva_filtre == '1' %}selected{% endif %}>Assujetti TVA</option>
+                        <option value="0" {% if tva_filtre == '0' %}selected{% endif %}>Non assujetti</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Filtrer
+                </button>
+                {% if q or type_filtre or tva_filtre %}
+                <a href="{% url 'clients:liste' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x me-1"></i>Réinitialiser
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    {# ── Table ── #}
+    <div class="col-12">
+        <div class="card">
+            {% if clients %}
+            <div style="overflow-x:auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>NIF</th>
+                            <th>Type</th>
+                            <th>TVA</th>
+                            <th>Adresse</th>
+                            <th>Inscrit le</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for client in clients %}
+                        <tr>
+                            {# Nom + initiales #}
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:36px;height:36px;border-radius:50%;background:var(--bleu);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:0.75rem;color:#fff;">
+                                        {{ client.nom|slice:":2"|upper }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:600;color:var(--bleu);font-size:0.87rem;">
+                                            {{ client.nom }}
+                                        </div>
+                                        {% if client.nb_factures > 0 %}
+                                        <div style="font-size:0.72rem;color:#8a9aaa;">
+                                            {{ client.nb_factures }} facture{{ client.nb_factures|pluralize }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if client.nif %}
+                                <span style="font-family:monospace;font-size:0.82rem;color:var(--bleu);">{{ client.nif }}</span>
+                                {% else %}
+                                <span style="color:#ccc;font-style:italic;font-size:0.8rem;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if client.type_client %}
+                                <span class="badge-essai">{{ client.type_client.nom }}</span>
+                                {% else %}
+                                <span style="color:#ccc;font-size:0.8rem;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if client.assujeti_tva %}
+                                <span class="badge-active">Oui</span>
+                                {% else %}
+                                <span class="badge-inactive">Non</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size:0.82rem;color:#5a6a7a;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ client.adresse|default:"—" }}
+                            </td>
+                            <td style="font-size:0.8rem;color:#8a9aaa;white-space:nowrap;">
+                                {{ client.date_creation|date:"d/m/Y" }}
+                            </td>
+                            <td style="text-align:right;white-space:nowrap;">
+                                <a href="{% url 'clients:modifier' client.pk %}"
+                                   class="btn btn-sm btn-outline-secondary me-1"
+                                   title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ====================== PAGINATION ====================== -->
+            {% include "stock/pagination.html" %}
+
+            <!-- Info bas de page -->
+            <div class="card-footer bg-white py-3 text-end text-muted small">
+                Page {{ page_obj.number }} sur {{ paginator.num_pages }} 
+                • {{ clients|length }} client{{ clients|length|pluralize }} affiché{{ clients|length|pluralize:"s" }}
+            </div>
+
+            {% else %}
+            <div class="text-center p-5">
+                <i class="bi bi-people fs-1 mb-3 d-block" style="opacity:0.2;color:var(--bleu);"></i>
+                {% if q or type_filtre or tva_filtre %}
+                <p style="color:#8a9aaa;">Aucun client ne correspond aux filtres.</p>
+                <a href="{% url 'clients:liste' %}" class="btn btn-outline-secondary mt-2">
+                    Voir tous les clients
+                </a>
+                {% else %}
+                <p style="color:#8a9aaa;margin-bottom:20px;">Aucun client enregistré pour l'instant.</p>
+                <a href="{% url 'clients:creer' %}" class="btn btn-gold">
+                    <i class="bi bi-plus-circle me-2"></i>Ajouter le premier client
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

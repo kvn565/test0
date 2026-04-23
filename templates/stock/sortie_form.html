@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Sorties Stock{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">{% if sortie %}✏️ Modifier la sortie{% else %}➕ Nouvelle sortie stock{% endif %}</div>
+        <div class="page-subtitle">{% if sortie %}Modification de la sortie #{{ sortie.pk }}{% else %}Enregistrer un mouvement de sortie{% endif %}</div>
+    </div>
+    <a href="{% url 'stock:sorties' %}" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Retour</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div style="padding:24px;">
+
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+                    <div style="width:44px; height:44px; background:#fff1f0; border-radius:10px; display:flex; align-items:center; justify-content:center; border:1.5px solid #fca5a5; flex-shrink:0;">
+                        <i class="bi bi-box-arrow-up" style="color:#ef4444; font-size:19px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:15px; font-weight:700;">{{ titre }}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">Les champs marqués <span style="color:#dc2626;">*</span> sont obligatoires</div>
+                    </div>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+
+                        <!-- Type sortie -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Type de sortie <span class="required">*</span></label>
+                                {{ form.type_sortie }}
+                                {% if form.type_sortie.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.type_sortie.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Code sortie -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Code sortie</label>
+                                {{ form.code }}
+                                {% if form.code.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.code.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Date sortie -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Date de sortie <span class="required">*</span></label>
+                                {{ form.date_sortie }}
+                                {% if form.date_sortie.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.date_sortie.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Entrée stock -->
+                        <div class="col-12">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Produit en stock <span class="required">*</span></label>
+                                {{ form.entree_stock }}
+                                {% if form.entree_stock.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.entree_stock.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Info stock disponible (AJAX) -->
+                        <div class="col-12" id="bloc_stock_info" style="display:none;">
+                            <div style="background:#f0faf5; border:1px solid #bbdfc9; border-radius:8px; padding:12px 16px; font-size:13px;">
+                                <strong>Stock disponible :</strong>
+                                <span id="stock_dispo_label" style="font-weight:700; color:#10b981; margin-left:6px;">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Quantité -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Quantité à sortir <span class="required">*</span></label>
+                                {{ form.quantite }}
+                                {% if form.quantite.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.quantite.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Prix unitaire -->
+                        <div class="col-12 col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Prix unitaire <span class="required">*</span></label>
+                                {{ form.prix }}
+                                {% if form.prix.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.prix.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Commentaire -->
+                        <div class="col-12">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Commentaire / Explication</label>
+                                {{ form.commentaire }}
+                                {% if form.commentaire.errors %}<div style="color:#dc2626; font-size:12px; margin-top:4px;"><i class="bi bi-exclamation-circle"></i> {{ form.commentaire.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {% if sortie %}
+                    <div style="background:var(--body-bg); border-radius:8px; padding:10px 14px; margin-top:8px; font-size:12px; color:var(--text-muted);">
+                        <i class="bi bi-clock"></i> Enregistré le {{ sortie.date_creation|date:"d/m/Y à H:i" }}
+                    </div>
+                    {% endif %}
+
+                    <div style="display:flex; gap:10px; margin-top:24px;">
+                        <a href="{% url 'stock:sorties' %}" class="btn-outline-custom" style="flex:1; justify-content:center;">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn-primary-custom" style="flex:1; justify-content:center;">
+                            <i class="bi bi-check-lg"></i> {{ action }}
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        {% if sortie %}
+        <div style="text-align:center; margin-top:14px;">
+            <a href="{% url 'stock:sortie_supprimer' sortie.pk %}" style="font-size:12.5px; color:#dc2626; text-decoration:none;">
+                <i class="bi bi-trash"></i> Supprimer cette sortie
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectEntree = document.getElementById('id_entree_stock');
+    const blocInfo     = document.getElementById('bloc_stock_info');
+    const labelDispo   = document.getElementById('stock_dispo_label');
+    const inputPrix    = document.getElementById('id_prix_sortie');
+
+    function chargerStockDispo(entreeId) {
+        if (!entreeId) { blocInfo.style.display = 'none'; return; }
+        fetch(`{% url 'stock:stock_disponible' %}?entree_id=${entreeId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    blocInfo.style.display = 'block';
+                    labelDispo.textContent = `${data.dispo} ${data.unite}`;
+                    if (inputPrix && !inputPrix.value) {
+                        inputPrix.value = data.prix;
+                    }
+                } else {
+                    blocInfo.style.display = 'none';
+                }
+            });
+    }
+
+    if (selectEntree) {
+        selectEntree.addEventListener('change', function () {
+            chargerStockDispo(this.value);
+        });
+        // Charger au chargement si déjà sélectionné (mode modifier)
+        if (selectEntree.value) chargerStockDispo(selectEntree.value);
+    }
+});
+</script>
+
+{% endblock %}

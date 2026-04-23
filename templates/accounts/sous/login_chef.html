@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Chef de Société — WIBABI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root { --bleu:#0f2a4a; --bleu-clair:#1a3f6f; --or:#c9a84c; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2a4a 0%, #1a3f6f 50%, #0f2a4a 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+        /* Motif décoratif */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: radial-gradient(circle at 20% 80%, rgba(201,168,76,0.06) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 20px;
+            width: 100%; max-width: 460px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, var(--bleu), var(--bleu-clair));
+            padding: 36px 36px 28px;
+            text-align: center;
+            position: relative;
+        }
+        .card-header-custom::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 30px;
+            background: #fff;
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+
+        .icon-badge {
+            width: 64px; height: 64px;
+            background: rgba(201,168,76,0.15);
+            border: 2px solid rgba(201,168,76,0.4);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .icon-badge i { color: var(--or); font-size: 1.6rem; }
+        .card-header-custom h1 {
+            font-family: 'Playfair Display', serif;
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+        .card-header-custom p { color: rgba(255,255,255,0.55); font-size: 0.82rem; }
+
+        .card-body-custom { padding: 28px 36px 36px; }
+
+        .input-wrap { position: relative; margin-bottom: 16px; }
+        .input-wrap i.fi { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #a0adb8; }
+        .input-wrap input {
+            width: 100%;
+            border: 1.5px solid #dde3ea;
+            border-radius: 10px;
+            padding: 12px 12px 12px 42px;
+            font-size: 0.88rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrap input:focus { border-color: var(--or); box-shadow: 0 0 0 3px rgba(201,168,76,0.15); outline: none; }
+        .input-wrap label { display: block; font-size: 0.78rem; font-weight: 500; color: #7a8a99; margin-bottom: 5px; }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--bleu), var(--bleu-clair));
+            border: none; color: #fff;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            letter-spacing: 0.02em;
+            margin-top: 8px;
+        }
+        .btn-submit:hover { opacity: 0.92; }
+        .btn-submit:active { transform: scale(0.98); }
+
+        .or-gold-line {
+            display: flex; align-items: center; gap: 10px;
+            margin: 20px 0; color: #c0c8d0; font-size: 0.78rem;
+        }
+        .or-gold-line::before, .or-gold-line::after { content:''; flex:1; height:1px; background:#eee; }
+
+        .back-link { text-align: center; }
+        .back-link a {
+            color: #7a8a99; font-size: 0.82rem; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .back-link a:hover { color: var(--bleu); }
+
+        .error-box { background:#fdecea; border-radius:8px; padding:10px 14px; margin-bottom:16px; }
+        .error-box p { color:#b71c1c; font-size:0.82rem; margin:0; }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <div class="card-header-custom">
+        <div class="icon-badge">
+            <i class="bi bi-briefcase-fill"></i>
+        </div>
+        <h1>Chef de Société</h1>
+        <p>Accès réservé au Directeur Général</p>
+    </div>
+
+    <div class="card-body-custom">
+
+        {% if form.non_field_errors %}
+        <div class="error-box">
+            {% for error in form.non_field_errors %}
+            <p><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="input-wrap">
+                <label>Identifiant</label>
+                <i class="bi bi-person fi"></i>
+                <input type="text" name="username"
+                       value="{{ form.username.value|default:'' }}"
+                       placeholder="Nom d'utilisateur" autofocus autocomplete="username"
+                       class="{% if form.username.errors %}border-danger{% endif %}">
+                {% if form.username.errors %}<small class="text-danger">{{ form.username.errors.0 }}</small>{% endif %}
+            </div>
+
+            <div class="input-wrap">
+                <label>Mot de passe</label>
+                <i class="bi bi-lock fi"></i>
+                <input type="password" name="password" id="passField"
+                       placeholder="••••••••" autocomplete="current-password"
+                       class="{% if form.password.errors %}border-danger{% endif %}">
+                {% if form.password.errors %}<small class="text-danger">{{ form.password.errors.0 }}</small>{% endif %}
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Accéder à mon espace
+            </button>
+        </form>
+
+        <div class="or-gold-line">retour</div>
+
+        <div class="back-link">
+            <a href="{% url 'accounts:login' %}">
+                <i class="bi bi-arrow-left"></i>Connexion générale
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div style="position:fixed;top:20px;right:20px;z-index:9999;width:300px;">
+    {% for message in messages %}
+    <div style="background:#fff;border-radius:10px;padding:12px 16px;margin-bottom:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);border-left:4px solid #c9a84c;font-size:0.83rem;">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+</body>
+</html>

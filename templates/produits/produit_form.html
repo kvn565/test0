@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Produits{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title mb-1">
+            {% if produit %}✏️ Modifier un produit{% elif origine == 'IMPORTE' %}➕ Nouveau produit importé{% else %}➕ Nouveau produit local{% endif %}
+        </h1>
+        <div class="text-muted small">
+            {% if produit %}
+                Modification de « {{ produit.designation }} »
+            {% elif origine == 'IMPORTE' %}
+                Enregistrez un produit en provenance de l'étranger
+            {% else %}
+                Enregistrez un produit fabriqué ou acheté localement
+            {% endif %}
+        </div>
+    </div>
+    <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+
+                <!-- En-tête -->
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="bg-light rounded p-3">
+                        <i class="bi bi-box-seam text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">{{ titre }}</h5>
+                        <div class="text-muted small">
+                            Origine : 
+                            {% if est_importe or origine == 'IMPORTE' %}
+                                <span class="badge bg-info-subtle text-info">Importé</span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success">Local</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+
+                        <!-- Catégorie -->
+                        <div class="col-md-6">
+                            <label class="form-label">Catégorie <span class="text-danger">*</span></label>
+                            {{ form.categorie }}
+                            {{ form.categorie.errors }}
+                        </div>
+
+                        <!-- Code produit -->
+                        <div class="col-md-6">
+                            <label class="form-label">Code produit <span class="text-danger">*</span></label>
+                            {{ form.code }}
+                            {{ form.code.errors }}
+                        </div>
+
+                        <!-- Désignation -->
+                        <div class="col-12">
+                            <label class="form-label">Désignation <span class="text-danger">*</span></label>
+                            {{ form.designation }}
+                            {{ form.designation.errors }}
+                        </div>
+
+                        <!-- Unité -->
+                        <div class="col-md-6">
+                            <label class="form-label">Unité <span class="text-danger">*</span></label>
+                            {{ form.unite }}
+                            {{ form.unite.errors }}
+                        </div>
+
+                        <!-- Prix de vente -->
+                        <div class="col-md-6">
+                            <label class="form-label">Prix de vente <span class="text-danger">*</span></label>
+                            {{ form.prix_vente }}
+                            {{ form.prix_vente.errors }}
+                        </div>
+
+                        <!-- Devise -->
+                        <div class="col-md-6">
+                            <label class="form-label">Devise <span class="text-danger">*</span></label>
+                            {{ form.devise }}
+                            {{ form.devise.errors }}
+                        </div>
+
+                        <!-- Taux TVA -->
+                        <div class="col-md-6">
+                            <label class="form-label">Taux TVA (%)</label>
+                            {{ form.taux_tva }}
+                            {{ form.taux_tva.errors }}
+                        </div>
+
+                        <!-- Statut - AJOUTÉ -->
+                        <div class="col-md-6">
+                            <label class="form-label">Statut <span class="text-danger">*</span></label>
+                            {{ form.statut }}
+                            {{ form.statut.errors }}
+                        </div>
+
+                        <!-- === CHAMPS SPÉCIFIQUES IMPORTÉS === -->
+                        {% if est_importe or origine == 'IMPORTE' %}
+
+                        <!-- Référence DMC + Bouton Importer -->
+                        <div class="col-12">
+                            <label class="form-label">Référence DMC <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                {{ form.reference_dmc }}
+                                <button type="button" class="btn btn-primary" id="btn-importer-obr">
+                                    <i class="bi bi-cloud-download me-1"></i> Importer depuis OBR
+                                </button>
+                            </div>
+                            {{ form.reference_dmc.errors }}
+                            <div id="obr-loading" class="d-none mt-2 text-muted small">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Recherche en cours sur OBR...
+                            </div>
+                            <div id="obr-error" class="d-none mt-2 alert alert-danger small"></div>
+                        </div>
+
+                        <!-- Rubrique tarifaire -->
+                        <div class="col-md-6">
+                            <label class="form-label">Rubrique tarifaire <span class="text-danger">*</span></label>
+                            {{ form.rubrique_tarifaire }}
+                            {{ form.rubrique_tarifaire.errors }}
+                        </div>
+
+                        <!-- Nombre par paquet -->
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre par paquet <span class="text-danger">*</span></label>
+                            {{ form.nombre_par_paquet }}
+                            {{ form.nombre_par_paquet.errors }}
+                        </div>
+
+                        <!-- Description paquet -->
+                        <div class="col-12">
+                            <label class="form-label">Description paquet <span class="text-danger">*</span></label>
+                            {{ form.description_paquet }}
+                            {{ form.description_paquet.errors }}
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="d-flex gap-3 mt-5">
+                        <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary flex-fill">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check-lg"></i> {{ action }}
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btnImporter = document.getElementById('btn-importer-obr');
+    if (!btnImporter) return;
+
+    const loadingDiv  = document.getElementById('obr-loading');
+    const errorDiv    = document.getElementById('obr-error');
+    const dmcInput    = document.getElementById('id_reference_dmc');
+
+    btnImporter.addEventListener('click', async function () {
+        const dmc = dmcInput.value.trim();
+        if (!dmc) {
+            alert("Veuillez entrer une référence DMC avant d'importer.");
+            dmcInput.focus();
+            return;
+        }
+
+        btnImporter.disabled = true;
+        btnImporter.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Importation...`;
+        loadingDiv.classList.remove('d-none');
+        errorDiv.classList.add('d-none');
+        errorDiv.textContent = '';
+
+        try {
+            const response = await fetch("{% url 'produits:ajax_importer_dmc' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({ 'reference_dmc': dmc })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const data = result.data;
+
+                document.getElementById('id_reference_dmc').value = dmc;
+                document.getElementById('id_code').value = dmc;
+                document.getElementById('id_designation').value = data.designation || '';
+                document.getElementById('id_rubrique_tarifaire').value = data.rubrique_tarifaire || '';
+                document.getElementById('id_nombre_par_paquet').value = data.nombre_par_paquet || '';
+                document.getElementById('id_description_paquet').value = data.description_paquet || '';
+                document.getElementById('id_unite').value = data.unite || 'Pièce';
+
+                if (data.taux_tva !== undefined) {
+                    const tvaSelect = document.getElementById('id_taux_tva');
+                    if (tvaSelect) tvaSelect.value = data.taux_tva;
+                }
+
+                alert("✅ Importation réussie depuis OBR !\nCode produit = Référence DMC");
+
+            } else {
+                const errorMessage = result.error || result.msg || "Erreur inconnue lors de l'importation.";
+                errorDiv.textContent = errorMessage;
+                errorDiv.classList.remove('d-none');
+            }
+        } 
+        catch (err) {
+            errorDiv.textContent = err.message || "Erreur de connexion au serveur.";
+            errorDiv.classList.remove('d-none');
+        } 
+        finally {
+            btnImporter.disabled = false;
+            btnImporter.innerHTML = '<i class="bi bi-cloud-download me-1"></i> Importer depuis OBR';
+            loadingDiv.classList.add('d-none');
+        }
+    });
+});
+</script>
+{% endblock %}

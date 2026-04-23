@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% block title %}Tableau de bord — WIBABI{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block nav_accueil %}active{% endblock %}
+
+{% block content %}
+
+{# ── Résolution sécurisée des URLs ── #}
+{% url 'facturer:liste'        as url_factures     %}
+{% url 'produits:liste'        as url_produits     %}
+{% url 'stock:entrees'         as url_entrees      %}
+{% url 'stock:sorties'         as url_sorties      %}
+{% url 'clients:liste'         as url_clients      %}
+{% url 'rapports:facturation'  as url_rapports     %}
+{% url 'categories:liste'      as url_categories   %}
+{% url 'fournisseurs:liste'    as url_fournisseurs %}
+{% url 'services:liste'        as url_services     %}
+{% url 'taux:liste'            as url_taux         %}
+{% url 'societe:liste'         as url_societe      %}
+{% url 'accounts:profil'       as url_profil       %}
+
+<div class="row g-4">
+
+    {# ── Bandeau bienvenue ── #}
+    <div class="col-12">
+        <div style="background:linear-gradient(135deg,var(--bleu),#1a3f6f);border-radius:16px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+            <div>
+                <p style="color:rgba(255,255,255,0.55);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Bienvenue</p>
+                <h2 style="font-family:'Playfair Display',serif;color:#fff;font-size:1.6rem;margin-bottom:4px;">{{ user.nom_complet }}</h2>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;">{{ user.get_type_poste_display }}{% if user.societe %} — {{ user.societe.nom }}{% endif %}</p>
+            </div>
+            <div>
+                <div style="background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:12px 20px;text-align:right;">
+                    <div style="color:var(--or);font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;">Date</div>
+                    <div style="color:#fff;font-size:0.95rem;font-weight:500;margin-top:2px;">{% now "l d F Y" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════
+       FACTURATION
+    ══════════════════════════════════════ #}
+    {% if user.droit_facture_pnb or user.droit_facture_fdnb or user.is_superuser %}
+    <div class="col-12"><div class="section-label"><i class="bi bi-receipt me-1"></i>Facturation</div></div>
+
+    {% if url_factures %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_factures }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f1ff;"><i class="bi bi-receipt" style="color:#0d3c8a;"></i></div>
+                    <div class="dash-title">Factures</div>
+                    <div class="dash-sub">Créer &amp; gérer les factures</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if url_clients %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_clients }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f1ff;"><i class="bi bi-people" style="color:#0d3c8a;"></i></div>
+                    <div class="dash-title">Clients</div>
+                    <div class="dash-sub">Gérer la base clients</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {# ══════════════════════════════════════
+       STOCK
+    ══════════════════════════════════════ #}
+    {% if user.droit_stock_produit or user.is_superuser %}
+    <div class="col-12"><div class="section-label"><i class="bi bi-box-seam me-1"></i>Stock</div></div>
+
+    {% if url_produits %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_produits }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f8f0;"><i class="bi bi-box" style="color:#1a6b3a;"></i></div>
+                    <div class="dash-title">Produits</div>
+                    <div class="dash-sub">Catalogue des produits</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if url_entrees %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_entrees }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f8f0;"><i class="bi bi-arrow-down-circle" style="color:#1a6b3a;"></i></div>
+                    <div class="dash-title">Entrées stock</div>
+                    <div class="dash-sub">Réceptions &amp; approvisionnements</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if url_sorties %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_sorties }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f8f0;"><i class="bi bi-arrow-up-circle" style="color:#1a6b3a;"></i></div>
+                    <div class="dash-title">Sorties stock</div>
+                    <div class="dash-sub">Livraisons &amp; transferts</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if url_fournisseurs %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_fournisseurs }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#e8f8f0;"><i class="bi bi-truck" style="color:#1a6b3a;"></i></div>
+                    <div class="dash-title">Fournisseurs</div>
+                    <div class="dash-sub">Gérer les fournisseurs</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {# ══════════════════════════════════════
+       ANALYSE
+    ══════════════════════════════════════ #}
+    {% if user.droit_rapports or user.is_superuser %}
+    <div class="col-12"><div class="section-label"><i class="bi bi-bar-chart me-1"></i>Analyse</div></div>
+
+    {% if url_rapports %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_rapports }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#fff8e5;"><i class="bi bi-bar-chart-line" style="color:#7d5a00;"></i></div>
+                    <div class="dash-title">Rapports facturation</div>
+                    <div class="dash-sub">Chiffre d'affaires &amp; taxes</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {# ══════════════════════════════════════
+       PARAMÈTRES (DIRECTEUR ou SUPERADMIN)
+    ══════════════════════════════════════ #}
+    {% if user.type_poste == 'DIRECTEUR' or user.is_superuser %}
+    <div class="col-12"><div class="section-label"><i class="bi bi-gear me-1"></i>Paramètres</div></div>
+
+    {% if url_categories %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_categories }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#f0f3f8;"><i class="bi bi-tags" style="color:#4a5568;"></i></div>
+                    <div class="dash-title">Catégories</div>
+                    <div class="dash-sub">Catégories de produits</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if url_services %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_services }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#f0f3f8;"><i class="bi bi-briefcase" style="color:#4a5568;"></i></div>
+                    <div class="dash-title">Services</div>
+                    <div class="dash-sub">Catalogue des services</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if url_taux %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_taux }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#f0f3f8;"><i class="bi bi-percent" style="color:#4a5568;"></i></div>
+                    <div class="dash-title">Taux</div>
+                    <div class="dash-sub">TVA &amp; taxes configurées</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if url_societe %}
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_societe }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#f0f3f8;"><i class="bi bi-building" style="color:#4a5568;"></i></div>
+                    <div class="dash-title">Ma société</div>
+                    <div class="dash-sub">Informations &amp; paramètres</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {# ══════════════════════════════════════
+       MON COMPTE
+    ══════════════════════════════════════ #}
+    <div class="col-12"><div class="section-label"><i class="bi bi-person me-1"></i>Mon compte</div></div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="{{ url_profil }}" class="card-link">
+            <div class="card dashboard-card">
+                <div class="card-body p-4">
+                    <div class="dash-icon" style="background:#f5e8ff;"><i class="bi bi-person-circle" style="color:#5b0d8a;"></i></div>
+                    <div class="dash-title">Mon profil</div>
+                    <div class="dash-sub">Mes droits &amp; informations</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {# ══════════════════════════════════════
+       STATUT LICENCE (DIRECTEUR)
+    ══════════════════════════════════════ #}
+    {% if user.societe and user.type_poste == 'DIRECTEUR' %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-key me-2" style="color:var(--or);"></i>Licence de la société</div>
+            <div class="card-body p-4">
+                {% if user.societe.licence_valide %}
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#27ae60;box-shadow:0 0 0 3px rgba(39,174,96,0.2);flex-shrink:0;"></div>
+                    <div>
+                        <span style="font-weight:600;color:#1a6b3a;">Licence active</span>
+                        <span style="color:#8a9aaa;font-size:0.83rem;margin-left:12px;">
+                            Expire le {{ user.societe.cle_active.date_fin|date:"d/m/Y" }}
+                            ({{ user.societe.cle_active.jours_restants }} jour{{ user.societe.cle_active.jours_restants|pluralize }} restant{{ user.societe.cle_active.jours_restants|pluralize }})
+                        </span>
+                    </div>
+                </div>
+                {% else %}
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0;"></div>
+                    <span style="font-weight:600;color:#b71c1c;">Licence expirée ou inactive</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #8a9aaa;
+        margin-bottom: 4px;
+    }
+    .card-link { text-decoration: none; display: block; height: 100%; }
+    .dashboard-card {
+        transition: box-shadow 0.2s, transform 0.15s;
+        cursor: pointer;
+        height: 100%;
+    }
+    .dashboard-card:hover {
+        box-shadow: 0 8px 24px rgba(15,42,74,0.13);
+        transform: translateY(-2px);
+    }
+    .dash-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+        font-size: 1.2rem;
+    }
+    .dash-title { font-weight: 600; color: var(--bleu); margin-bottom: 2px; font-size: 0.92rem; }
+    .dash-sub   { font-size: 0.78rem; color: #a0adb8; }
+</style>
+{% endblock %}

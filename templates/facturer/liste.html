@@ -1,0 +1,598 @@
+{% extends 'base.html' %}
+
+{% block title %}Factures — WIBABI{% endblock %}
+{% block nav_facturer %}active{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+
+    {# En-tête + bouton créer #}
+    <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div>
+            <h4 class="mb-1" style="font-family:'Playfair Display',serif;color:var(--bleu);">Factures</h4>
+            <p class="text-muted mb-0">{{ stats.total }} facture{{ stats.total|pluralize }}</p>
+        </div>
+
+        {# POINT 3 : Empêcher création si une facture en attente existe #}
+        {% if has_facture_en_attente %}
+            <button class="btn btn-gold" disabled 
+                    title="Une facture est déjà en cours (en attente OBR). Veuillez la finaliser, l'envoyer ou l'annuler avant d'en créer une nouvelle.">
+                <i class="bi bi-plus-circle me-2"></i>Nouvelle facture
+            </button>
+        {% else %}
+            <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#modalCreerFacture">
+                <i class="bi bi-plus-circle me-2"></i>Nouvelle facture
+            </button>
+        {% endif %}
+    </div>
+    {# Messages Django #}
+    {% if messages %}
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-exclamation-triangle-fill{% else %}bi-info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Statistiques #}
+    <div class="col-12">
+        <div class="row g-3">
+            <div class="col-6 col-lg-3">
+                <div class="card text-center p-3 shadow-sm border-0">
+                    <div class="fs-3 fw-bold text-primary">{{ stats.total }}</div>
+                    <div class="text-muted small">Total factures</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card text-center p-3 shadow-sm border-0">
+                    <div class="fs-3 fw-bold text-warning">{{ stats.en_attente }}</div>
+                    <div class="text-muted small">En attente OBR</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card text-center p-3 shadow-sm border-0">
+                    <div class="fs-3 fw-bold text-success">{{ stats.envoyes }}</div>
+                    <div class="text-muted small">Envoyées OBR</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card text-center p-3 shadow-sm border-0">
+                    <div class="fs-3 fw-bold text-danger">{{ stats.echecs }}</div>
+                    <div class="text-muted small">Échecs envoi</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Filtres #}
+    <div class="col-12">
+        <form method="get" class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-3 align-items-end">
+                    <div class="flex-grow-1 position-relative" style="min-width: 240px;">
+                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input type="text" name="q" value="{{ q }}" class="form-control ps-5" placeholder="N°, client, bon de commande...">
+                    </div>
+
+                    <select name="type" class="form-select" style="min-width: 180px;">
+                        <option value="">Tous les types</option>
+                        {% for val, label in types %}
+                            <option value="{{ val }}" {% if type_f == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="statut" class="form-select" style="min-width: 180px;">
+                        <option value="">Tous statuts OBR</option>
+                        {% for val, label in statuts %}
+                            <option value="{{ val }}" {% if statut == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>Filtrer
+                        </button>
+                        {% if q or type_f or statut %}
+                            <a href="{% url 'facturer:liste' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i>Réinitialiser
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {# Tableau des factures #}
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>N° Facture</th>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Type</th>
+                                <th>Devise</th>
+                                <th class="text-end">Total TTC</th>
+                                <th class="text-center">Statut OBR</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in page_obj %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'facturer:detail' f.pk %}" class="fw-medium text-primary text-decoration-none">
+                                        {{ f.display_numero }}
+                                    </a>
+                                </td>
+                                <td class="small">
+                                    {{ f.date_facture|date:"d/m/Y" }}<br>
+                                    <span class="text-muted">{{ f.heure_facture|time:"H:i" }}</span>
+                                </td>
+                                <td>
+                                    <div class="fw-medium">{{ f.client.nom|default:"Client divers" }}</div>
+                                    {% if f.client.nif %}
+                                        <div class="text-muted small">NIF : {{ f.client.nif }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if f.type_facture == 'FA' %}bg-secondary{% else %}bg-info{% endif %}">
+                                        {{ f.get_type_facture_display }}
+                                    </span>
+                                </td>
+                                <td class="small">{{ f.devise }}</td>
+                                <td class="text-end fw-bold text-primary">
+                                    {{ f.total_ttc|floatformat:0 }} {{ f.devise }}
+                                </td>
+                                <td class="text-center">
+                                    {% if f.statut_obr == 'ENVOYE' %}
+                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> OBR</span>
+                                    {% elif f.statut_obr == 'ECHEC' %}
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Échec</span>
+                                    {% elif f.statut_obr == 'ANNULE' %}
+                                        <span class="badge bg-danger">Annulée avec sucess</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> En attente</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'facturer:detail' f.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Voir détails">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'facturer:imprimer-a4' f.pk %}" target="_blank" class="btn btn-sm btn-outline-secondary me-1" title="Imprimer A4">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
+
+                                    <!-- Bouton Annuler -->
+                                    {% if f.statut_obr in 'EN_ATTENTE,ECHEC,ENVOYE' %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="Annuler cette facture"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalAnnulerFacture"
+                                            data-facture-id="{{ f.pk }}"
+                                            data-facture-numero="{{ f.display_numero }}"
+                                            data-facture-statut="{{ f.statut_obr }}">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Pagination #}
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Pagination factures" class="mt-3">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if q %}&q={{ q }}{% endif %}{% if type_f %}&type={{ type_f }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}" aria-label="Première">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if type_f %}&type={{ type_f }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">Précédent</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item disabled">
+                            <span class="page-link">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if type_f %}&type={{ type_f }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">Suivant</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}{% if type_f %}&type={{ type_f }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}" aria-label="Dernière">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="text-center py-5 my-5">
+                    <i class="bi bi-receipt display-1 text-muted opacity-50 mb-3 d-block"></i>
+                    <h5 class="text-muted mb-2">
+                        {% if q or type_f or statut %}
+                            Aucune facture ne correspond aux filtres
+                        {% else %}
+                            Aucune facture créée pour le moment
+                        {% endif %}
+                    </h5>
+                    <p class="text-muted mb-4">
+                        {% if q or type_f or statut %}
+                            Essayez de modifier ou supprimer certains filtres.
+                        {% else %}
+                            Commencez par créer votre première facture.
+                        {% endif %}
+                    </p>
+                    <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#modalCreerFacture">
+                        <i class="bi bi-plus-circle me-2"></i>Créer une facture
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{# ====================== MODAL CRÉATION FACTURE ====================== #}
+<div class="modal fade" id="modalCreerFacture" tabindex="-1" aria-labelledby="modalCreerFactureLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCreerFactureLabel">
+                    <i class="bi bi-receipt text-warning me-2"></i>Nouvelle facture
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCreerFacture">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date <span class="text-danger">*</span></label>
+                            {{ header_form.date_facture }}
+                            <div class="invalid-feedback d-block">{{ header_form.date_facture.errors }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Heure <span class="text-danger">*</span></label>
+                            {{ header_form.heure_facture }}
+                            <div class="invalid-feedback d-block">{{ header_form.heure_facture.errors }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Client <span class="text-danger">*</span></label>
+                            {{ header_form.client }}
+                            <div class="invalid-feedback d-block">{{ header_form.client.errors }}</div>
+                            <div class="form-text">
+                                <a href="{% url 'clients:creer' %}" target="_blank" class="text-warning">+ Nouveau client</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Type <span class="text-danger">*</span></label>
+                            {{ header_form.type_facture }}
+                            <div class="invalid-feedback d-block">{{ header_form.type_facture.errors }}</div>
+                        </div>
+
+                        {# Champs Facture d'Avoir #}
+                        <div class="col-12 avoir-wrapper" style="display: none;">
+                            <label class="form-label">Facture concernée <span class="text-danger">*</span></label>
+                            {{ header_form.facture_originale }}
+                            <div class="invalid-feedback d-block">{{ header_form.facture_originale.errors }}</div>
+                            <small class="form-text text-muted">Sélectionnez une facture normale (FN) déjà envoyée</small>
+                        </div>
+                        <div class="col-12 avoir-wrapper" style="display: none;">
+                            <label class="form-label">Motif de l'avoir <span class="text-danger">*</span></label>
+                            {{ header_form.motif_avoir }}
+                            <div class="invalid-feedback d-block">{{ header_form.motif_avoir.errors }}</div>
+                            <small class="form-text text-muted">Ex : Erreur, retour marchandise, remise, rabais...</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Mode de paiement <span class="text-danger">*</span></label>
+                            {{ header_form.mode_paiement }}
+                            <div class="invalid-feedback d-block">{{ header_form.mode_paiement.errors }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Devise</label>
+                            {{ header_form.devise }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bon de commande</label>
+                            {{ header_form.bon_commande }}
+                        </div>
+                    </div>
+
+                    <div id="erreurCreer" class="alert alert-danger mt-3" style="display:none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" id="btnSoumettreEntete" class="btn btn-gold" onclick="soumettreEntete()" disabled>
+                    <i class="bi bi-arrow-right-circle me-2"></i>Continuer — Ajouter les lignes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ====================== MODAL ANNULATION FACTURE (corrigé pour tes 3 points) ====================== #}
+<div class="modal fade" id="modalAnnulerFacture" tabindex="-1" aria-labelledby="modalAnnulerFactureLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAnnulerFactureLabel">
+                    <i class="bi bi-x-circle text-danger me-2"></i>Annuler la facture
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="texteAnnulation" class="mb-3 fw-bold"></p>
+                
+                <div id="motifGroup" class="mb-3">
+                    <label for="motifAnnulation" class="form-label">
+                        Motif d'annulation <span class="text-danger" id="motifRequired">*</span>
+                    </label>
+                    <textarea id="motifAnnulation" class="form-control" rows="3" 
+                              placeholder="Ex: Erreur de saisie, retour de marchandise, client annulé..."></textarea>
+                </div>
+
+                <div id="info-annulation" class="alert alert-info small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" id="btnConfirmerAnnulation" class="btn btn-danger">
+                    <i class="bi bi-x-circle me-1"></i>Confirmer l'annulation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    console.log('✅ JS liste.html chargé');
+
+    // ====================== MODAL ANNULATION (Point 1) ======================
+    const modalAnnuler = document.getElementById('modalAnnulerFacture');
+    if (modalAnnuler) {
+        modalAnnuler.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const factureId = button.getAttribute('data-facture-id');
+            const numero    = button.getAttribute('data-facture-numero');
+            let statut      = (button.getAttribute('data-facture-statut') || '').toUpperCase();
+
+            document.getElementById('texteAnnulation').innerHTML = 
+                `Vous allez traiter la facture <strong>${numero}</strong>.`;
+
+            const motifGroup = document.getElementById('motifGroup');
+            const motifField = document.getElementById('motifAnnulation');
+            const infoBox    = document.getElementById('info-annulation');
+            const required   = document.getElementById('motifRequired');
+
+            if (statut === 'ENVOYE') {
+                // Facture envoyée OBR → motif obligatoire
+                motifGroup.style.display = 'block';
+                required.style.display = 'inline';
+                infoBox.innerHTML = '<strong>Facture déjà envoyée à l’OBR.</strong><br>Le motif est obligatoire pour conformité réglementaire.';
+                motifField.required = true;
+            } else {
+                // EN_ATTENTE ou ECHEC → suppression directe sans motif
+                motifGroup.style.display = 'none';
+                required.style.display = 'none';
+                infoBox.innerHTML = 'Cette facture est locale (en attente). Elle sera <strong>supprimée définitivement</strong> sans motif.';
+                motifField.required = false;
+            }
+
+            // Stocker les données pour la soumission
+            const btnConfirmer = document.getElementById('btnConfirmerAnnulation');
+            btnConfirmer.dataset.factureId = factureId;
+            btnConfirmer.dataset.statut = statut;
+        });
+    }
+
+    // Soumission de l'annulation
+    const btnConfirmer = document.getElementById('btnConfirmerAnnulation');
+    if (btnConfirmer) {
+        btnConfirmer.addEventListener('click', function () {
+            const id = this.dataset.factureId;
+            const statut = this.dataset.statut;
+            const motif = document.getElementById('motifAnnulation').value.trim();
+
+            if (statut === 'ENVOYE' && !motif) {
+                alert("Le motif d'annulation est obligatoire pour une facture envoyée à l'OBR.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('motif', motif);
+
+            fetch(`/facturer/${id}/annuler/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Une erreur est survenue lors de l'annulation.");
+                }
+            })
+            .catch(() => alert("Erreur réseau. Veuillez réessayer."));
+        });
+    }
+
+    // ====================== MODAL CRÉATION (code existant conservé) ======================
+    const modalCreer = document.getElementById('modalCreerFacture');
+    if (modalCreer) {
+        modalCreer.addEventListener('shown.bs.modal', function () {
+            resetAvoirFields();
+            checkContinuerButton();
+            initAvoirDynamic();
+        });
+    }
+
+    function resetAvoirFields() {
+        document.querySelectorAll('.avoir-wrapper').forEach(el => el.style.display = 'none');
+    }
+
+    function initAvoirDynamic() {
+        const clientSelect = document.getElementById('id_client');
+        const typeSelect   = document.getElementById('id_type_facture');
+        const avoirSelect  = document.getElementById('id_facture_originale');
+        const motifField   = document.getElementById('id_motif_avoir');
+
+        if (!clientSelect || !typeSelect || !avoirSelect) return;
+
+        function chargerFacturesClient(clientId) {
+            avoirSelect.innerHTML = '<option value="">-- Chargement...</option>';
+            avoirSelect.disabled = true;
+
+            if (!clientId) {
+                avoirSelect.innerHTML = '<option value="">-- Choisir la facture FN concernée --</option>';
+                checkContinuerButton();
+                return;
+            }
+
+            fetch(`/facturer/ajax/factures-client/${clientId}/`)
+                .then(r => r.json())
+                .then(data => {
+                    avoirSelect.innerHTML = '<option value="">-- Choisir la facture FN concernée --</option>';
+                    if (data.ok && data.factures && data.factures.length > 0) {
+                        data.factures.forEach(f => {
+                            const opt = document.createElement('option');
+                            opt.value = f.id;
+                            opt.textContent = f.text;
+                            avoirSelect.appendChild(opt);
+                        });
+                        avoirSelect.disabled = false;
+                    } else {
+                        avoirSelect.innerHTML = '<option value="">Aucune facture normale pour ce client</option>';
+                    }
+                    checkContinuerButton();
+                })
+                .catch(() => {
+                    avoirSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                    checkContinuerButton();
+                });
+        }
+
+        clientSelect.addEventListener('change', () => chargerFacturesClient(clientSelect.value));
+
+        typeSelect.addEventListener('change', function() {
+            const isFA = this.value === 'FA';
+            document.querySelectorAll('.avoir-wrapper').forEach(el => {
+                el.style.display = isFA ? 'block' : 'none';
+            });
+
+            if (isFA && clientSelect.value) {
+                chargerFacturesClient(clientSelect.value);
+            } else {
+                checkContinuerButton();
+            }
+        });
+
+        avoirSelect.addEventListener('change', checkContinuerButton);
+        if (motifField) motifField.addEventListener('input', checkContinuerButton);
+    }
+
+    function checkContinuerButton() {
+        const type   = document.getElementById('id_type_facture')?.value || '';
+        const client = document.getElementById('id_client')?.value || '';
+        const dateF  = document.getElementById('id_date_facture')?.value || '';
+        const heureF = document.getElementById('id_heure_facture')?.value || '';
+
+        let valid = !!(client && dateF && heureF && type);
+
+        if (type === 'FA') {
+            const ref   = document.getElementById('id_facture_originale')?.value || '';
+            const motif = (document.getElementById('id_motif_avoir')?.value || '').trim();
+            valid = valid && !!(ref && motif);
+        }
+
+        const btn = document.getElementById('btnSoumettreEntete');
+        if (btn) btn.disabled = !valid;
+    }
+
+    async function soumettreEntete() {
+        const btn = document.getElementById('btnSoumettreEntete');
+        const err = document.getElementById('erreurCreer');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...';
+        if (err) err.style.display = 'none';
+
+        const form = document.getElementById('formCreerFacture');
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('{% url "facturer:ajax-creer-facture" %}', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+
+            const data = await response.json();
+
+            if (data.ok) {
+                window.location.href = `/facturer/${data.facture_id}/`;
+            } else {
+                let msg = 'Erreur lors de la création.';
+                if (data.error) msg = data.error;
+                if (data.errors) msg = Object.values(data.errors).flat().join('<br>');
+                if (err) {
+                    err.innerHTML = msg;
+                    err.style.display = 'block';
+                }
+            }
+        } catch (error) {
+            if (err) {
+                err.innerHTML = 'Erreur réseau ou serveur.';
+                err.style.display = 'block';
+            }
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Continuer — Ajouter les lignes';
+        }
+    }
+
+    window.soumettreEntete = soumettreEntete;
+
+    // Écouteurs sur les champs du formulaire création
+    const fields = ['id_client', 'id_type_facture', 'id_date_facture', 'id_heure_facture', 'id_facture_originale', 'id_motif_avoir'];
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', checkContinuerButton);
+            if (el.tagName === 'TEXTAREA' || el.type === 'text') {
+                el.addEventListener('input', checkContinuerButton);
+            }
+        }
+    });
+
+});
+</script>
+{% endblock %}

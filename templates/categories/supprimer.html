@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer — {{ categorie.nom }} — WIBABI{% endblock %}
+{% block nav_categories %}active{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+
+    {# ── Fil d'ariane ── #}
+    <div style="font-size:0.8rem;color:#8a9aaa;margin-bottom:18px;">
+        <a href="{% url 'categories:liste' %}" style="color:#8a9aaa;text-decoration:none;">
+            <i class="bi bi-tags me-1"></i>Catégories
+        </a>
+        <span style="margin:0 6px;">›</span>
+        <span style="color:#e74c3c;">Supprimer</span>
+    </div>
+
+    <div class="card" style="border:1.5px solid #fdecea;">
+        <div class="card-body p-5 text-center">
+
+            <div style="width:68px;height:68px;background:#fdecea;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                <i class="bi bi-trash" style="font-size:1.8rem;color:#e74c3c;"></i>
+            </div>
+
+            <h5 style="font-family:'Playfair Display',serif;color:var(--bleu);margin-bottom:8px;">
+                Supprimer cette catégorie ?
+            </h5>
+            <p style="color:#8a9aaa;font-size:0.87rem;margin-bottom:24px;">
+                Cette action est <strong>irréversible</strong>.
+            </p>
+
+            {# ── Récap ── #}
+            <div style="background:#fafbfc;border:1px solid #eef0f4;border-radius:12px;padding:16px;margin-bottom:28px;text-align:left;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;background:rgba(201,168,76,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-tag" style="color:var(--or);font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;color:var(--bleu);">{{ categorie.nom }}</div>
+                        <div style="font-size:0.78rem;color:#8a9aaa;margin-top:2px;">
+                            {{ categorie.nb_produits }} produit{{ categorie.nb_produits|pluralize }} associé{{ categorie.nb_produits|pluralize }}
+                        </div>
+                    </div>
+                </div>
+                {% if categorie.description %}
+                <div style="margin-top:10px;padding-top:10px;border-top:1px solid #eef0f4;font-size:0.82rem;color:#5a6a7a;">
+                    {{ categorie.description }}
+                </div>
+                {% endif %}
+            </div>
+
+            {# ── Formulaire ── #}
+            <form method="post">
+                {% csrf_token %}
+                <div style="display:flex;gap:10px;justify-content:center;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>Confirmer la suppression
+                    </button>
+                    <a href="{% url 'categories:liste' %}" class="btn btn-outline-secondary">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

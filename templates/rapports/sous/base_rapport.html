@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% block breadcrumb_parent %}Rapports{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Onglets rapports ── */
+.rapport-tabs { display:flex; gap:5px; flex-wrap:wrap; }
+.rapport-tab {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 13px; border-radius:8px; font-size:12.5px; font-weight:600;
+    text-decoration:none; border:1.5px solid var(--border-color);
+    color:var(--text-muted); background:var(--card-bg); transition:var(--transition);
+}
+.rapport-tab:hover { border-color:var(--primary); color:var(--primary); }
+.rapport-tab.actif { background:var(--primary); border-color:var(--primary); color:white; }
+.rapport-tab.actif i { color:rgba(255,255,255,0.8); }
+
+/* ── Formulaire recherche ── */
+.search-card {
+    background:var(--card-bg); border:1px solid var(--border-color);
+    border-radius:var(--radius); margin-bottom:18px; overflow:hidden;
+}
+.search-header {
+    background:linear-gradient(90deg, var(--primary) 0%, var(--primary-light, var(--primary)) 100%);
+    padding:10px 18px; display:flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:700; color:white;
+}
+.search-body { padding:16px 18px; }
+.search-grid { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; align-items:end; }
+@media(max-width:768px){ .search-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:480px){ .search-grid { grid-template-columns:1fr; } }
+
+.search-field label {
+    display:flex; font-size:12px; font-weight:700;
+    color:var(--text-color); margin-bottom:5px;
+    align-items:center; gap:5px;
+}
+.search-field label i { color:var(--primary); }
+.search-input {
+    width:100%; padding:9px 12px;
+    border:1.5px solid var(--border-color); border-radius:8px;
+    font-size:13.5px; font-family:'DM Sans',sans-serif;
+    color:var(--text-color); background:var(--card-bg);
+    transition:var(--transition); outline:none;
+}
+.search-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(10,92,54,.08); }
+
+/* Sélecteur produit/service fusionné */
+.ps-wrapper { display:flex; }
+.ps-type {
+    padding:9px 10px; border:1.5px solid var(--border-color);
+    border-right:none; border-radius:8px 0 0 8px;
+    font-size:12px; font-weight:600; background:var(--body-bg);
+    color:var(--text-muted); outline:none; cursor:pointer;
+    font-family:'DM Sans',sans-serif; min-width:90px;
+}
+.ps-type:focus { border-color:var(--primary); }
+.ps-select {
+    flex:1; padding:9px 12px;
+    border:1.5px solid var(--border-color); border-left:none;
+    border-radius:0 8px 8px 0; font-size:13px;
+    font-family:'DM Sans',sans-serif; color:var(--text-color);
+    background:var(--card-bg); outline:none;
+}
+.ps-select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(10,92,54,.08); }
+
+/* Boutons */
+.search-actions { display:flex; flex-direction:column; gap:6px; }
+.btn-search {
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    padding:9px 18px; background:var(--primary); color:white;
+    border:none; border-radius:8px; font-size:13px; font-weight:700;
+    cursor:pointer; transition:var(--transition); white-space:nowrap;
+    font-family:'DM Sans',sans-serif;
+}
+.btn-search:hover { opacity:0.9; transform:translateY(-1px); }
+.btn-reset {
+    display:inline-flex; align-items:center; justify-content:center; gap:5px;
+    padding:6px 12px; background:transparent; color:var(--text-muted);
+    border:1.5px solid var(--border-color); border-radius:8px;
+    font-size:12px; font-weight:600; cursor:pointer; transition:var(--transition);
+    text-decoration:none; font-family:'DM Sans',sans-serif;
+}
+.btn-reset:hover { border-color:#e53e3e; color:#e53e3e; background:#fff5f5; }
+
+/* Raccourcis période */
+.periode-chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px solid var(--border-color); }
+.periode-chips span { font-size:11.5px; color:var(--text-muted); font-weight:600; align-self:center; }
+.chip {
+    padding:3px 11px; border-radius:20px; font-size:11.5px; font-weight:600;
+    border:1.5px solid var(--border-color); background:var(--card-bg); color:var(--text-muted);
+    cursor:pointer; transition:var(--transition);
+}
+.chip:hover { background:var(--primary); border-color:var(--primary); color:white; }
+
+/* Filtre actif */
+.filtre-actif {
+    background:#e8f5ee; border:1.5px solid #b7dfc7;
+    border-radius:8px; padding:8px 14px; margin-top:10px;
+    font-size:12px; color:#155724;
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}
+.filtre-actif strong { color:var(--primary); }
+
+/* ── Cards totaux ── */
+.totaux-grid { display:grid; gap:12px; margin-bottom:18px; }
+.totaux-grid.cols-3 { grid-template-columns:repeat(3,1fr); }
+.totaux-grid.cols-4 { grid-template-columns:repeat(4,1fr); }
+.totaux-grid.cols-2 { grid-template-columns:repeat(2,1fr); }
+@media(max-width:768px){ .totaux-grid { grid-template-columns:repeat(2,1fr) !important; } }
+@media(max-width:480px){ .totaux-grid { grid-template-columns:1fr !important; } }
+
+.total-card {
+    background:var(--card-bg); border:1px solid var(--border-color);
+    border-radius:var(--radius); padding:16px 18px;
+    display:flex; flex-direction:column; gap:6px;
+    box-shadow:var(--shadow-sm); transition:var(--transition);
+}
+.total-card:hover { box-shadow:var(--shadow-md); transform:translateY(-1px); }
+.total-card .tc-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.total-card .tc-val { font-size:20px; font-weight:800; font-family:'DM Mono',monospace; color:var(--text-color); line-height:1; }
+.total-card .tc-lbl { font-size:11.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+
+/* ── Tableau résultats ── */
+.result-card { background:var(--card-bg); border:1px solid var(--border-color); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); }
+.result-header {
+    padding:12px 18px; background:var(--body-bg);
+    border-bottom:1px solid var(--border-color);
+    display:flex; align-items:center; justify-content:space-between;
+}
+.result-header .rh-title { font-size:13px; font-weight:700; color:var(--text-color); display:flex; align-items:center; gap:7px; }
+.result-header .rh-count { font-size:12px; color:var(--text-muted); background:var(--card-bg); border:1px solid var(--border-color); padding:2px 10px; border-radius:20px; }
+.table-wrap { overflow-x:auto; }
+.t-custom { width:100%; border-collapse:collapse; font-size:13px; }
+.t-custom thead th {
+    background:var(--body-bg); color:var(--text-muted); font-size:11px;
+    font-weight:700; text-transform:uppercase; letter-spacing:.7px;
+    padding:10px 14px; border-bottom:1px solid var(--border-color); white-space:nowrap;
+}
+.t-custom tbody td { padding:10px 14px; border-bottom:1px solid var(--border-color); vertical-align:middle; }
+.t-custom tbody tr:hover td { background:var(--body-bg); }
+.t-custom tbody tr:last-child td { border-bottom:none; }
+.t-custom tfoot td { padding:10px 14px; background:var(--body-bg); font-weight:700; font-size:12.5px; border-top:2px solid var(--border-color); }
+
+/* Vide */
+.empty-state { padding:48px 24px; text-align:center; color:var(--text-muted); }
+.empty-state i { font-size:40px; opacity:.3; display:block; margin-bottom:10px; }
+.empty-state p { font-size:14px; }
+
+/* Badges */
+.badge-stock { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge-ok  { background:#dcfce7; color:#15803d; }
+.badge-low { background:#fee2e2; color:#991b1b; }
+
+/* Impression */
+@media print {
+    #sidebar, #topbar, .search-card, .rapport-tabs, .page-header { display:none !important; }
+    #main-content { margin:0 !important; padding:0 !important; }
+    .result-card { box-shadow:none; border:1px solid #ccc; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Page header ── -->
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:44px; height:44px; background:{{ rapport_bg|default:'#e8f5ee' }};
+                    border-radius:10px; display:flex; align-items:center; justify-content:center;">
+            <i class="bi {{ rapport_icone|default:'bi-bar-chart' }}"
+               style="font-size:20px; color:{{ rapport_clr|default:'var(--primary)' }};"></i>
+        </div>
+        <div>
+            <div class="page-title">{{ titre }}</div>
+            <div class="page-subtitle">Rapport avec filtres : période et produit / service</div>
+        </div>
+    </div>
+    <div class="rapport-tabs">
+        <a href="{% url 'rapports:entrees' %}"
+           class="rapport-tab {% if rapport == 'entrees' %}actif{% endif %}">
+            <i class="bi bi-box-arrow-in-down"></i> Entrées
+        </a>
+        <a href="{% url 'rapports:cout_stock' %}"
+           class="rapport-tab {% if rapport == 'cout_stock' %}actif{% endif %}">
+            <i class="bi bi-calculator"></i> Coût stock
+        </a>
+        <a href="{% url 'rapports:sorties' %}"
+           class="rapport-tab {% if rapport == 'sorties' %}actif{% endif %}">
+            <i class="bi bi-box-arrow-up"></i> Sorties
+        </a>
+        <a href="{% url 'rapports:stock_actuel' %}"
+           class="rapport-tab {% if rapport == 'stock_actuel' %}actif{% endif %}">
+            <i class="bi bi-archive"></i> Stock actuel
+        </a>
+        <a href="{% url 'rapports:facturation' %}"
+           class="rapport-tab {% if rapport == 'facturation' %}actif{% endif %}">
+            <i class="bi bi-receipt"></i> Facturation
+        </a>
+    </div>
+</div>
+
+<!-- ── Formulaire de recherche ── -->
+<div class="search-card">
+    <div class="search-header">
+        <i class="bi bi-search"></i>
+        <span>Rechercher dans le rapport</span>
+        {% if date_debut or date_fin or produit_id or service_id %}
+        <span style="margin-left:auto; background:rgba(255,255,255,0.25); color:white;
+                     padding:2px 10px; border-radius:20px; font-size:11px;">
+            Filtre actif
+        </span>
+        {% endif %}
+    </div>
+    <div class="search-body">
+        <form method="get" id="form-rapport">
+            <div class="search-grid">
+
+                <!-- Date début -->
+                <div class="search-field">
+                    <label><i class="bi bi-calendar-event"></i> Date de début</label>
+                    <input type="date" name="date_debut" value="{{ date_debut }}"
+                           class="search-input" id="id_date_debut">
+                </div>
+
+                <!-- Date fin -->
+                <div class="search-field">
+                    <label><i class="bi bi-calendar-check"></i> Date de fin</label>
+                    <input type="date" name="date_fin" value="{{ date_fin }}"
+                           class="search-input" id="id_date_fin">
+                </div>
+
+                <!-- Produit ou Service -->
+                <div class="search-field">
+                    <label><i class="bi bi-box-seam"></i> Produit / Service</label>
+                    <div class="ps-wrapper">
+                        <select id="sel-type" class="ps-type" onchange="switchPS()">
+                            <option value="produit" {% if not service_id %}selected{% endif %}>Produit</option>
+                            <option value="service" {% if service_id %}selected{% endif %}>Service</option>
+                        </select>
+                        <select name="produit" id="sel-produit" class="ps-select"
+                                {% if service_id %}style="display:none"{% endif %}>
+                            <option value="">Tous les produits</option>
+                            {% for p in produits %}
+                            <option value="{{ p.pk }}"
+                                {% if produit_id == p.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ p.designation }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <select name="service" id="sel-service" class="ps-select"
+                                {% if not service_id %}style="display:none"{% endif %}>
+                            <option value="">Tous les services</option>
+                            {% for s in services %}
+                            <option value="{{ s.pk }}"
+                                {% if service_id == s.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ s.designation }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Boutons -->
+                <div class="search-actions">
+                    <button type="submit" class="btn-search">
+                        <i class="bi bi-search"></i> Rechercher
+                    </button>
+                    {% if date_debut or date_fin or produit_id or service_id %}
+                    <a href="{{ request.path }}" class="btn-reset">
+                        <i class="bi bi-x-circle"></i> Effacer
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Raccourcis période -->
+            <div class="periode-chips">
+                <span>Période rapide :</span>
+                <button type="button" class="chip" onclick="periode('today')">Aujourd'hui</button>
+                <button type="button" class="chip" onclick="periode('week')">Cette semaine</button>
+                <button type="button" class="chip" onclick="periode('month')">Ce mois</button>
+                <button type="button" class="chip" onclick="periode('quarter')">Ce trimestre</button>
+                <button type="button" class="chip" onclick="periode('year')">Cette année</button>
+            </div>
+        </form>
+
+        <!-- Résumé filtre actif -->
+        {% if date_debut or date_fin or produit_id or service_id %}
+        <div class="filtre-actif">
+            <i class="bi bi-funnel-fill"></i>
+            <strong>Filtre :</strong>
+            {% if date_debut %}Du <strong>{{ date_debut }}</strong>{% endif %}
+            {% if date_fin %}au <strong>{{ date_fin }}</strong>{% endif %}
+            {% if produit_id %}
+                — Produit :
+                {% for p in produits %}{% if p.pk|stringformat:"s" == produit_id %}<strong>{{ p.designation }}</strong>{% endif %}{% endfor %}
+            {% endif %}
+            {% if service_id %}
+                — Service :
+                {% for s in services %}{% if s.pk|stringformat:"s" == service_id %}<strong>{{ s.designation }}</strong>{% endif %}{% endfor %}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Contenu spécifique au rapport -->
+{% block corps_rapport %}{% endblock %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchPS() {
+    const type = document.getElementById('sel-type').value;
+    const sp = document.getElementById('sel-produit');
+    const ss = document.getElementById('sel-service');
+    if (type === 'produit') {
+        sp.style.display = 'block'; sp.name = 'produit';
+        ss.style.display = 'none';  ss.name = ''; ss.value = '';
+    } else {
+        ss.style.display = 'block'; ss.name = 'service';
+        sp.style.display = 'none';  sp.name = ''; sp.value = '';
+    }
+}
+{% if service_id %}
+document.getElementById('sel-type').value = 'service';
+switchPS();
+{% endif %}
+
+function periode(type) {
+    const t = new Date();
+    let d = new Date(t), f = new Date(t);
+    if (type === 'today') {
+        // d == f == aujourd'hui
+    } else if (type === 'week') {
+        const dow = t.getDay() || 7;
+        d.setDate(t.getDate() - dow + 1);
+        f.setDate(d.getDate() + 6);
+    } else if (type === 'month') {
+        d = new Date(t.getFullYear(), t.getMonth(), 1);
+        f = new Date(t.getFullYear(), t.getMonth() + 1, 0);
+    } else if (type === 'quarter') {
+        const q = Math.floor(t.getMonth() / 3);
+        d = new Date(t.getFullYear(), q * 3, 1);
+        f = new Date(t.getFullYear(), q * 3 + 3, 0);
+    } else if (type === 'year') {
+        d = new Date(t.getFullYear(), 0, 1);
+        f = new Date(t.getFullYear(), 11, 31);
+    }
+    const fmt = x => x.toISOString().split('T')[0];
+    document.getElementById('id_date_debut').value = fmt(d);
+    document.getElementById('id_date_fin').value   = fmt(f);
+    document.getElementById('form-rapport').submit();
+}
+</script>
+{% endblock %}

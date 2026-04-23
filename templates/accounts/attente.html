@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Accès en attente — WIBABI{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card text-center">
+      <div class="card-body p-5">
+        <div style="width:72px;height:72px;background:rgba(243,156,18,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+          <i class="bi bi-hourglass-split" style="font-size:2rem;color:#f39c12;"></i>
+        </div>
+        <h4 style="font-family:'Playfair Display',serif;color:var(--bleu);">Accès en attente</h4>
+        {% if societe %}
+        <p style="color:#8a9aaa;font-size:0.88rem;margin:8px 0 24px;">
+          La société <strong style="color:var(--bleu);">{{ societe.nom }}</strong> n'a pas encore de licence active.
+        </p>
+        {% else %}
+        <p style="color:#8a9aaa;font-size:0.88rem;margin:8px 0 24px;">Votre société n'a pas encore de licence active.</p>
+        {% endif %}
+        <div style="background:#fafbfc;border-radius:12px;padding:18px;margin-bottom:24px;text-align:left;font-size:0.84rem;color:#5a6a7a;">
+          Contactez votre <strong>administrateur système</strong> pour qu'il vous attribue une licence.
+        </div>
+        <a href="{% url 'accounts:logout' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-box-arrow-left me-2"></i>Se déconnecter
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

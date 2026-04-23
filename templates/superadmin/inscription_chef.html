@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription – WIBABI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root { --bleu:#0f2a4a; --or:#c9a84c; --gris:#f4f6f9; --vert:#1B5E20; }
+        body { font-family:'DM Sans',sans-serif; background:var(--gris); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+        .setup-card { background:#fff; border-radius:16px; box-shadow:0 8px 40px rgba(15,42,74,0.12); width:100%; max-width:720px; overflow:hidden; }
+        .setup-header { background:linear-gradient(135deg,var(--bleu),#1a3f6f); padding:32px 36px; }
+        .setup-body { padding:36px; }
+        .section-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#8a9aaa; padding:20px 0 10px; border-bottom:1px solid #f0f2f5; margin-bottom:20px; }
+        .form-control, .form-select { border:1.5px solid #dde3ea; border-radius:8px; padding:10px 14px; font-size:0.88rem; }
+        .form-control:focus, .form-select:focus { border-color:var(--or); box-shadow:0 0 0 3px rgba(201,168,76,0.15); outline:none; }
+        .form-label { font-size:0.82rem; font-weight:500; color:#5a6a7a; margin-bottom:5px; }
+        .field-error { color:#e74c3c; font-size:0.78rem; margin-top:4px; }
+        .field-help { font-size:0.76rem; color:#8a9aaa; margin-top:4px; }
+        .read-only-field { 
+            background:#f8f9fa; 
+            border:1.5px solid #dde3ea; 
+            border-radius:8px; 
+            padding:10px 14px; 
+            font-size:0.88rem; 
+            color:#495057; 
+        }
+        .btn-setup { background:var(--or); border:none; color:var(--bleu); border-radius:10px; padding:14px 28px; font-weight:700; font-size:0.95rem; cursor:pointer; width:100%; transition:background 0.2s; }
+        .btn-setup:hover { background:#e8c97a; }
+        .step-badge { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; background:rgba(201,168,76,0.3); border-radius:50%; font-size:0.72rem; font-weight:700; color:var(--or); margin-right:8px; }
+        .essai-badge { background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; padding:10px 16px; font-size:0.82rem; color:#2e7d32; margin-bottom:24px; display:flex; align-items:center; gap:10px; }
+    </style>
+</head>
+<body>
+
+<div class="setup-card">
+    <div class="setup-header">
+        <div style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">
+            WIBABI – Inscription Chef
+        </div>
+        <h1 style="font-family:'Playfair Display',serif;color:#fff;font-size:1.5rem;margin:0;">
+            Complétez votre inscription
+        </h1>
+        <p style="color:rgba(255,255,255,0.55);font-size:0.85rem;margin:6px 0 0;">
+            Votre société a déjà été créée par l'administrateur. Saisissez votre NIF pour la retrouver et complétez les informations manquantes.
+        </p>
+    </div>
+
+    <div class="setup-body">
+
+        <!-- Badge essai gratuit -->
+        <div class="essai-badge">
+            <i class="bi bi-gift-fill" style="font-size:1.1rem;"></i>
+            <span><strong>Essai gratuit 14 jours</strong> — Votre compte sera activé immédiatement après inscription.</span>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div style="background:#fdecea;border-radius:10px;padding:14px 18px;margin-bottom:20px;color:#b71c1c;font-size:0.85rem;display:flex;gap:10px;align-items:center;">
+            <i class="bi bi-x-circle-fill"></i>
+            <span>{{ form.non_field_errors.0 }}</span>
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {# ── Section 1 : Société ── #}
+            <div class="section-label"><span class="step-badge">1</span>Informations de la société</div>
+            <div class="row g-3 mb-4">
+
+                <!-- NOM DE LA SOCIÉTÉ EN LECTURE SEULE (ajouté au début comme demandé) -->
+                {% if societe %}
+                <div class="col-12">
+                    <label class="form-label">Nom officiel de la société</label>
+                    <div class="read-only-field">
+                        {{ societe.nom }}
+                    </div>
+                    <div class="field-help">Ce nom a été défini par l'administrateur et ne peut pas être modifié.</div>
+                </div>
+                {% endif %}
+
+                <!-- NIF : saisie par le chef -->
+                <div class="col-12">
+                    <label class="form-label">NIF (Numéro d'Identification Fiscale) <span style="color:#e74c3c;">*</span></label>
+                    {{ form.nif }}
+                    <div class="field-help">
+                        <i class="bi bi-shield-check me-1" style="color:var(--or);"></i>
+                        Saisissez exactement le NIF fourni par l'administrateur système.
+                    </div>
+                    {% if form.nif.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ form.nif.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Logo de la société</label>
+                    {{ form.logo }}
+                    {% if form.logo.errors %}
+                        <div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ form.logo.errors.0 }}</div>
+                    {% endif %}
+                    {% if societe and societe.logo %}
+                        <div style="margin-top:6px;">
+                            <img src="{{ societe.logo.url }}" alt="Logo actuel" style="height:48px; object-fit:contain;">
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Registre de commerce <span style="color:#e74c3c;">*</span></label>
+                    {{ form.registre }}
+                    {% if form.registre.errors %}<div class="field-error">{{ form.registre.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Téléphone <span style="color:#e74c3c;">*</span></label>
+                    {{ form.telephone }}
+                    {% if form.telephone.errors %}<div class="field-error">{{ form.telephone.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Centre fiscal <span style="color:#e74c3c;">*</span></label>
+                    {{ form.centre_fiscale }}
+                    {% if form.centre_fiscale.errors %}<div class="field-error">{{ form.centre_fiscale.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Assujetti TVA</label>
+                    {{ form.assujeti_tva }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Assujetti TC</label>
+                    {{ form.assujeti_tc }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Assujetti PFL</label>
+                    {{ form.assujeti_pfl }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Province <span style="color:#e74c3c;">*</span></label>
+                    {{ form.province }}
+                    {% if form.province.errors %}<div class="field-error">{{ form.province.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Commune <span style="color:#e74c3c;">*</span></label>
+                    {{ form.commune }}
+                    {% if form.commune.errors %}<div class="field-error">{{ form.commune.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Quartier <span style="color:#e74c3c;">*</span></label>
+                    {{ form.quartier }}
+                    {% if form.quartier.errors %}<div class="field-error">{{ form.quartier.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Avenue <span style="color:#e74c3c;">*</span></label>
+                    {{ form.avenue }}
+                    {% if form.avenue.errors %}<div class="field-error">{{ form.avenue.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Numéro</label>
+                    {{ form.numero }}
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label">Boîte postale</label>
+                    {{ form.boite_postal }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Forme juridique <span style="color:#e74c3c;">*</span></label>
+                    {{ form.forme }}
+                    {% if form.forme.errors %}<div class="field-error">{{ form.forme.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Secteur d'activité <span style="color:#e74c3c;">*</span></label>
+                    {{ form.secteur }}
+                    {% if form.secteur.errors %}<div class="field-error">{{ form.secteur.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Nom complet du gérant</label>
+                    {{ form.nom_complet_gerant }}
+                </div>
+
+            </div>
+
+            {# ── Section 2 : Identité du chef ── #}
+            <div class="section-label"><span class="step-badge">2</span>Vos informations personnelles</div>
+            <div class="row g-3 mb-2">
+
+                <div class="col-md-4">
+                    <label class="form-label">Nom <span style="color:#e74c3c;">*</span></label>
+                    {{ form.chef_nom }}
+                    {% if form.chef_nom.errors %}<div class="field-error">{{ form.chef_nom.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Post-nom <span style="color:#e74c3c;">*</span></label>
+                    {{ form.chef_postnom }}
+                    {% if form.chef_postnom.errors %}<div class="field-error">{{ form.chef_postnom.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Prénom <span style="color:#e74c3c;">*</span></label>
+                    {{ form.chef_prenom }}
+                    {% if form.chef_prenom.errors %}<div class="field-error">{{ form.chef_prenom.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Email officiel de la société</label>
+                    {{ form.email_societe }}
+                    {% if form.email_societe.errors %}
+                        <div class="field-error">{{ form.email_societe.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            {# ── Section 3 : Compte de connexion ── #}
+            <div class="section-label"><span class="step-badge">3</span>Votre compte de connexion</div>
+            <div class="row g-3 mb-4">
+
+                <div class="col-12">
+                    <label class="form-label">Nom d'utilisateur <span style="color:#e74c3c;">*</span></label>
+                    {{ form.chef_username }}
+                    <div class="field-help"><i class="bi bi-info-circle me-1"></i>Ce nom sera utilisé pour vous connecter à l'application.</div>
+                    {% if form.chef_username.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ form.chef_username.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Mot de passe <span style="color:#e74c3c;">*</span></label>
+                    {{ form.chef_password1 }}
+                    <div class="field-help">Minimum 8 caractères.</div>
+                    {% if form.chef_password1.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ form.chef_password1.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Confirmer le mot de passe <span style="color:#e74c3c;">*</span></label>
+                    {{ form.chef_password2 }}
+                    {% if form.chef_password2.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ form.chef_password2.errors.0 }}</div>{% endif %}
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn-setup">
+                <i class="bi bi-person-check me-2"></i>Créer mon compte et accéder à l'application
+            </button>
+
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

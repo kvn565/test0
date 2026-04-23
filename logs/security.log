@@ -1,0 +1,1230 @@
+[2026-02-14 15:52:00] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 15:52:01] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 15:52:28] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 15:52:30] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:52:44] [ERROR] [500] /superadmin/setup/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:52:49] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:52:53] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:52:54] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:53:01] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:53:02] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:53:18] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:53:21] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:53:23] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:53:23] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:56:45] [ERROR] [500] /superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 15:57:10] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 16:00:44] [INFO] [ACCÈS SENSIBLE] GET /admin/auth/group/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 16:00:45] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 16:00:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 16:01:13] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 16:01:13] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 16:05:54] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 16:06:05] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 16:06:06] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 16:16:11] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 16:16:13] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:42:34] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 17:42:34] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 17:43:02] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-14 17:43:04] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:19] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:23] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:40] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:40] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:44] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:44] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:55] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:43:56] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:44:00] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:44:00] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:44:13] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:44:13] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:44:17] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:44:17] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:45:49] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/backup/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:45:49] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:45:52] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/backup/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:45:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:46:09] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/backup/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:46:10] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 17:46:43] [ERROR] [500] /superadmin/setup/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:03:17] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/backup/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:17] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:17] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:19] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:20] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:25] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:25] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:28] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:31] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/backup/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-14 18:04:31] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 19:53:12] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 19:53:13] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 19:53:56] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 19:54:05] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 19:54:11] [ERROR] [500] /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 20:01:19] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 20:01:19] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 20:01:38] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-15 20:01:40] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:01:57] [ERROR] [500] /accounts/login/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:06] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:09] [ERROR] [500] /accounts/login/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:23] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:29] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:31] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:38] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:42] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:44] [ERROR] [500] /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:49] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:53] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:02:53] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:20] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:20] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:24] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:32] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:33] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:35] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:03:35] [ERROR] [500] /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:11:43] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:11:49] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:11:49] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:11:51] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:11:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:12:09] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:12:10] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:12:56] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:12:57] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:12:58] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:12:58] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:15:41] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:15:41] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:15:43] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:15:43] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:15:57] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:15:57] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:19:01] [ERROR] [500] /accounts/login/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:34:22] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:34:22] [ERROR] [500] /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:34:27] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:34:28] [ERROR] [500] /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:43:07] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:43:14] [ERROR] [500] /superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:51:33] [ERROR] [500] /superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 20:51:34] [ERROR] [500] /superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:12:34] [ERROR] [500] /superadmin/societes/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:12:41] [ERROR] [500] /superadmin/societes/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:13:10] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:13:10] [ERROR] [500] /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:18:35] [ERROR] [500] /superadmin/societes/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:28:32] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:28:38] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-15 21:35:22] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 20:10:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 20:10:49] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 20:11:20] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 20:11:22] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 20:15:58] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 20:16:01] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 20:16:05] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 20:16:06] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 20:16:15] [ERROR] [500] /accounts/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 21:53:14] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 21:53:14] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 21:54:04] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 21:54:07] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 21:54:23] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 21:54:25] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 21:59:32] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 21:59:32] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 22:01:18] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-18 22:01:20] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-18 22:01:20] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 16:24:35] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 16:24:36] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 16:24:50] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 16:24:52] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:28:39] [ERROR] [500] /societe/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:41:31] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:43:09] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:43:28] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:43:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:44:07] [INFO] [ACCÈS SENSIBLE] GET /admin/services/service/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:44:08] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:44:10] [INFO] [ACCÈS SENSIBLE] GET /admin/services/service/add/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:44:13] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:44:35] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/taux/add/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:44:35] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:44:47] [INFO] [ACCÈS SENSIBLE] GET /admin/services/service/add/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:54:33] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:54:34] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:54:36] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 16:54:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 17:45:25] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/add/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 17:45:29] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 17:45:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 17:48:16] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 17:48:18] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin — IP: 127.0.0.1
+[2026-02-19 17:52:37] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:52:37] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:52:48] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:53:04] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:53:29] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:53:47] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:54:05] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:54:05] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:54:23] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 17:54:26] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 17:54:42] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 17:55:09] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/1/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 17:55:59] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 17:57:38] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/2/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:00:33] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:00:41] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:00:42] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:00:45] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:00:47] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:00:48] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:00:59] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:01:00] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:01:51] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:01:51] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:02:50] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:02:50] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:03:16] [INFO] [ACCÈS SENSIBLE] GET /admin/services/service/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:03:16] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:03:26] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:03:31] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:03:31] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:03:34] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:03:35] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:04:16] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:04:17] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:04:30] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:04:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:05:41] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 18:05:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 18:05:48] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 18:05:58] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 18:05:58] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 19:47:30] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Burundijobs2026 — IP: 127.0.0.1
+[2026-02-19 19:47:30] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: Burundijobs2026 — IP: 127.0.0.1
+[2026-02-19 19:51:00] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 19:51:00] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 19:51:55] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 19:51:59] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:52:40] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:53:05] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/1/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:53:11] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:53:22] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:53:49] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:54:06] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:54:07] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:55:44] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:55:45] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:56:11] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:56:40] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 19:56:41] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:00:48] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:00:53] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:01:35] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:01:44] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:02:11] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:02:24] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:02:26] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:03:50] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:04:08] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:04:10] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:04:11] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:04:51] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:04:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:05:11] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:05:13] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:05:14] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:05:14] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:05:46] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:05:46] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:06:59] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:06:59] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:13] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:25] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:25] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:34] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:35] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:36] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:36] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:51] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:07:51] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:08:01] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:08:16] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:08:29] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:08:29] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:08:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:09:26] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:09:26] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:09:26] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:09:33] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:09:33] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:10:19] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:10:20] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:10:23] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:10:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:10:38] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:10:39] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:10:39] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:12:28] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:12:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:12:31] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:12:31] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:12:59] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:12:59] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:12:59] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:13:24] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:13:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:13:32] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:13:33] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:13:33] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:14:17] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:14:18] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:14:18] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:27:35] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:27:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:27:52] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:27:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:28:06] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:28:09] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:28:10] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:28:10] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:30:08] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:30:09] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:30:37] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:30:37] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:31:33] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:31:33] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:31:33] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:31:52] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:31:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:31:58] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 20:31:58] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:08:01] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:08:03] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:08:03] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:08:49] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:09:18] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:09:40] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:09:56] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:09:59] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:10:14] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:14:55] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 21:30:07] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 21:30:09] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 21:30:35] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-19 21:30:38] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:31:27] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:31:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:31:37] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:31:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:32:40] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:32:40] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:32:47] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/auditcle/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:32:47] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:32:58] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:32:58] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:33:00] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:33:00] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:33:03] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-19 21:33:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+                                                                                                                                                                                                                                                                                                                  [2026-02-21 13:39:42] [ERROR] [500] /accounts/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 13:44:15] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 13:45:34] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 13:45:34] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 13:45:57] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 13:45:59] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:46:08] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:46:09] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:46:19] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:46:20] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:47:21] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:47:22] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:47:22] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:47:50] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:47:50] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:48:21] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:48:21] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:48:49] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 13:48:52] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 13:48:52] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 14:09:02] [ERROR] [500] /accueil/ — User: amstrong123 — IP: 127.0.0.1
+[2026-02-21 14:15:59] [ERROR] [500] /societe/ — User: amstrong123 — IP: 127.0.0.1
+[2026-02-21 15:42:49] [ERROR] [500] /accueil/ — User: amstrong123 — IP: 127.0.0.1
+[2026-02-21 16:11:14] [ERROR] [500] /clients/ — User: amstrong123 — IP: 127.0.0.1
+[2026-02-21 18:43:17] [ERROR] [500] /accueil/ — User: amstrong123 — IP: 127.0.0.1
+[2026-02-21 18:46:38] [ERROR] [500] /accueil/ — User: amstrong123 — IP: 127.0.0.1
+[2026-02-21 19:35:41] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 19:35:42] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 19:36:12] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-21 19:36:14] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-21 19:42:13] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:05:52] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-23 20:06:57] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-23 20:06:57] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-23 20:07:16] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-23 20:07:19] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:07:26] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:07:26] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:07:37] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:07:37] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:22:09] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:22:09] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:23:07] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:32:04] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:32:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:32:33] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:33:00] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:33:00] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:33:07] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:36:58] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:37:01] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:37:23] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:37:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:38:08] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:38:08] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:38:08] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:38:58] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:38:58] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:39:04] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:39:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:39:11] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:39:11] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:47:26] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:48:35] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:48:35] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:48:35] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:49:30] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:49:32] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:49:32] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:49:33] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:51:16] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:51:16] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:51:21] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:51:21] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:54:29] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:54:29] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:54:29] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:54:37] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 20:54:37] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:04:21] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:04:22] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:04:22] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:04:24] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:04:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:29:04] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:29:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:29:19] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:29:19] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:29:27] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:29:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:41:09] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:41:10] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:41:14] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:41:15] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:42:23] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:42:24] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:42:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:42:28] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:42:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:43:22] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:43:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:44:44] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:44:53] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:45:25] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:46:10] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-23 21:46:14] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-23 21:46:14] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 16:52:56] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 16:52:56] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 16:53:12] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 16:53:14] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 16:53:22] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 16:53:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 16:54:06] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 16:54:06] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:48:44] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:51:42] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:51:52] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:51:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:51:58] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:52:01] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:52:57] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:52:59] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:52:59] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:53:38] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:53:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:54:07] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:54:08] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:54:08] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:54:46] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 17:55:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:10:46] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:10:47] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:11:19] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:11:20] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:11:47] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:14:29] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:16:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:16:24] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:16:26] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:16:53] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:17:01] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:17:01] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:22:15] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:22:21] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:22:21] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:22:33] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:29:31] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:30:32] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:30:52] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:31:28] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:31:28] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:31:48] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:31:50] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:32:01] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:32:01] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:32:04] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:32:05] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:33:36] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:33:36] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:33:40] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:33:41] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:35:16] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:35:17] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:35:17] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:35:31] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:35:31] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:35:55] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/2/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:35:55] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:36:59] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:36:59] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:37:07] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:37:08] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:37:14] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:37:15] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:38:11] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:38:19] [WARNING] [403] /setup/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:38:40] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 18:38:50] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:38:50] [WARNING] [403] /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:38:54] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:38:54] [WARNING] [403] /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:39:04] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 18:41:30] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 20:25:37] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 20:25:38] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 20:25:57] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 20:25:59] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:26:09] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:26:10] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:28:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:28:25] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:28:34] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:28:37] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:45:24] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:45:28] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:45:29] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:46:04] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:46:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:51:19] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:51:21] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:52:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:05] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:08] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:15] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:17] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:33] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:54:38] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:55:12] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:56:10] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 20:56:16] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:15:27] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:15:37] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:46:20] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:46:36] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:47:45] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:47:51] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:47:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:47:57] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:47:57] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:48:11] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:48:12] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:49:48] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-24 21:50:04] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 21:50:05] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-24 21:50:22] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 00:35:10] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 00:35:11] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 00:36:37] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 00:36:44] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 00:37:02] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 00:37:06] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 00:38:03] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 00:38:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 00:40:52] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+                                                                                                                                                                                                                                                                                                          [2026-02-25 09:11:49] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 09:11:51] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 09:12:41] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 09:12:44] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 09:27:44] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 09:27:59] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 09:27:59] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 09:28:16] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 09:28:18] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 09:28:39] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 09:38:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 10:00:01] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 10:00:04] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 10:22:00] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 10:22:00] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 10:22:24] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 10:22:26] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 10:22:53] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 10:23:04] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 10:23:05] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:00:29] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:00:38] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:00:49] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:01:19] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:01:21] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:01:27] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:01:34] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:01:39] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 11:01:44] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 19:57:56] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 19:58:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 19:58:48] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 19:59:10] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 19:59:12] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:03:55] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:05:15] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:05:28] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:05:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:05:44] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:05:45] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:11:01] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:11:03] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/6/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:11:03] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:11:21] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:11:57] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:12:09] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:15:36] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:16:12] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:17:50] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:19:51] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:20:28] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:27:46] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/3/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:27:59] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:28:05] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:28:05] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:28:18] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:28:22] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:28:23] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:28:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:29:04] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:29:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:29:41] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:29:44] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:29:44] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:29:44] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:29:54] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:36:19] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:36:58] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 20:37:54] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 20:46:49] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 20:47:44] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 20:48:14] [ERROR] [500] /societe/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-25 20:53:13] [ERROR] [500] /societe/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-25 20:53:15] [ERROR] [500] /societe/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-25 22:03:44] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 22:03:45] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 22:04:09] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-25 22:04:11] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:04:23] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:04:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:04:30] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:04:31] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:06:47] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:06:47] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:06:48] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:06:53] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-25 22:06:53] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:28:05] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-02-28 12:28:06] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-28 12:28:31] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-02-28 12:28:41] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:29:11] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:29:13] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:29:24] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:29:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:29:56] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:29:56] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:29:57] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:30:02] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:30:02] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:30:28] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:30:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 12:30:38] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-02-28 13:08:42] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:08:47] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:09:36] [ERROR] [500] /stock/entrees/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:18:58] [ERROR] [500] /stock/entrees/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:24:52] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:25:00] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:25:04] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:29:04] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:29:11] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:52:56] [ERROR] [500] /stock/entrees/refresh-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 13:53:41] [ERROR] [500] /stock/entrees/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 18:04:48] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 18:06:35] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-02-28 18:24:07] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 15:28:34] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-02 15:28:35] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-02 17:47:44] [ERROR] [500] /facturer/11/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 17:54:41] [ERROR] [500] /facturer/11/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 17:55:27] [ERROR] [500] /facturer/12/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 21:29:47] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 21:34:19] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 21:55:39] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 22:02:10] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-02 22:06:09] [ERROR] [500] /facturer/ajax/envoyer-obr/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-06 19:49:02] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-06 20:10:52] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-13 18:53:16] [WARNING] [LICENCE] Aucune licence valide (statut=ACTIVE) — Société: 'BLANSA COMPANY' — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-13 18:54:56] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-13 18:54:56] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-13 18:55:35] [WARNING] [LICENCE] Aucune licence valide (statut=ACTIVE) — Société: 'BLANSA COMPANY' — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-13 19:11:49] [WARNING] [LICENCE] Aucune licence valide (statut=ACTIVE) — Société: 'BLANSA COMPANY' — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-13 19:12:05] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-13 19:12:05] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-13 19:13:46] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-13 19:13:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:14:03] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:14:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:14:27] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:14:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:16:03] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:16:04] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:16:04] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:16:25] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:17:01] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:17:25] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/7/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:17:25] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:18:05] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/7/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:18:05] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:18:05] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:18:16] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/7/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:18:16] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:20:14] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:20:57] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'BLANSA COMPANY' — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-13 19:25:13] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-13 19:25:13] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-13 19:27:34] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-13 19:27:36] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:28:26] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:28:26] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:28:31] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-13 19:29:02] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-15 17:42:58] [ERROR] [500] /clients/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-15 17:46:46] [ERROR] [500] /clients/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-15 17:46:48] [ERROR] [500] /clients/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-16 18:55:55] [WARNING] [404 POST suspect] /facturer/66/supprimer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-17 16:45:22] [ERROR] [500] /facturer/ajax/creer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-17 17:14:35] [ERROR] [500] /facturer/ajax/creer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-17 19:43:01] [WARNING] [404 POST suspect] /facturer/85/supprimer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-17 19:44:32] [WARNING] [404 POST suspect] /facturer/85/supprimer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-18 13:43:42] [WARNING] [403] /accounts/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-18 15:51:54] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-18 15:51:54] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-18 15:51:54] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-18 15:51:54] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-18 15:51:54] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-18 15:51:54] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 17:32:15] [ERROR] [500] /facturer/105/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 17:37:33] [ERROR] [500] /facturer/105/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 19:05:53] [ERROR] [500] /facturer/106/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 19:11:05] [ERROR] [500] /facturer/ajax/info-produit/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 19:14:01] [ERROR] [500] /facturer/ajax/info-produit/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 19:15:32] [ERROR] [500] /facturer/ajax/info-produit/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 19:15:47] [ERROR] [500] /facturer/ajax/info-produit/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 20:05:54] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 21:07:31] [ERROR] [500] /facturer/107/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 21:52:08] [ERROR] [500] /facturer/108/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 21:58:28] [ERROR] [500] /facturer/108/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-20 22:03:21] [ERROR] [500] /facturer/108/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 14:26:14] [ERROR] [500] /facturer/109/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 14:58:06] [ERROR] [500] /facturer/ajax/info-produit/2/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 15:02:45] [ERROR] [500] /facturer/ajax/info-produit/2/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 15:12:41] [ERROR] [500] /facturer/ajax/info-produit/2/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 15:19:53] [ERROR] [500] /produits/creer/local/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 16:20:00] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 16:40:11] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 16:40:11] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 16:40:11] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 16:40:11] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 16:44:31] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 17:13:19] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 17:16:08] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 17:32:52] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-21 20:16:32] [ERROR] [500] /facturer/ajax/envoyer-obr/114/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-22 14:51:53] [ERROR] [500] /facturer/ajax/info-produit/3/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-22 14:54:10] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-22 15:51:09] [ERROR] [500] /facturer/116/supprimer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-22 16:43:18] [ERROR] [500] /facturer/ajax/creer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-22 21:23:04] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-22 21:23:05] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-22 21:24:24] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-22 21:24:24] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-22 21:24:48] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-22 21:24:50] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:17] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:18] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:26] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/7/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:27] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:50] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:50] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:52] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:25:53] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:31:22] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:31:23] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:31:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:33:55] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:33:58] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-22 21:34:02] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: anonyme — IP: 127.0.0.1
+[2026-03-22 21:34:02] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 17:59:58] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:01:47] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:02:05] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:03:00] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:04:16] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:06:28] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:10:19] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:10:42] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:11:18] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:11:32] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:11:32] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:11:53] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 18:11:55] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:12:12] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:12:14] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:12:57] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:12:57] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:01] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:02] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:05] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:14] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/7/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:14] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:41] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:42] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:44] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:13:44] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 18:16:03] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 19:11:04] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:14:06] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:16:41] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:26:51] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:31:23] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:35:50] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:36:44] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:39:10] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 19:46:53] [ERROR] [500] /facturer/ajax/envoyer-obr/135/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 20:00:33] [ERROR] [500] /facturer/ajax/envoyer-obr/136/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 20:04:33] [ERROR] [500] /facturer/ajax/envoyer-obr/136/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 20:11:35] [ERROR] [500] /facturer/ajax/envoyer-obr/137/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 20:53:36] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 20:53:37] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 20:54:01] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 20:54:05] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:54:18] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:54:23] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:54:45] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:54:51] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:54:53] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:55:25] [INFO] [ACCÈS SENSIBLE] POST /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:55:27] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:55:27] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:55:44] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 20:57:18] [ERROR] [500] /facturer/ajax/envoyer-obr/138/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-23 21:40:57] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 21:40:58] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 21:41:12] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 21:41:25] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-23 21:41:27] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:42:57] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:43:42] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:43:49] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:43:51] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:43:54] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:43:57] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:43:57] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:43:59] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/4/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:44:00] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-23 21:55:31] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-24 07:32:57] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-24 07:47:48] [ERROR] [500] /facturer/ajax/info-produit/3/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-24 08:06:28] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-24 08:54:53] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-24 09:03:56] [ERROR] [500] /facturer/ajax/info-produit/3/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-24 11:06:45] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 07:38:02] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 07:43:50] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 07:43:53] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 07:44:02] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 08:41:31] [ERROR] [500] /facturer/140/imprimer/a4/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 10:29:38] [ERROR] [500] /facturer/140/imprimer/a4/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 11:05:59] [ERROR] [500] /facturer/140/imprimer/a4/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-03-25 11:54:40] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 11:54:41] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 11:54:58] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 11:55:00] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:11:55] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:12:22] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:16:50] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:16:50] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:17:43] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:17:44] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:18:02] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:28:17] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:45:21] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:46:44] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:48:00] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:48:00] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:48:16] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 12:48:17] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:48:23] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:48:23] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:53:23] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:53:23] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:53:26] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:53:26] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:00] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:01] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:02] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:02] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:54] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:54] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:55] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:55:55] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:57:10] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:57:10] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:57:12] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:57:13] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:58:08] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:58:13] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:58:13] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:59:26] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 12:59:27] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:03:06] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:03:07] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:03:07] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:03:08] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:07:20] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:07:21] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:07:22] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:07:22] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:09:53] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:09:53] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:10:54] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:10:54] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:13:56] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:13:56] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:15:34] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:15:35] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:18:29] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:18:29] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:19:34] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:19:35] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:20:04] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:20:05] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:20:06] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:20:06] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:21:31] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:21:32] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:21:33] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:21:33] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:22:24] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:22:24] [ERROR] [500] /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:23:30] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:23:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:23:49] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-03-25 13:23:57] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 13:23:57] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-03-25 13:23:57] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-03 12:14:23] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-03 12:14:50] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-03 12:17:43] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 04:27:29] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 04:36:15] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 04:47:45] [ERROR] [500] /facturer/ajax/envoyer-obr/172/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 11:13:06] [ERROR] [500] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 11:13:13] [ERROR] [500] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 11:14:01] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 11:15:19] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 11:37:03] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 11:39:32] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 11:52:00] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 12:21:12] [ERROR] [500] /facturer/ajax/envoyer-obr/179/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-04 12:33:24] [ERROR] [500] /facturer/ajax/envoyer-obr/180/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-06 00:17:37] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-06 00:18:36] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-06 00:18:36] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-06 00:18:50] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-06 00:18:52] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-06 00:19:48] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 05:20:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 05:20:48] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 05:21:06] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 05:21:08] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 05:36:10] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 05:36:27] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 05:46:19] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 12:06:50] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 12:06:50] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 12:07:20] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 12:08:02] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-07 12:08:04] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:09:25] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:09:27] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:09:28] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:10:08] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:10:29] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:10:29] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:10:48] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/10/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:10:48] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:15:35] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:15:37] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:17:20] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:17:21] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:17:36] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:17:39] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/13/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:17:55] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-07 12:19:46] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 04:21:35] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:21:35] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:21:54] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:21:55] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 04:22:58] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 04:22:58] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 04:26:43] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 04:26:49] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:26:49] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:26:49] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:26:55] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:26:55] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 04:26:59] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:27:13] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:27:41] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:30:58] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:31:14] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:32:13] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:34:05] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:59:57] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 05:59:57] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 06:00:23] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 06:00:25] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 06:12:07] [ERROR] [500] /superadmin/societes/gestion/10/edit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 07:09:26] [ERROR] [500] /superadmin/societes/gestion/10/edit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 07:12:55] [ERROR] [500] /superadmin/societes/gestion/4/edit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 07:47:52] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 07:48:00] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 07:57:05] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 07:57:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 08:08:00] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 08:08:44] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 08:12:56] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 08:12:56] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 08:13:10] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 08:13:11] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 08:16:44] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 09:44:37] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 09:44:37] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 09:44:50] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 09:45:07] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 09:45:09] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 09:56:33] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 09:56:33] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 09:56:49] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 09:56:49] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:39:28] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:39:32] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:39:34] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:39:36] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:39:49] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:40:03] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:41:57] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:42:07] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 10:53:50] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 11:08:54] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 11:09:48] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 11:17:37] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 11:38:07] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 11:48:55] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 11:48:59] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 11:56:58] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 12:06:33] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 12:06:33] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 12:11:40] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 12:11:49] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 12:11:49] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 12:16:54] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-08 12:27:13] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-08 12:27:13] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-09 04:26:04] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-11 18:42:15] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-11 18:43:38] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-11 18:43:39] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-12 18:07:24] [WARNING] [LICENCE] Aucune licence valide (statut=ACTIVE) — Société: 'SOCAS-BURUNDI - SOFT COMPUTER SECURITY AND ACCOUNTING SERVICES' — User: pascal.socas — IP: 127.0.0.1
+[2026-04-12 18:20:24] [ERROR] [500] /facturer/197/imprimer/pos/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-12 20:25:39] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-12 20:25:39] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-12 20:25:56] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-12 20:25:57] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:26:07] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/taux/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:26:08] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:26:32] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/taux/1/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:26:32] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:26:38] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/taux/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:26:55] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:27:02] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/taux/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:27:02] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:27:32] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/taux/3/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:27:32] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:27:40] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/taux/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:28:12] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:28:16] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:28:16] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:28:21] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:28:24] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:28:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:29:06] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/9/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:29:06] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-12 20:29:51] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-14 17:43:13] [WARNING] [404 POST suspect] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-14 17:43:21] [WARNING] [404 POST suspect] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-14 17:46:32] [ERROR] [500] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-15 22:01:28] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-15 22:01:31] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-15 22:03:00] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-15 22:03:01] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-15 22:03:12] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-15 22:03:13] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 17:48:14] [WARNING] [404 POST suspect] /facturer/223/annuler/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:16:18] [ERROR] [500] /facturer/224/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:28:06] [WARNING] [404 POST suspect] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:38:15] [WARNING] [404 POST suspect] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:38:38] [WARNING] [404 POST suspect] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:42:59] [WARNING] [404 POST suspect] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:45:25] [WARNING] [404 POST suspect] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:56:10] [ERROR] [500] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 18:58:11] [ERROR] [500] /facturer/ajax/supprimer-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 19:11:17] [ERROR] [500] /facturer/227/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 19:11:19] [ERROR] [500] /facturer/227/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 19:12:35] [ERROR] [500] /facturer/227/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 19:12:36] [ERROR] [500] /facturer/227/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 19:12:37] [ERROR] [500] /facturer/227/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 19:17:53] [ERROR] [500] /facturer/227/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-16 21:34:05] [ERROR] [500] /produits/creer/importe/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 15:41:40] [ERROR] [500] /rapports/stock-actuel/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 15:41:56] [ERROR] [500] /rapports/stock-actuel/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 15:58:45] [ERROR] [500] /rapports/cout-stock/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 16:58:30] [ERROR] [500] /rapports/cout-stock/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:23:00] [ERROR] [500] /rapports/cout-stock/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:24:10] [ERROR] [500] /rapports/cout-stock/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:24:12] [ERROR] [500] /rapports/cout-stock/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:26:35] [ERROR] [500] /rapports/sorties/export/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:29:49] [ERROR] [500] /rapports/stock-actuel/export/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:35:12] [ERROR] [500] /rapports/facturation/export/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:40:21] [ERROR] [500] /rapports/facturation/export/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 17:43:19] [ERROR] [500] /rapports/cout-stock/export/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-17 19:36:38] [ERROR] [500] /rapports/facturation/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-19 18:43:05] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-21 18:18:01] [ERROR] [500] / — User: anonyme — IP: 143.105.213.103
+[2026-04-21 18:23:38] [ERROR] [500] / — User: anonyme — IP: 143.105.213.103
+[2026-04-21 18:27:17] [ERROR] [500] / — User: anonyme — IP: 143.105.213.103
+[2026-04-21 18:28:35] [ERROR] [500] / — User: anonyme — IP: 143.105.213.103
+[2026-04-21 18:31:01] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 18:34:55] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 18:35:46] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 18:42:45] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 18:47:11] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 18:48:23] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:23:42] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:23:56] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:23:56] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:24:00] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:24:01] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:27:15] [INFO] [ACCÈS SENSIBLE] GET /admin/password_change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:27:28] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:27:29] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:28:20] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/add/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:28:20] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:29:28] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:29:28] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:32:01] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/add/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:32:02] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/2/change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:32:03] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:34:08] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/2/change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:34:08] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:34:09] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:34:19] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:34:20] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:34:37] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/1/change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:34:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:35:13] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/1/change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:35:13] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:35:26] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/1/change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:35:27] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:35:43] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:40:48] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:40:52] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 19:40:53] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 19:41:23] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 19:42:00] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 19:42:29] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 19:42:30] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:42:40] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:42:41] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:42:57] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/2/change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:42:58] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:43:06] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/2/password/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:43:59] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/2/password/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:44:00] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/2/change/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:44:01] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:44:28] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 143.105.213.103
+[2026-04-21 19:44:31] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 19:44:31] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 19:44:53] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 20:29:16] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 20:29:35] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 20:44:45] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 143.105.213.103
+[2026-04-21 20:47:31] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Bakame — IP: 143.105.213.103
+[2026-04-23 15:27:29] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 143.105.213.217
+[2026-04-23 15:28:40] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 143.105.213.217
+[2026-04-23 15:28:44] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 143.105.213.217
+[2026-04-23 15:37:11] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 143.105.213.217
+[2026-04-23 15:37:18] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/1/revoquer/ — User: Admin_kevin — IP: 143.105.213.217
+[2026-04-23 15:37:25] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/1/ — User: Admin_kevin — IP: 143.105.213.217
+[2026-04-23 15:39:19] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 143.105.213.217
+[2026-04-23 17:01:48] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 74.7.243.221

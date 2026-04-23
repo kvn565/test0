@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Catégories — WIBABI{% endblock %}
+{% block nav_categories %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── En-tête + bouton créer ── #}
+    <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <h4 style="font-family:'Playfair Display',serif;color:var(--bleu);margin:0;">Catégories de produits</h4>
+            <p style="color:#8a9aaa;font-size:0.82rem;margin:3px 0 0;">{{ total }} catégorie{{ total|pluralize }} au total</p>
+        </div>
+        <a href="{% url 'categories:creer' %}" class="btn btn-gold">
+            <i class="bi bi-plus-circle me-2"></i>Nouvelle catégorie
+        </a>
+    </div>
+
+    {# ── Messages ── #}
+    {% if messages %}
+    <div class="col-12">
+        {% for msg in messages %}
+        <div class="alert alert-{% if msg.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible">
+            {{ msg }}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Recherche ── #}
+    <div class="col-12">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" value="{{ q }}" class="form-control"
+                   placeholder="Rechercher une catégorie..." style="max-width:320px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+            {% if q %}
+            <a href="{% url 'categories:liste' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    {# ── Grille des catégories ── #}
+    {% if categories %}
+    <div class="col-12">
+        <div class="row g-3">
+            {% for cat in categories %}
+            <div class="col-sm-6 col-lg-4">
+                <div class="card h-100" style="transition:box-shadow 0.2s;"
+                     onmouseover="this.style.boxShadow='0 8px 24px rgba(15,42,74,0.1)'"
+                     onmouseout="this.style.boxShadow=''">
+                    <div class="card-body p-4">
+                        {# Icône + nom #}
+                        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+                            <div style="width:44px;height:44px;background:rgba(201,168,76,0.1);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-tag" style="font-size:1.2rem;color:var(--or);"></i>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-weight:600;color:var(--bleu);font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    {{ cat.nom }}
+                                </div>
+                                <div style="font-size:0.76rem;color:#8a9aaa;margin-top:2px;">
+                                    {{ cat.nb_produits }} produit{{ cat.nb_produits|pluralize }}
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Description #}
+                        {% if cat.description %}
+                        <p style="font-size:0.82rem;color:#5a6a7a;margin:0 0 16px;line-height:1.5;">
+                            {{ cat.description|truncatechars:80 }}
+                        </p>
+                        {% else %}
+                        <p style="font-size:0.82rem;color:#bbb;font-style:italic;margin:0 0 16px;">
+                            Aucune description
+                        </p>
+                        {% endif %}
+
+                        {# Actions #}
+                        <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid #f0f2f5;">
+                            <a href="{% url 'categories:modifier' cat.pk %}"
+                               class="btn btn-sm btn-outline-secondary flex-fill">
+                                <i class="bi bi-pencil me-1"></i>Modifier
+                            </a>
+                            {% if cat.nb_produits == 0 %}
+                            
+                            {% else %}
+                            
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="padding:8px 16px;background:#fafbfc;border-top:1px solid #f0f2f5;font-size:0.72rem;color:#aab;">
+                        Modifiée le {{ cat.date_modification|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    {# ── État vide ── #}
+    <div class="col-12">
+        <div class="card text-center p-5">
+            <i class="bi bi-tags fs-1 mb-3" style="opacity:0.2;color:var(--or);"></i>
+            {% if q %}
+            <p style="color:#8a9aaa;">Aucune catégorie trouvée pour « <strong>{{ q }}</strong> ».</p>
+            <a href="{% url 'categories:liste' %}" class="btn btn-outline-secondary mt-2">
+                Voir toutes les catégories
+            </a>
+            {% else %}
+            <p style="color:#8a9aaa;margin-bottom:20px;">Aucune catégorie créée pour l'instant.</p>
+            <a href="{% url 'categories:creer' %}" class="btn btn-gold">
+                <i class="bi bi-plus-circle me-2"></i>Créer la première catégorie
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

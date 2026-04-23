@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Sorties Stock{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div><div class="page-title">{{ titre }}</div></div>
+    <a href="{% url 'stock:sorties' %}" class="btn-outline-custom">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+</div>
+
+<form method="post">
+{% csrf_token %}
+<div class="row g-3">
+
+    <!-- Colonne gauche -->
+    <div class="col-12 col-lg-7">
+
+        <!-- Identification -->
+        <div class="card mb-3">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:#dc2626; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:28px; height:28px; background:#fee2e2; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-box-arrow-up" style="color:#dc2626; font-size:12px;"></i>
+                    </div>
+                    Informations de la sortie
+                </div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Type de sortie <span class="required">*</span></label>
+                            {{ form.type_sortie }}
+                            {% if form.type_sortie.errors %}<div style="color:#dc2626; font-size:12px; margin-top:3px;">{{ form.type_sortie.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Date de sortie <span class="required">*</span></label>
+                            {{ form.date_sortie }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Code sortie</label>
+                            {{ form.code }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produit depuis stock -->
+        <div class="card mb-3">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:#dc2626; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:28px; height:28px; background:#fef9c3; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-search" style="color:#854d0e; font-size:12px;"></i>
+                    </div>
+                    Produit en stock
+                </div>
+
+                <div class="form-group-custom">
+                    <label class="form-label-custom">Recherche produit en stock <span class="required">*</span></label>
+                    {{ form.entree_stock }}
+                    {% if form.entree_stock.errors %}<div style="color:#dc2626; font-size:12px; margin-top:3px;">{{ form.entree_stock.errors.0 }}</div>{% endif %}
+                </div>
+
+                <!-- Infos produit sélectionné (chargées par AJAX) -->
+                <div id="info-produit" style="display:none; margin-top:10px; background:var(--body-bg);
+                     border:1.5px solid var(--border-color); border-radius:10px; padding:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <div>
+                            <div id="info-nom" style="font-weight:700; font-size:14px;"></div>
+                            <div id="info-code" style="font-size:11.5px; color:var(--text-muted); font-family:'DM Mono',monospace;"></div>
+                        </div>
+                        <span id="info-badge" class="status-badge"></span>
+                    </div>
+                    <div style="display:flex; gap:20px; font-size:13px;">
+                        <div>
+                            <span style="color:var(--text-muted);">Qté entrée :</span>
+                            <span id="info-total" style="font-family:'DM Mono',monospace; font-weight:600;"></span>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-muted);">Disponible :</span>
+                            <span id="info-dispo" style="font-family:'DM Mono',monospace; font-weight:700; color:var(--primary); font-size:15px;"></span>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-muted);">Prix vente :</span>
+                            <span id="info-prix" style="font-family:'DM Mono',monospace; font-weight:600;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantité & Prix -->
+        <div class="card mb-3">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:#dc2626; margin-bottom:18px;">
+                    <i class="bi bi-123 me-2"></i> Quantité & Prix
+                </div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Quantité à sortir <span class="required">*</span></label>
+                            {{ form.quantite }}
+                            {% if form.quantite.errors %}<div style="color:#dc2626; font-size:12px; margin-top:3px;">{{ form.quantite.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Prix unitaire <span class="required">*</span></label>
+                            {{ form.prix }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Commentaire / Explication</label>
+                            {{ form.commentaire }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Colonne droite — Récapitulatif -->
+    <div class="col-12 col-lg-5">
+        <div class="card" style="position:sticky; top:80px;">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:#dc2626; margin-bottom:18px;">
+                    <i class="bi bi-calculator me-2"></i> Récapitulatif
+                </div>
+
+                <div style="background:var(--body-bg); border-radius:10px; padding:16px; border:1.5px solid var(--border-color);">
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13px;">
+                        <span style="color:var(--text-muted);">Stock disponible</span>
+                        <span id="recap-dispo" style="font-family:'DM Mono',monospace; font-weight:600;">—</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13px;">
+                        <span style="color:var(--text-muted);">Quantité sortie</span>
+                        <span id="recap-qte" style="font-family:'DM Mono',monospace; font-weight:600; color:#dc2626;">—</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13px;">
+                        <span style="color:var(--text-muted);">Prix unitaire</span>
+                        <span id="recap-prix" style="font-family:'DM Mono',monospace; font-weight:600;">—</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:10px 0; font-size:14px; font-weight:700;">
+                        <span>Montant total</span>
+                        <span id="recap-total" style="font-family:'DM Mono',monospace; color:#dc2626; font-size:16px;">—</span>
+                    </div>
+                </div>
+
+                <!-- Alerte stock insuffisant -->
+                <div id="alerte-stock" style="display:none;" class="alert-obr danger" style="margin-top:10px;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Stock insuffisant !</span>
+                </div>
+
+                <div class="alert-obr warning" style="margin-top:14px;">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div style="font-size:12px;">
+                        Cette sortie est <strong>hors vente</strong>. Pour les sorties liées à une vente, utilisez le module Factures.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boutons -->
+    <div class="col-12">
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <a href="{% url 'stock:sorties' %}" class="btn-outline-custom">Annuler</a>
+            <button type="submit" class="btn-primary-custom">
+                <i class="bi bi-check-lg"></i> {{ action }}
+            </button>
+        </div>
+    </div>
+
+</div>
+</form>
+
+{% block extra_js %}
+<script>
+const selectEntree = document.getElementById('id_entree_stock');
+const inputQte     = document.getElementById('id_quantite_sortie');
+const inputPrix    = document.getElementById('id_prix_sortie');
+let stockDispo = 0;
+let uniteLabel = '';
+
+// Charger infos produit via AJAX
+selectEntree.addEventListener('change', function() {
+    const id = this.value;
+    if (!id) {
+        document.getElementById('info-produit').style.display = 'none';
+        stockDispo = 0;
+        calculer();
+        return;
+    }
+    fetch(`{% url 'stock:stock_disponible' %}?entree_id=${id}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.ok) return;
+            uniteLabel = data.unite;
+            stockDispo = data.dispo;
+
+            document.getElementById('info-nom').textContent   = data.produit;
+            document.getElementById('info-code').textContent  = data.code;
+            document.getElementById('info-total').textContent = data.total_entre + ' ' + data.unite;
+            document.getElementById('info-dispo').textContent = data.dispo + ' ' + data.unite;
+            document.getElementById('info-prix').textContent  = data.prix.toLocaleString('fr-FR') + ' BIF';
+
+            const badge = document.getElementById('info-badge');
+            if (data.origine === 'LOCAL') {
+                badge.className = 'status-badge badge-success';
+                badge.innerHTML = '<i class="bi bi-geo-alt"></i> Local';
+            } else {
+                badge.className = 'status-badge badge-warning';
+                badge.innerHTML = '<i class="bi bi-airplane"></i> Importé';
+            }
+            // Pré-remplir le prix
+            inputPrix.value = data.prix;
+            document.getElementById('info-produit').style.display = 'block';
+            calculer();
+        });
+});
+
+function calculer() {
+    const qte   = parseFloat(inputQte.value) || 0;
+    const prix  = parseFloat(inputPrix.value) || 0;
+    const total = qte * prix;
+
+    document.getElementById('recap-dispo').textContent = stockDispo > 0 ? stockDispo + ' ' + uniteLabel : '—';
+    document.getElementById('recap-qte').textContent   = qte > 0 ? '-' + qte.toLocaleString('fr-FR') + ' ' + uniteLabel : '—';
+    document.getElementById('recap-prix').textContent  = prix > 0 ? prix.toLocaleString('fr-FR') + ' BIF' : '—';
+    document.getElementById('recap-total').textContent = total > 0 ? total.toLocaleString('fr-FR') + ' BIF' : '—';
+
+    // Alerte stock insuffisant
+    const alerte = document.getElementById('alerte-stock');
+    if (qte > 0 && stockDispo > 0 && qte > stockDispo) {
+        alerte.style.display = 'flex';
+    } else {
+        alerte.style.display = 'none';
+    }
+}
+
+inputQte.addEventListener('input', calculer);
+inputPrix.addEventListener('input', calculer);
+
+// Init si modification
+if (selectEntree.value) {
+    selectEntree.dispatchEvent(new Event('change'));
+}
+</script>
+{% endblock %}
+{% endblock %}

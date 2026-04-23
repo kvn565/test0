@@ -1,0 +1,302 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}{{ societe.nom }} — Détail société{% endblock %}
+{% block page_title %}{{ societe.nom }}{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">NIF : {{ societe.nif }} — <span class="badge-{{ statut_classe }}">{{ statut_affichage }}</span></p>{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span><a href="{% url 'superadmin:societes_liste' %}">Sociétés</a><span class="sep">›</span>{{ societe.nom|truncatechars:20 }}{% endblock %}
+{% block nav_societes %}active{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'superadmin:societe_modifier' societe.pk %}" class="btn btn-outline-secondary">
+    <i class="bi bi-pencil me-1"></i>Modifier
+</a>
+<a href="{% url 'superadmin:cle_generer' societe.pk %}" class="btn btn-gold">
+    <i class="bi bi-key me-2"></i>Générer une clé
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── Alerte chef non inscrit ── #}
+    {% if not inscription_complete %}
+    <div class="col-12">
+        <div class="alert alert-warning" style="border-left:4px solid #f39c12;">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-hourglass-split fs-5"></i>
+                <div>
+                    <strong>Le chef ne s'est pas encore inscrit.</strong>
+                    Le chef doit se rendre sur <code>/setup/</code> et utiliser le NIF
+                    <strong>{{ societe.nif }}</strong> pour créer son compte.
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif not infos_completes %}
+    <div class="col-12">
+        <div class="alert alert-info" style="border-left:4px solid #3498db;">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-info-circle fs-5"></i>
+                <div>
+                    <strong>Informations incomplètes.</strong>
+                    Le chef s'est inscrit mais n'a pas encore complété tous les champs de la société.
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Colonne gauche ── #}
+    <div class="col-lg-7">
+
+        {# ── Section 1 : Ce que le superadmin a enregistré ── #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <span><i class="bi bi-shield-check me-2" style="color:var(--or);"></i>Enregistrement par le superadmin</span>
+                <span class="badge-active" style="font-size:0.7rem;">Référence système</span>
+            </div>
+            <div class="card-body p-0">
+                {% for label, valeur, icone in infos_superadmin %}
+                <div class="d-flex align-items-center" style="padding:13px 20px;border-bottom:1px solid #f5f6f8;">
+                    <div style="width:36px;height:36px;background:#f0f2f5;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:14px;">
+                        <i class="bi {{ icone }}" style="color:#5a6a7a;font-size:0.9rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.72rem;color:#8a9aaa;text-transform:uppercase;letter-spacing:0.05em;">{{ label }}</div>
+                        <div style="font-weight:500;color:var(--bleu);font-size:0.9rem;margin-top:1px;">{{ valeur }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# ── Section 2 : Ce que le chef a fourni ── #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <span><i class="bi bi-person-badge me-2" style="color:var(--or);"></i>Informations fournies par le chef</span>
+                {% if inscription_complete %}
+                <span class="badge-active" style="font-size:0.7rem;">Inscrit</span>
+                {% else %}
+                <span class="badge-pending" style="font-size:0.7rem;">En attente</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if inscription_complete and infos_chef_societe %}
+                    {% for label, valeur, icone in infos_chef_societe %}
+                    <div class="d-flex align-items-center" style="padding:13px 20px;border-bottom:1px solid #f5f6f8;">
+                        <div style="width:36px;height:36px;background:#f0f2f5;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:14px;">
+                            <i class="bi {{ icone }}" style="color:#5a6a7a;font-size:0.9rem;"></i>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:0.72rem;color:#8a9aaa;text-transform:uppercase;letter-spacing:0.05em;">{{ label }}</div>
+                            <div style="font-weight:500;color:var(--bleu);font-size:0.9rem;margin-top:1px;">
+                                {% if valeur == '—' %}<span style="color:#bbb;">—</span>{% else %}{{ valeur }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="p-4 text-center" style="color:#8a9aaa;font-size:0.85rem;">
+                    <i class="bi bi-hourglass fs-3 d-block mb-2" style="opacity:0.4;"></i>
+                    En attente de l'inscription du chef.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Section 3 : Compte du chef ── #}
+        {% if infos_compte_chef %}
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-person-circle me-2" style="color:var(--or);"></i>Compte du chef</span>
+            </div>
+            <div class="card-body p-0">
+                {% for label, valeur, icone in infos_compte_chef %}
+                <div class="d-flex align-items-center" style="padding:13px 20px;border-bottom:1px solid #f5f6f8;">
+                    <div style="width:36px;height:36px;background:#e8f1ff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:14px;">
+                        <i class="bi {{ icone }}" style="color:#0d3c8a;font-size:0.9rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.72rem;color:#8a9aaa;text-transform:uppercase;letter-spacing:0.05em;">{{ label }}</div>
+                        <div style="font-weight:500;color:var(--bleu);font-size:0.9rem;margin-top:1px;">{{ valeur }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {# ── Colonne droite ── #}
+    <div class="col-lg-5">
+
+        {# ── Licence active ── #}
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-key me-2" style="color:var(--or);"></i>Licence en cours</div>
+            <div class="card-body">
+                {% if licence_active %}
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width:12px;height:12px;border-radius:50%;background:{% if statut_classe == 'success' %}#27ae60{% elif statut_classe == 'warning' %}#f39c12{% else %}#e74c3c{% endif %};box-shadow:0 0 0 3px {% if statut_classe == 'success' %}rgba(39,174,96,0.2){% elif statut_classe == 'warning' %}rgba(243,156,18,0.2){% else %}rgba(231,76,60,0.2){% endif %};flex-shrink:0;"></div>
+                    <span style="font-weight:600;font-size:0.9rem;">{{ statut_affichage }}</span>
+                </div>
+                <div style="font-size:0.82rem;color:#5a6a7a;">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Plan</span>
+                        <strong>
+                            {% if licence_active.est_essai %}
+                            <span class="badge-essai">Essai gratuit</span>
+                            {% else %}
+                            <span class="badge-active">{{ licence_active.label_plan }}</span>
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Début</span>
+                        <strong>{{ licence_active.date_debut|date:"d/m/Y" }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Expiration</span>
+                        <strong>{{ licence_active.date_fin|date:"d/m/Y" }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Jours restants</span>
+                        <strong style="color:{% if licence_active.jours_restants <= 3 %}#e74c3c{% elif licence_active.jours_restants <= 7 %}#f39c12{% else %}#27ae60{% endif %};">
+                            {{ licence_active.jours_restants }} jour{{ licence_active.jours_restants|pluralize }}
+                        </strong>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center" style="color:#8a9aaa;font-size:0.85rem;padding:10px 0;">
+                    <i class="bi bi-x-circle fs-3 d-block mb-2" style="color:#e74c3c;opacity:0.6;"></i>
+                    Aucune licence active
+                </div>
+                {% endif %}
+                <a href="{% url 'superadmin:cle_generer' societe.pk %}" class="btn btn-gold w-100 mt-3">
+                    <i class="bi bi-key me-2"></i>Générer une nouvelle clé
+                </a>
+            </div>
+        </div>
+
+        {# ── Stats métier ── #}
+        {% if stats_societe.nb_clients is not None or stats_societe.nb_factures is not None %}
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-bar-chart me-2" style="color:var(--or);"></i>Activité</div>
+            <div class="card-body">
+                <div class="row g-3 text-center">
+                    {% if stats_societe.nb_clients is not None %}
+                    <div class="col-6">
+                        <div style="font-size:1.6rem;font-weight:700;color:var(--bleu);">{{ stats_societe.nb_clients }}</div>
+                        <div style="font-size:0.75rem;color:#8a9aaa;">Clients</div>
+                    </div>
+                    {% endif %}
+                    {% if stats_societe.nb_factures is not None %}
+                    <div class="col-6">
+                        <div style="font-size:1.6rem;font-weight:700;color:var(--bleu);">{{ stats_societe.nb_factures }}</div>
+                        <div style="font-size:0.75rem;color:#8a9aaa;">Factures</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {# ── Historique des clés ── #}
+        <div class="card mb-4">
+            <div class="card-header">
+                <span><i class="bi bi-clock-history me-2" style="color:var(--or);"></i>Historique des clés</span>
+                <a href="{% url 'superadmin:cle_generer' societe.pk %}" class="btn btn-sm btn-gold" style="padding:3px 10px;font-size:0.75rem;">+ Nouvelle</a>
+            </div>
+            <div class="card-body p-0">
+                {% if cles %}
+                {% for cle in cles|slice:":5" %}
+                <div class="d-flex align-items-center justify-content-between" style="padding:11px 16px;border-bottom:1px solid #f5f6f8;">
+                    <div>
+                        <div style="font-family:monospace;font-size:0.78rem;color:#5a6a7a;">{{ cle.cle_visible|truncatechars:20 }}</div>
+                        <div style="font-size:0.72rem;color:#8a9aaa;margin-top:2px;">
+                            {% if cle.est_essai %}Essai{% else %}{{ cle.label_plan }}{% endif %}
+                            · {{ cle.date_debut|date:"d/m/Y" }}
+                            {% if cle.date_fin %} → {{ cle.date_fin|date:"d/m/Y" }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        {% if cle.statut == 'ACTIVE' %}
+                        <span class="badge-active">Active</span>
+                        {% elif cle.statut == 'REVOQUEE' %}
+                        <span class="badge-revoked">Révoquée</span>
+                        {% else %}
+                        <span class="badge-inactive">Expirée</span>
+                        {% endif %}
+                        <a href="{% url 'superadmin:cle_detail' cle.pk %}" style="color:#8a9aaa;font-size:0.8rem;text-decoration:none;">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if cles|length > 5 %}
+                <div class="p-2 text-center">
+                    <a href="{% url 'superadmin:liste_cles' %}?societe={{ societe.pk }}" style="font-size:0.8rem;color:var(--bleu);">
+                        Voir tout l'historique ({{ cles|length }} clés)
+                    </a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="p-3 text-center" style="color:#8a9aaa;font-size:0.82rem;">Aucune clé générée.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Actions danger ── #}
+        <div class="card" style="border:1px solid #fdecea;">
+            <div class="card-header" style="background:#fdecea;color:#b71c1c;border-radius:12px 12px 0 0 !important;">
+                <i class="bi bi-exclamation-triangle me-2"></i>Zone sensible
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'superadmin:societe_toggle' societe.pk %}"
+                      onsubmit="return confirm('Confirmer cette action ?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm w-100 mb-2"
+                            style="background:#fdecea;color:#b71c1c;border:1px solid #f5c6cb;">
+                        <i class="bi bi-{% if licence_active %}pause-circle{% else %}play-circle{% endif %} me-1"></i>
+                        {% if licence_active %}Suspendre la licence{% else %}Réactiver la licence{% endif %}
+                    </button>
+                </form>
+                <a href="{% url 'superadmin:societe_supprimer' societe.pk %}"
+                   class="btn btn-sm w-100"
+                   style="background:#fff;color:#e74c3c;border:1px solid #f5c6cb;"
+                   onclick="return confirm('⚠️ Supprimer définitivement {{ societe.nom }} ? Cette action est irréversible.')">
+                    <i class="bi bi-trash me-1"></i>Supprimer la société
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    {# ── Journal d'audit ── #}
+    {% if audits %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-journal-text me-2" style="color:var(--or);"></i>Journal d'audit</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead><tr>
+                        <th>Action</th>
+                        <th>Date</th>
+                        <th>IP</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for audit in audits %}
+                        <tr>
+                            <td style="font-size:0.83rem;">{{ audit.message }}</td>
+                            <td style="font-size:0.78rem;color:#8a9aaa;white-space:nowrap;">{{ audit.date_action|date:"d/m/Y H:i" }}</td>
+                            <td style="font-size:0.78rem;color:#8a9aaa;font-family:monospace;">{{ audit.ip_address|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

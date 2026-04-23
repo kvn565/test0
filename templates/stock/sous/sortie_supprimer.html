@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Supprimer la sortie{% endblock %}
+{% block breadcrumb_parent %}Sorties Stock{% endblock %}
+{% block breadcrumb_current %}Supprimer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-5 col-lg-4">
+        <div class="card" style="border-top:3px solid #ef4444;">
+            <div style="padding:28px; text-align:center;">
+                <div style="width:56px; height:56px; background:#fee2e2; border-radius:50%;
+                            display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                    <i class="bi bi-trash" style="color:#dc2626; font-size:22px;"></i>
+                </div>
+                <div style="font-size:16px; font-weight:700; margin-bottom:8px;">Supprimer cette sortie ?</div>
+                <div style="background:#f9fafb; border:1.5px solid var(--border-color); border-radius:8px; padding:12px 16px; margin:14px 0 6px;">
+                    <div style="font-weight:700; font-size:14px;">{{ sortie.produit.designation }}</div>
+                    <div style="font-size:12px; color:var(--text-muted);">
+                        {{ sortie.type_sortie }} — {{ sortie.quantite }} {{ sortie.produit.unite }} — {{ sortie.date_sortie|date:"d/m/Y" }}
+                    </div>
+                </div>
+                <div class="alert-obr warning" style="text-align:left; margin:14px 0;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Cette action est irréversible. Le stock ne sera pas recalculé automatiquement.</span>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div style="display:flex; gap:10px;">
+                        <a href="{% url 'stock:sorties' %}" class="btn-outline-custom" style="flex:1; justify-content:center;">Annuler</a>
+                        <button type="submit" style="flex:1; background:#dc2626; color:white; border:none;
+                                padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600;
+                                cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Générer une clé — {{ societe.nom }}{% endblock %}
+{% block breadcrumb_parent %}{{ societe.nom }}{% endblock %}
+{% block breadcrumb_current %}Générer une clé{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Générer une clé d'activation</div>
+        <div class="page-subtitle">La clé sera liée au NIF {{ societe.nif }} — impossible à utiliser pour une autre société</div>
+    </div>
+    <a href="{% url 'superadmin:societe_detail' societe.pk %}" class="btn-outline-custom">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+</div>
+
+<div class="row g-3 justify-content-center">
+    <div class="col-12 col-md-7">
+
+        <!-- Carte société -->
+        <div class="card mb-3" style="border-left:4px solid var(--primary);">
+            <div style="padding:16px 20px; display:flex; align-items:center; gap:14px;">
+                <div style="width:44px; height:44px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="bi bi-building" style="color:white; font-size:18px;"></i>
+                </div>
+                <div>
+                    <div style="font-size:15px; font-weight:700;">{{ societe.nom }}</div>
+                    <div style="font-size:12px; color:var(--text-muted);">
+                        NIF: <strong>{{ societe.nif }}</strong> &nbsp;·&nbsp;
+                        {{ societe.commune }}, {{ societe.province }}
+                    </div>
+                </div>
+                <div style="margin-left:auto;">
+                    {% if societe.licence_valide %}
+                    <span class="status-badge badge-success">Licence active</span>
+                    {% else %}
+                    <span class="status-badge badge-danger">Sans licence</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire génération clé -->
+        <div class="card">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+                    <i class="bi bi-key-fill" style="font-size:16px;"></i>
+                    Période de validité
+                </div>
+
+                <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Date de début <span class="required">*</span></label>
+                            {{ form.date_debut }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Date de fin <span class="required">*</span></label>
+                            {{ form.date_fin }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">Notes</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explication sécurité -->
+                <div class="alert-obr info" style="margin-top:12px;">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <div>
+                        <div style="font-weight:600; margin-bottom:2px;">Clé sécurisée et unique</div>
+                        <div style="font-size:12px;">
+                            La clé générée contiendra les 3 premières lettres du nom de la société (<strong>{{ societe.nom|slice:":3"|upper }}</strong>-)
+                            et sera liée cryptographiquement au NIF <strong>{{ societe.nif }}</strong>.
+                            Elle ne pourra jamais être utilisée pour une autre société.
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                    <a href="{% url 'superadmin:societe_detail' societe.pk %}" class="btn-outline-custom">Annuler</a>
+                    <button type="submit" class="btn-primary-custom">
+                        <i class="bi bi-key-fill"></i> Générer la clé
+                    </button>
+                </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — WIBABI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bleu: #0f2a4a;
+            --bleu-clair: #1a3f6f;
+            --or: #c9a84c;
+            --or-clair: #e8c97a;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background: #f0f3f7;
+        }
+
+        /* ── PANNEAU GAUCHE ── */
+        .panel-left {
+            width: 420px;
+            background: var(--bleu);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 48px 40px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            bottom: -80px; right: -80px;
+            width: 320px; height: 320px;
+            border-radius: 50%;
+            background: rgba(201,168,76,0.08);
+        }
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            top: -60px; left: -60px;
+            width: 220px; height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+        .brand-logo {
+            font-family: 'Playfair Display', serif;
+            color: var(--or);
+            font-size: 1.8rem;
+            line-height: 1.1;
+            position: relative; z-index: 1;
+        }
+        .brand-logo span { display: block; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-family: 'DM Sans', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 6px; }
+        .panel-tagline {
+            position: relative; z-index: 1;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 24px;
+        }
+        .panel-tagline strong { color: var(--or); display: block; font-size: 1.1rem; font-family: 'Playfair Display', serif; margin-bottom: 8px; font-weight: 600; }
+
+        /* ── PANNEAU DROIT ── */
+        .panel-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+        }
+        .login-header { margin-bottom: 36px; }
+        .login-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            color: var(--bleu);
+            margin-bottom: 6px;
+        }
+        .login-header p { color: #7a8a99; font-size: 0.88rem; }
+
+        .form-floating-custom { position: relative; margin-bottom: 18px; }
+        .form-floating-custom .form-control {
+            border: 1.5px solid #dde3ea;
+            border-radius: 10px;
+            padding: 14px 14px 14px 44px;
+            height: 52px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fff;
+        }
+        .form-floating-custom .form-control:focus {
+            border-color: var(--or);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+            outline: none;
+        }
+        .form-floating-custom .field-icon {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: #a0adb8;
+            font-size: 1rem;
+            pointer-events: none;
+        }
+        .form-floating-custom .toggle-pass {
+            position: absolute;
+            right: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: #a0adb8;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .form-floating-custom label {
+            position: absolute;
+            top: -9px; left: 40px;
+            background: #fff;
+            padding: 0 6px;
+            font-size: 0.75rem;
+            color: #7a8a99;
+            font-weight: 500;
+        }
+        .form-check-input:checked { background-color: var(--bleu); border-color: var(--bleu); }
+
+        .btn-login {
+            width: 100%;
+            background: var(--bleu);
+            border: none;
+            color: #fff;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 8px;
+            letter-spacing: 0.02em;
+        }
+        .btn-login:hover { background: var(--bleu-clair); }
+        .btn-login:active { transform: scale(0.98); }
+
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 24px 0;
+            color: #c0c8d0;
+            font-size: 0.8rem;
+        }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e8ecf0; }
+
+        .alt-logins { display: flex; flex-direction: column; gap: 10px; }
+        .btn-alt {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 16px;
+            border: 1.5px solid #dde3ea;
+            border-radius: 10px;
+            background: #fff;
+            color: var(--bleu);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .btn-alt:hover { border-color: var(--or); background: #fffdf5; color: var(--bleu); }
+        .btn-alt i { color: var(--or); font-size: 1rem; }
+
+        .error-list { background: #fdecea; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; }
+        .error-list p { color: #b71c1c; font-size: 0.83rem; margin: 0; }
+        .error-list p + p { margin-top: 4px; }
+
+        @media (max-width: 768px) {
+            .panel-left { display: none; }
+            .panel-right { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="panel-left">
+    <div class="brand-logo">
+        WIBABI
+        <span>Système de Gestion Commerciale</span>
+    </div>
+    <div class="panel-tagline">
+        <strong>Bienvenue</strong>
+        Gérez votre facturation, votre stock et vos rapports en toute conformité avec l'OBR.
+    </div>
+</div>
+
+<div class="panel-right">
+    <div class="login-box">
+        <div class="login-header">
+            <h1>Connexion</h1>
+            <p>Entrez vos identifiants pour accéder à l'application</p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="error-list">
+            {% for error in form.non_field_errors %}
+            <p><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="form-floating-custom">
+                <i class="bi bi-person field-icon"></i>
+                <label>Nom d'utilisateur</label>
+                <input type="text" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                       value="{{ form.username.value|default:'' }}"
+                       placeholder="Nom d'utilisateur" autofocus autocomplete="username">
+                {% if form.username.errors %}
+                <div class="invalid-feedback px-3">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-floating-custom">
+                <i class="bi bi-lock field-icon"></i>
+                <label>Mot de passe</label>
+                <input type="password" name="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                       id="passField" placeholder="Mot de passe" autocomplete="current-password">
+                <i class="bi bi-eye toggle-pass" onclick="togglePass()"></i>
+                {% if form.password.errors %}
+                <div class="invalid-feedback px-3">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="remember_me" id="remember">
+                    <label class="form-check-label" for="remember" style="font-size:0.83rem;color:#7a8a99;">Se souvenir de moi</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+            </button>
+        </form>
+
+        <div class="divider">ou accéder via</div>
+
+        <div class="alt-logins">
+            <a href="{% url 'accounts:login_chef' %}" class="btn-alt">
+                <i class="bi bi-briefcase"></i>
+                <span>Espace Chef de Société</span>
+                <i class="bi bi-chevron-right ms-auto" style="font-size:0.75rem;color:#c0c8d0;"></i>
+            </a>
+            <a href="{% url 'accounts:login_utilisateur' %}" class="btn-alt">
+                <i class="bi bi-person-badge"></i>
+                <span>Espace Employé</span>
+                <i class="bi bi-chevron-right ms-auto" style="font-size:0.75rem;color:#c0c8d0;"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div style="position:fixed;top:20px;right:20px;z-index:9999;width:320px;">
+    {% for message in messages %}
+    <div style="background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:10px;box-shadow:0 4px 20px rgba(0,0,0,0.12);border-left:4px solid {% if message.tags == 'success' %}#27ae60{% elif message.tags == 'error' %}#e74c3c{% else %}#c9a84c{% endif %};">
+        <span style="font-size:0.84rem;">{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+function togglePass() {
+    const f = document.getElementById('passField');
+    const icon = document.querySelector('.toggle-pass');
+    if (f.type === 'password') {
+        f.type = 'text'; icon.className = 'bi bi-eye-slash toggle-pass';
+    } else {
+        f.type = 'password'; icon.className = 'bi bi-eye toggle-pass';
+    }
+}
+</script>
+</body>
+</html>

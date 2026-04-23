@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}{{ titre }} — WIBABI{% endblock %}
+{% block nav_clients %}active{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+
+    {# ── Fil d'ariane ── #}
+    <div style="font-size:0.8rem;color:#8a9aaa;margin-bottom:18px;">
+        <a href="{% url 'clients:liste' %}" style="color:#8a9aaa;text-decoration:none;">
+            <i class="bi bi-people me-1"></i>Clients
+        </a>
+        <span style="margin:0 6px;">›</span>
+        <span style="color:var(--bleu);">{{ titre }}</span>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span>
+                <i class="bi bi-{% if mode == 'modifier' %}pencil{% else %}person-plus{% endif %} me-2"
+                   style="color:var(--or);"></i>{{ titre }}
+            </span>
+        </div>
+
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row g-3">
+
+                    {# ── Nom ── #}
+                    <div class="col-12">
+                        <label class="form-label">
+                            Nom du client <span style="color:#e74c3c;">*</span>
+                        </label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}
+                        <div style="color:#e74c3c;font-size:0.78rem;margin-top:5px;">
+                            <i class="bi bi-exclamation-circle me-1"></i>{{ form.nom.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# ── NIF + VÉRIFICATION OBR ── #}
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            NIF
+                            <span style="color:#aab;font-weight:400;">(optionnel – vérifiable OBR)</span>
+                        </label>
+                        {{ form.nif }}
+
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-verifier-nif">
+                                <i class="bi bi-search me-1"></i>Vérifier NIF (OBR)
+                            </button>
+                        </div>
+
+                        <small id="feedback-nif" class="form-text d-block mt-1" style="min-height:1.2em;"></small>
+
+                        {% if form.nif.errors %}
+                        <div style="color:#e74c3c;font-size:0.78rem;margin-top:5px;">
+                            {{ form.nif.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            Type de client
+                            <span style="color:#aab;font-weight:400;">(optionnel)</span>
+                        </label>
+                        {{ form.type_client }}
+                        <div style="font-size:0.74rem;color:#aab;margin-top:4px;">
+                            <a href="{% url 'clients:types' %}" style="color:var(--or);">
+                                Gérer les types
+                            </a>
+                        </div>
+                    </div>
+
+                    {# ── Adresse ── #}
+                    <div class="col-12">
+                        <label class="form-label">
+                            Adresse / Résidence
+                            <span style="color:#aab;font-weight:400;">(optionnel)</span>
+                        </label>
+                        {{ form.adresse }}
+                    </div>
+
+                    {# ── TVA ── #}
+                    <div class="col-12">
+                        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8f9fb;border-radius:10px;border:1.5px solid #eef0f4;">
+                            {{ form.assujeti_tva }}
+                            <div>
+                                <label class="form-label" style="margin:0;cursor:pointer;">Assujetti TVA</label>
+                                <div style="font-size:0.76rem;color:#8a9aaa;margin-top:1px;">
+                                    Cocher si ce client est assujetti à la TVA
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {# ── Boutons ── #}
+                <div style="display:flex;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid #f0f2f5;">
+                    <button type="submit" class="btn btn-gold">
+                        <i class="bi bi-check-circle me-2"></i>
+                        {% if mode == 'modifier' %}Enregistrer les modifications{% else %}Créer le client{% endif %}
+                    </button>
+                    <a href="{% url 'clients:liste' %}" class="btn btn-outline-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if mode == 'modifier' and client %}
+    <div style="margin-top:10px;padding:10px 14px;background:#fafbfc;border-radius:8px;font-size:0.76rem;color:#aab;">
+        <i class="bi bi-calendar me-1"></i>Client enregistré le {{ client.date_creation|date:"d/m/Y" }}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-verifier-nif');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+        const nifInput = document.querySelector('#id_nif');  // id généré par Django
+        const nomInput = document.querySelector('#id_nom');
+        const feedback = document.getElementById('feedback-nif');
+
+        const nif = nifInput.value.trim();
+        if (!nif) {
+            feedback.textContent = 'Veuillez entrer un NIF avant de vérifier.';
+            feedback.className = 'text-danger';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat spin me-1"></i> Vérification...';
+        feedback.textContent = '';
+        feedback.className = 'text-muted';
+
+        try {
+            const formData = new FormData();
+            formData.append('nif', nif);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            const response = await fetch("{% url 'clients:verifier_nif' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.ok) {
+                nomInput.value = data.nom_officiel;
+                feedback.innerHTML = '<i class="bi bi-check-circle-fill me-1 text-success"></i> ' + data.message;
+                feedback.className = 'text-success';
+            } else {
+                feedback.innerHTML = '<i class="bi bi-x-circle-fill me-1 text-danger"></i> ' + data.message;
+                feedback.className = 'text-danger';
+            }
+        } catch (err) {
+            feedback.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i> Erreur de connexion. Réessayez.';
+            feedback.className = 'text-danger';
+            console.error(err);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-search me-1"></i>Vérifier NIF (OBR)';
+        }
+    });
+});
+</script>
+
+<style>
+    .spin { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}

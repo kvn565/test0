@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+{% block title %}Ma Société{% endblock %}
+{% block breadcrumb_parent %}Paramètres{% endblock %}
+{% block breadcrumb_current %}Ma Société{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">Ma Société</div>
+        <div class="page-subtitle">Informations légales et fiscales de votre société</div>
+    </div>
+    {% if societe %}
+    <button class="btn-primary-custom" onclick="ouvrirModal()">
+        <i class="bi bi-pencil"></i> Modifier les informations
+    </button>
+    {% endif %}
+</div>
+
+{% if not societe %}
+<div class="card" style="text-align:center; padding:60px 20px;">
+    <div style="width:64px; height:64px; background:#fef9c3; border-radius:16px;
+                display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+        <i class="bi bi-building" style="font-size:28px; color:#ca8a04;"></i>
+    </div>
+    <div style="font-size:15px; font-weight:700; margin-bottom:6px;">Aucune société configurée</div>
+    <div style="font-size:13px; color:var(--text-muted);">La société doit être configurée avant la première connexion.</div>
+</div>
+{% else %}
+
+<!-- Carte principale -->
+<div class="row g-3">
+
+    <!-- Colonne gauche — Identité -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:30px; height:30px; background:#e0f2fe; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-building" style="color:#075985; font-size:13px;"></i>
+                    </div>
+                    Identité légale
+                </div>
+
+                {% for lbl, val, icon in identity_rows %}
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+                        <i class="bi {{ icon }}" style="font-size:12px;"></i> {{ lbl }}
+                    </span>
+                    <span style="font-weight:600; text-align:right; max-width:60%;">{{ val|default:"—" }}</span>
+                </div>
+                {% endfor %}
+
+                <!-- Nom société mis en valeur -->
+                <div style="margin-top:14px; background:var(--body-bg); border-radius:10px; padding:14px 16px;
+                            border:1.5px solid var(--primary); display:flex; align-items:center; gap:12px;">
+                    <div style="width:40px; height:40px; background:var(--primary); border-radius:10px;
+                                display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <i class="bi bi-building-fill" style="color:white; font-size:16px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:16px; font-weight:800; color:var(--primary);">{{ societe.nom }}</div>
+                        <div style="font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace;">NIF : {{ societe.nif }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colonne droite — Adresse & Fiscalité -->
+    <div class="col-12 col-lg-6">
+
+        <!-- Adresse -->
+        <div class="card mb-3">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:30px; height:30px; background:#dcfce7; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-geo-alt" style="color:#15803d; font-size:13px;"></i>
+                    </div>
+                    Adresse
+                </div>
+
+                {% for lbl, val, icon in address_rows %}
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+                        <i class="bi {{ icon }}" style="font-size:12px;"></i> {{ lbl }}
+                    </span>
+                    <span style="font-weight:600;">{{ val|default:"—" }}</span>
+                </div>
+                {% endfor %}
+
+                <!-- Adresse complète -->
+                <div style="margin-top:10px; background:var(--body-bg); border-radius:8px; padding:10px 12px;
+                            border:1.5px dashed var(--border-color); font-size:12.5px; color:var(--text-muted);">
+                    <i class="bi bi-map me-1"></i>
+                    {{ societe.adresse_complete }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Fiscalité -->
+        <div class="card">
+            <div style="padding:20px;">
+                <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:30px; height:30px; background:#fef9c3; border-radius:7px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi bi-calculator" style="color:#ca8a04; font-size:13px;"></i>
+                    </div>
+                    Fiscalité
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-bank me-2" style="font-size:12px;"></i>Centre fiscal</span>
+                    <span style="font-weight:700; font-family:'DM Mono',monospace; font-size:13px; background:#e0f2fe;
+                                 color:#075985; padding:2px 10px; border-radius:5px;">
+                        {{ societe.get_centre_fiscale_display }}
+                    </span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            padding:10px 0; border-bottom:1px solid var(--border-color); font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-percent me-2" style="font-size:12px;"></i>Assujetti TVA</span>
+                    {% if societe.assujeti_tva %}
+                        <span class="status-badge badge-success"><i class="bi bi-check2"></i> Oui</span>
+                    {% else %}
+                        <span class="status-badge badge-neutral"><i class="bi bi-x"></i> Non</span>
+                    {% endif %}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            padding:10px 0; font-size:13.5px;">
+                    <span style="color:var(--text-muted);"><i class="bi bi-receipt me-2" style="font-size:12px;"></i>Assujetti à la TC</span>
+                    {% if societe.assujeti_tc %}
+                        <span class="status-badge badge-success"><i class="bi bi-check2"></i> Oui</span>
+                    {% else %}
+                        <span class="status-badge badge-neutral"><i class="bi bi-x"></i> Non</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Note superadmin -->
+<div class="alert-obr warning" style="margin-top:14px;">
+    <i class="bi bi-shield-lock"></i>
+    <div style="font-size:12.5px;">
+        La suppression de la société est réservée au <strong>superadmin</strong>. 
+        Seule la modification des informations est possible depuis cette interface.
+    </div>
+</div>
+
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL — MODIFIER SOCIÉTÉ
+════════════════════════════════════════════════════════ -->
+<div id="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+     z-index:1000; align-items:flex-start; justify-content:center; padding:20px; overflow-y:auto;">
+    <div style="background:var(--card-bg); border-radius:16px; width:100%; max-width:680px;
+                margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+
+        <!-- Header -->
+        <div style="background:var(--primary); padding:16px 22px; border-radius:16px 16px 0 0;
+                    display:flex; align-items:center; justify-content:space-between; position:sticky; top:0;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:32px; height:32px; background:rgba(255,255,255,0.2); border-radius:8px;
+                            display:flex; align-items:center; justify-content:center;">
+                    <i class="bi bi-building" style="color:white; font-size:15px;"></i>
+                </div>
+                <span style="color:white; font-weight:700; font-size:15px;">Modifier les informations de la société</span>
+            </div>
+            <button onclick="fermerModal()" style="background:rgba(255,255,255,0.2); border:none; color:white;
+                    width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:14px;">✕</button>
+        </div>
+
+        <!-- Alerts -->
+        <div id="modal-success" style="display:none;" class="alert-obr success" style="margin:16px 22px 0;">
+            <i class="bi bi-check-circle-fill"></i>
+            <span id="modal-success-text"></span>
+        </div>
+        <div id="modal-errors" style="display:none;" class="alert-obr danger" style="margin:16px 22px 0;">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span id="modal-errors-text"></span>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:22px;">
+            <form id="form-societe">
+                {% csrf_token %}
+
+                <!-- Section Identité -->
+                <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;
+                            letter-spacing:0.6px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--border-color);">
+                    <i class="bi bi-building me-1"></i> Identité légale
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.nom.label }} <span class="required">*</span></label>
+                            {{ form.nom }}
+                            <div id="err-nom" class="field-error"></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.nif.label }} <span class="required">*</span></label>
+                            {{ form.nif }}
+                            <div id="err-nif" class="field-error"></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.registre.label }} <span class="required">*</span></label>
+                            {{ form.registre }}
+                            <div id="err-registre" class="field-error"></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.telephone.label }} <span class="required">*</span></label>
+                            {{ form.telephone }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.boite_postal.label }}</label>
+                            {{ form.boite_postal }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Adresse -->
+                <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;
+                            letter-spacing:0.6px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--border-color);">
+                    <i class="bi bi-geo-alt me-1"></i> Adresse
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.province.label }} <span class="required">*</span></label>
+                            {{ form.province }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.commune.label }} <span class="required">*</span></label>
+                            {{ form.commune }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.quartier.label }} <span class="required">*</span></label>
+                            {{ form.quartier }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.avenue.label }} <span class="required">*</span></label>
+                            {{ form.avenue }}
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.numero.label }}</label>
+                            {{ form.numero }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Fiscalité -->
+                <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;
+                            letter-spacing:0.6px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--border-color);">
+                    <i class="bi bi-calculator me-1"></i> Fiscalité
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.centre_fiscale.label }} <span class="required">*</span></label>
+                            {{ form.centre_fiscale }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.assujeti_tva.label }} <span class="required">*</span></label>
+                            {{ form.assujeti_tva }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group-custom">
+                            <label class="form-label-custom">{{ form.assujeti_tc.label }} <span class="required">*</span></label>
+                            {{ form.assujeti_tc }}
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:14px 22px; border-top:1px solid var(--border-color);
+                    display:flex; gap:10px; justify-content:flex-end; border-radius:0 0 16px 16px;">
+            <button onclick="fermerModal()" class="btn-outline-custom">
+                <i class="bi bi-x-lg"></i> Annuler
+            </button>
+            <button onclick="soumettreForm()" class="btn-primary-custom" id="btn-enregistrer">
+                <i class="bi bi-check-lg"></i> Enregistrer
+            </button>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+const URL_MODIFIER = '{% url "societe:ajax_modifier" %}';
+
+function ouvrirModal() {
+    document.getElementById('modal-overlay').style.display = 'flex';
+    document.getElementById('modal-success').style.display = 'none';
+    document.getElementById('modal-errors').style.display  = 'none';
+    // Effacer erreurs champs
+    document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+}
+
+function fermerModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+}
+
+// Fermer en cliquant sur l'overlay
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) fermerModal();
+});
+
+async function soumettreForm() {
+    const btn = document.getElementById('btn-enregistrer');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Enregistrement...';
+
+    document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+    document.getElementById('modal-errors').style.display  = 'none';
+    document.getElementById('modal-success').style.display = 'none';
+
+    const fd   = new FormData(document.getElementById('form-societe'));
+    const resp = await fetch(URL_MODIFIER, {
+        method: 'POST',
+        headers: {'X-CSRFToken': CSRF},
+        body: fd,
+    });
+    const data = await resp.json();
+
+    if (data.ok) {
+        // Succès
+        document.getElementById('modal-success-text').textContent = data.msg;
+        document.getElementById('modal-success').style.display    = 'flex';
+        setTimeout(() => {
+            fermerModal();
+            window.location.reload();
+        }, 1500);
+    } else {
+        if (data.errors) {
+            Object.entries(data.errors).forEach(([field, msg]) => {
+                const el = document.getElementById('err-' + field);
+                if (el) el.textContent = msg;
+            });
+            document.getElementById('modal-errors-text').textContent = 'Veuillez corriger les erreurs ci-dessous.';
+            document.getElementById('modal-errors').style.display    = 'flex';
+        } else {
+            document.getElementById('modal-errors-text').textContent = data.error || 'Une erreur est survenue.';
+            document.getElementById('modal-errors').style.display    = 'flex';
+        }
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-check-lg"></i> Enregistrer';
+}
+</script>
+
+<style>
+.field-error {
+    color: #dc2626;
+    font-size: 11.5px;
+    margin-top: 3px;
+}
+</style>
+{% endblock %}

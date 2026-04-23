@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Superadmin{% endblock %}
+{% block breadcrumb_parent %}Administration{% endblock %}
+{% block breadcrumb_current %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Administration Générale</div>
+        <div class="page-subtitle">Vue globale de toutes les sociétés et licences</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'superadmin:societe_creer' %}" class="btn-primary-custom">
+            <i class="bi bi-plus-lg"></i> Nouvelle société
+        </a>
+        <a href="{% url 'superadmin:cles_liste' %}" class="btn-outline-custom">
+            <i class="bi bi-key"></i> Toutes les clés
+        </a>
+    </div>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e0f2fe; color:#075985;"><i class="bi bi-building"></i></div>
+            <div><div class="stat-value">{{ stats.total_societes }}</div><div class="stat-label">Sociétés enregistrées</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#dcfce7; color:#15803d;"><i class="bi bi-check-circle"></i></div>
+            <div><div class="stat-value">{{ stats.societes_actives }}</div><div class="stat-label">Sociétés actives</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fef9c3; color:#854d0e;"><i class="bi bi-key"></i></div>
+            <div><div class="stat-value">{{ stats.cles_actives }}</div><div class="stat-label">Licences actives</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2; color:#991b1b;"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.cles_expirant }}</div>
+                <div class="stat-label">Expire dans 7 jours</div>
+            </div>
+            {% if stats.cles_expirant > 0 %}
+            <div class="stat-change down"><i class="bi bi-exclamation-circle"></i> Attention</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Licences qui expirent bientôt -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header-custom" style="padding:16px 18px 12px;">
+                <span class="card-title-sm"><i class="bi bi-alarm me-2" style="color:#f59e0b;"></i>Licences expirant bientôt</span>
+            </div>
+            <div style="padding:12px;">
+                {% for cle in expiration_proche %}
+                <div style="display:flex; align-items:center; gap:12px; padding:10px; background:#fffbeb; border-radius:8px; margin-bottom:6px; border:1px solid #fde68a;">
+                    <div style="flex:1;">
+                        <div style="font-weight:600; font-size:13px;">{{ cle.societe.nom }}</div>
+                        <div style="font-size:11.5px; color:var(--text-muted);">{{ cle.societe.nif }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-family:'DM Mono',monospace; font-size:12px; color:#d97706; font-weight:700;">{{ cle.jours_restants }} jours</div>
+                        <div style="font-size:11px; color:var(--text-muted);">expire le {{ cle.date_fin|date:"d/m/Y" }}</div>
+                    </div>
+                    <a href="{% url 'superadmin:cle_generer' cle.societe.pk %}" class="btn-primary-custom" style="padding:5px 10px; font-size:11px;">
+                        <i class="bi bi-plus"></i> Renouveler
+                    </a>
+                </div>
+                {% empty %}
+                <div style="text-align:center; padding:20px; color:var(--text-muted);">
+                    <i class="bi bi-check-circle" style="color:#22c55e; font-size:22px; display:block; margin-bottom:6px;"></i>
+                    Aucune licence n'expire dans les 7 prochains jours
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Journal d'activité -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header-custom" style="padding:16px 18px 12px;">
+                <span class="card-title-sm"><i class="bi bi-journal-text me-2" style="color:var(--primary);"></i>Activité récente</span>
+            </div>
+            <div style="padding:10px 14px 14px;">
+                {% for audit in derniers_audits %}
+                <div style="display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--border-color);">
+                    <div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12px;
+                        {% if audit.action == 'ACTIVEE' %}background:#dcfce7; color:#15803d;
+                        {% elif audit.action == 'REVOQUEE' %}background:#fee2e2; color:#991b1b;
+                        {% elif audit.action == 'ECHEC' %}background:#fef3c7; color:#92400e;
+                        {% else %}background:#e0f2fe; color:#075985;{% endif %}">
+                        <i class="bi {% if audit.action == 'ACTIVEE' %}bi-check2{% elif audit.action == 'REVOQUEE' %}bi-x-lg{% elif audit.action == 'ECHEC' %}bi-exclamation{% else %}bi-plus{% endif %}"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:12.5px; font-weight:600;">{{ audit.societe.nom }}</div>
+                        <div style="font-size:11.5px; color:var(--text-muted);">{{ audit.message|truncatechars:60 }}</div>
+                    </div>
+                    <div style="font-size:10.5px; color:var(--text-muted); flex-shrink:0;">{{ audit.date_action|date:"d/m H:i" }}</div>
+                </div>
+                {% empty %}
+                <div style="text-align:center; padding:20px; color:var(--text-muted);">Aucune activité</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

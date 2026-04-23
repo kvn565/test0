@@ -1,0 +1,97 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Détail clé — Administration{% endblock %}
+{% block page_title %}Détail de la clé{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span><a href="{% url 'superadmin:liste_cles' %}">Clés</a><span class="sep">›</span>Détail{% endblock %}
+{% block nav_cles %}active{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-key me-2" style="color:var(--or);"></i>Informations de la clé</span>
+                {% if cle.statut == 'ACTIVE' %}
+                <span class="badge-active">Active</span>
+                {% elif cle.statut == 'REVOQUEE' %}
+                <span class="badge-revoked">Révoquée</span>
+                {% else %}
+                <span class="badge-inactive">Expirée</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+
+                {% with rows=cle.cle_visible|default:"—" %}
+                <div class="d-flex align-items-center" style="padding:16px 20px;border-bottom:1px solid #f5f6f8;background:#fafbfc;">
+                    <div style="flex:1;">
+                        <div style="font-size:0.72rem;color:#8a9aaa;text-transform:uppercase;letter-spacing:0.05em;">Code de la clé</div>
+                        <div style="font-family:monospace;font-size:1.1rem;font-weight:700;color:var(--bleu);letter-spacing:1px;margin-top:3px;">
+                            {{ cle.cle_visible }}
+                        </div>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText('{{ cle.cle_visible }}');this.innerHTML='<i class=\\'bi bi-check-circle\\' style=\\'color:#27ae60;\\'></i>'"
+                            class="btn btn-sm btn-outline-secondary" title="Copier">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+                {% endwith %}
+
+                {% for label, valeur in cle_rows %}
+                <div class="d-flex align-items-center justify-content-between" style="padding:13px 20px;border-bottom:1px solid #f5f6f8;">
+                    <span style="font-size:0.83rem;color:#5a6a7a;">{{ label }}</span>
+                    <span style="font-weight:500;font-size:0.87rem;color:var(--bleu);">{{ valeur }}</span>
+                </div>
+                {% empty %}
+                <div style="padding:14px 20px;border-bottom:1px solid #f5f6f8;display:flex;justify-content:space-between;">
+                    <span style="font-size:0.83rem;color:#5a6a7a;">Société</span>
+                    <a href="{% url 'superadmin:societe_detail' cle.societe.pk %}" style="font-size:0.87rem;font-weight:500;text-decoration:none;color:var(--bleu);">{{ cle.societe.nom }}</a>
+                </div>
+                <div style="padding:14px 20px;border-bottom:1px solid #f5f6f8;display:flex;justify-content:space-between;">
+                    <span style="font-size:0.83rem;color:#5a6a7a;">Plan</span>
+                    <span style="font-size:0.87rem;font-weight:500;">
+                        {% if cle.est_essai %}<span class="badge-essai">Essai gratuit</span>
+                        {% else %}<span class="badge-active">{{ cle.label_plan }}</span>{% endif %}
+                    </span>
+                </div>
+                <div style="padding:14px 20px;border-bottom:1px solid #f5f6f8;display:flex;justify-content:space-between;">
+                    <span style="font-size:0.83rem;color:#5a6a7a;">Début de validité</span>
+                    <span style="font-size:0.87rem;font-weight:500;">{{ cle.date_debut|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div style="padding:14px 20px;border-bottom:1px solid #f5f6f8;display:flex;justify-content:space-between;">
+                    <span style="font-size:0.83rem;color:#5a6a7a;">Expiration</span>
+                    <span style="font-size:0.87rem;font-weight:500;">
+                        {% if cle.date_fin %}{{ cle.date_fin|date:"d/m/Y H:i" }}
+                        {% else %}<span style="color:#bbb;">—</span>{% endif %}
+                    </span>
+                </div>
+                <div style="padding:14px 20px;border-bottom:1px solid #f5f6f8;display:flex;justify-content:space-between;">
+                    <span style="font-size:0.83rem;color:#5a6a7a;">Jours restants</span>
+                    <span style="font-size:0.87rem;font-weight:700;color:{% if cle.jours_restants <= 3 %}#e74c3c{% elif cle.jours_restants <= 7 %}#f39c12{% else %}#27ae60{% endif %};">
+                        {% if cle.statut == 'ACTIVE' %}{{ cle.jours_restants }} jour{{ cle.jours_restants|pluralize }}
+                        {% else %}<span style="color:#bbb;">—</span>{% endif %}
+                    </span>
+                </div>
+                <div style="padding:14px 20px;display:flex;justify-content:space-between;">
+                    <span style="font-size:0.83rem;color:#5a6a7a;">Créée le</span>
+                    <span style="font-size:0.87rem;color:#8a9aaa;">{{ cle.date_creation|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        <div class="d-flex gap-3 mt-4">
+            <a href="{% url 'superadmin:societe_detail' cle.societe.pk %}" class="btn btn-primary">
+                <i class="bi bi-building me-2"></i>Voir la société
+            </a>
+            {% if cle.statut == 'ACTIVE' %}
+            <a href="{% url 'superadmin:cle_revoquer' cle.pk %}" class="btn btn-outline-danger">
+                <i class="bi bi-x-circle me-2"></i>Révoquer
+            </a>
+            {% endif %}
+            <a href="{% url 'superadmin:liste_cles' %}" class="btn btn-outline-secondary">
+                Retour à la liste
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

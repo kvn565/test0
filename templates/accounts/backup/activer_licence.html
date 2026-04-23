@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Licence expirée — WIBABI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Sora',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+        .card{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;max-width:480px;width:100%;animation:up .45s ease both}
+        @keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        .card-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center;color:#fff}
+        .card-header .logo{font-size:52px;margin-bottom:10px}
+        .card-header h1{font-size:26px;font-weight:700;margin-bottom:6px}
+        .card-header p{font-size:13px;opacity:.9}
+        .card-body{padding:40px 30px;text-align:center}
+        .icon-box{width:80px;height:80px;border-radius:50%;background:#fff7ed;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px}
+        h2{font-size:22px;color:#1e293b;margin-bottom:12px}
+        p{color:#64748b;font-size:14px;line-height:1.7;margin-bottom:24px}
+        .info-box{background:#f8fafc;border-radius:12px;padding:16px 20px;border-left:4px solid #f59e0b;text-align:left;margin-bottom:24px}
+        .info-box strong{display:block;font-size:13px;color:#334155;margin-bottom:4px}
+        .info-box span{font-size:14px;color:#1e293b;font-weight:600}
+        .btn-group{display:flex;flex-direction:column;gap:12px}
+        .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;text-decoration:none;transition:transform .2s,box-shadow .2s}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(102,126,234,.3)}
+        .btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:600;color:#64748b;text-decoration:none;font-family:'Sora',sans-serif;transition:border-color .2s}
+        .btn-outline:hover{border-color:#667eea;color:#667eea}
+        .card-footer{background:#f8fafc;padding:16px 30px;text-align:center;font-size:12px;color:#94a3b8}
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="card-header">
+        <div class="logo">🐋</div>
+        <h1>WIBABI</h1>
+        <p>Système de Facturation Moderne</p>
+    </div>
+    <div class="card-body">
+        <div class="icon-box">⏰</div>
+        <h2>Licence expirée</h2>
+        <p>Votre période d'essai ou licence a expiré. Contactez l'administrateur pour obtenir une nouvelle clé d'activation.</p>
+        {% if societe %}
+        <div class="info-box">
+            <strong>Société :</strong>
+            <span>{{ societe.nom }}</span>
+        </div>
+        {% endif %}
+        <div class="btn-group">
+            <a href="{% url 'account:setup' %}" class="btn-primary">
+                <i class="fas fa-key"></i> Entrer une nouvelle clé
+            </a>
+            <a href="{% url 'account:logout' %}" class="btn-outline">
+                <i class="fas fa-sign-out-alt"></i> Se déconnecter
+            </a>
+        </div>
+    </div>
+    <div class="card-footer">&copy; {% now "Y" %} WIBABI — Tous droits réservés</div>
+</div>
+</body>
+</html>

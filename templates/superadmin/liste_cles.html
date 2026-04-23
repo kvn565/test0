@@ -1,0 +1,242 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Clés de licence — Administration{% endblock %}
+{% block page_title %}Clés de licence{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Historique et gestion de toutes les clés</p>{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span> Clés{% endblock %}
+{% block nav_cles %}active{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'superadmin:creer_cle' %}" class="btn btn-gold">
+    <i class="bi bi-plus-circle me-2"></i>Créer une clé
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── Stats par plan ── #}
+    {% if stats %}
+    <div class="col-12">
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon gold"><i class="bi bi-key-fill"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.total }}</div>
+                        <div class="stat-label">Total clés</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="bi bi-check-circle"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.actives }}</div>
+                        <div class="stat-label">Actives</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.revoquees }}</div>
+                        <div class="stat-label">Révoquées</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="bi bi-clock-history"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.expirees }}</div>
+                        <div class="stat-label">Expirées</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Filtres ── #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body py-3">
+                <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
+                    <div style="min-width:160px;">
+                        <label class="form-label mb-1">Statut</label>
+                        <select name="statut" class="form-select" style="height:38px;">
+                            <option value="">Tous</option>
+                            <option value="ACTIVE"   {% if filtre_statut == 'ACTIVE' %}selected{% endif %}>Active</option>
+                            <option value="REVOQUEE" {% if filtre_statut == 'REVOQUEE' %}selected{% endif %}>Révoquée</option>
+                            <option value="EXPIREE"  {% if filtre_statut == 'EXPIREE' %}selected{% endif %}>Expirée</option>
+                        </select>
+                    </div>
+                    <div style="min-width:180px;">
+                        <label class="form-label mb-1">Plan</label>
+                        <select name="plan" class="form-select" style="height:38px;">
+                            <option value="">Tous les plans</option>
+                            {% for code, label in PLANS %}
+                            <option value="{{ code }}" {% if filtre_plan == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" style="height:38px;">
+                            <i class="bi bi-funnel me-1"></i>Filtrer
+                        </button>
+                        {% if filtre_statut or filtre_plan %}
+                        <a href="{% url 'superadmin:liste_cles' %}" class="btn btn-outline-secondary" style="height:38px;">
+                            Réinitialiser
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# ── Tableau des clés ── #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-key me-2" style="color:var(--or);"></i>
+                    {{ cles.paginator.count }} clé{{ cles.paginator.count|pluralize }}
+                    {% if cles.paginator.num_pages > 1 %}
+                    — Page {{ cles.number }} / {{ cles.paginator.num_pages }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="card-body p-0">
+                {% if cles %}
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Société</th>
+                                <th>Plan</th>
+                                <th>Statut</th>
+                                <th>Début</th>
+                                <th>Expiration</th>
+                                <th>Jours restants</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cle in cles %}
+                            <tr>
+                                <td style="font-family:monospace;font-size:0.85rem;color:#5a6a7a;">
+                                    {{ cle.cle_visible }}
+                                </td>
+                                <td>
+                                    <a href="{% url 'superadmin:societe_detail' cle.societe.pk %}" 
+                                       class="text-decoration-none fw-500" style="color:var(--bleu);">
+                                        {{ cle.societe.nom|truncatechars:22 }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if cle.est_essai %}
+                                        <span class="badge-essai">Essai 14j</span>
+                                    {% else %}
+                                        <span class="badge-active">{{ cle.label_plan }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if cle.statut == 'ACTIVE' %}
+                                        <span class="badge-active">Active</span>
+                                    {% elif cle.statut == 'REVOQUEE' %}
+                                        <span class="badge-revoked">Révoquée</span>
+                                    {% else %}
+                                        <span class="badge-inactive">Expirée</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:0.82rem;color:#8a9aaa;">{{ cle.date_debut|date:"d/m/Y" }}</td>
+                                <td style="font-size:0.82rem;color:#8a9aaa;">{{ cle.date_fin|date:"d/m/Y"|default:"—" }}</td>
+                                <td>
+                                    {% if cle.statut == 'ACTIVE' %}
+                                        {% if cle.jours_restants <= 3 %}
+                                            <span style="color:#e74c3c;font-weight:700;">{{ cle.jours_restants }}j ⚠️</span>
+                                        {% elif cle.jours_restants <= 7 %}
+                                            <span style="color:#f39c12;font-weight:600;">{{ cle.jours_restants }}j</span>
+                                        {% else %}
+                                            <span style="color:#27ae60;">{{ cle.jours_restants }}j</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <a href="{% url 'superadmin:cle_detail' cle.pk %}" 
+                                           class="btn btn-sm btn-outline-secondary" title="Détail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if cle.statut == 'ACTIVE' %}
+                                        <a href="{% url 'superadmin:cle_revoquer' cle.pk %}" 
+                                           class="btn btn-sm btn-outline-danger" title="Révoquer">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-5 text-center" style="color:#8a9aaa;">
+                    <i class="bi bi-key fs-1 d-block mb-3" style="opacity:0.3;"></i>
+                    <p>Aucune clé trouvée.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ====================== PAGINATION ====================== #}
+            {% if cles.paginator.num_pages > 1 %}
+            <div class="card-footer bg-white py-3">
+                <nav>
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- Précédent -->
+                        {% if cles.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ cles.previous_page_number }}{% if filtre_statut %}&statut={{ filtre_statut }}{% endif %}{% if filtre_plan %}&plan={{ filtre_plan }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+                        {% endif %}
+
+                        <!-- Numéros de pages -->
+                        {% for num in cles.paginator.page_range %}
+                            {% if num == cles.number %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > cles.number|add:'-3' and num < cles.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if filtre_statut %}&statut={{ filtre_statut }}{% endif %}{% if filtre_plan %}&plan={{ filtre_plan }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Suivant -->
+                        {% if cles.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ cles.next_page_number }}{% if filtre_statut %}&statut={{ filtre_statut }}{% endif %}{% if filtre_plan %}&plan={{ filtre_plan }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% if page_obj.has_other_pages %}
+<div class="pagination" style="margin: 25px 0; text-align: center;">
+    {% if page_obj.has_previous %}
+        <a href="?page=1{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}" 
+           class="page-link">« Première</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}" 
+           class="page-link">Précédent</a>
+    {% endif %}
+
+    {% for num in paginator.page_range %}
+        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}" 
+               class="page-link {% if num == page_obj.number %}active{% endif %}">
+                {{ num }}
+            </a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}" 
+           class="page-link">Suivant</a>
+        <a href="?page={{ paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}" 
+           class="page-link">Dernière »</a>
+    {% endif %}
+</div>
+{% endif %}

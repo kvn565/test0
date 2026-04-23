@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WIBABI{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bleu:       #0f2a4a;
+            --bleu-clair: #1a3f6f;
+            --or:         #c9a84c;
+            --or-clair:   #e8c97a;
+            --gris:       #f4f6f9;
+            --texte:      #2c3e50;
+            --danger:     #e74c3c;
+            --succes:     #27ae60;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--gris);
+            color: var(--texte);
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 250px; height: 100vh;
+            background: var(--bleu);
+            display: flex; flex-direction: column;
+            z-index: 1000;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-logo {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .sidebar-logo .logo-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--or);
+            font-size: 1.3rem;
+            line-height: 1.2;
+        }
+        .sidebar-logo .logo-sub {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+
+        .nav-section {
+            padding: 12px 20px 4px;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .nav-link-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 20px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 400;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-link-item:hover,
+        .nav-link-item.active {
+            color: #fff;
+            background: rgba(255,255,255,0.07);
+            border-left-color: var(--or);
+        }
+        .nav-link-item i { font-size: 1rem; width: 20px; }
+
+        /* ── Licence alerte dans sidebar ── */
+        .nav-link-item.licence-alert {
+            color: #f39c12;
+            animation: pulse-gold 2s infinite;
+        }
+        .nav-link-item.licence-alert:hover {
+            color: #fff;
+            background: rgba(243,156,18,0.15);
+            border-left-color: #f39c12;
+        }
+        .nav-link-item.licence-expired {
+            color: #e74c3c;
+        }
+        .nav-link-item.licence-expired:hover {
+            color: #fff;
+            background: rgba(231,76,60,0.15);
+            border-left-color: #e74c3c;
+        }
+        @keyframes pulse-gold {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.6; }
+        }
+
+        /* ── Menu bloqué (licence expirée) ── */
+        .nav-link-item.blocked {
+            color: rgba(255,255,255,0.2) !important;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+        .nav-link-item.blocked::after {
+            content: '\F4A1';  /* bi-lock */
+            font-family: 'bootstrap-icons';
+            font-size: 0.65rem;
+            margin-left: auto;
+            color: rgba(255,255,255,0.2);
+        }
+        .sidebar-blocked-banner {
+            margin: 8px 12px;
+            background: rgba(231,76,60,0.15);
+            border: 1px solid rgba(231,76,60,0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .sidebar-blocked-banner:hover {
+            background: rgba(231,76,60,0.25);
+        }
+
+        /* ── Modal saisie licence ── */
+        .licence-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(10,25,45,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+        .licence-modal {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+        .licence-modal-header {
+            background: linear-gradient(135deg, #b71c1c, #e53935);
+            padding: 24px 28px 20px;
+            position: relative;
+        }
+        .licence-modal-header.success {
+            background: linear-gradient(135deg, #1a6b3a, #27ae60);
+        }
+        .licence-modal-icon {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #fff;
+            margin-bottom: 12px;
+        }
+        .licence-modal-header h5 {
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            margin: 0;
+        }
+        .licence-modal-header p {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.82rem;
+            margin: 4px 0 0;
+        }
+
+        .licence-modal-body { padding: 24px 28px; }
+
+        .licence-input-wrap {
+            position: relative;
+        }
+        .licence-input {
+            width: 100%;
+            padding: 13px 16px;
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 2px solid #dde3ea;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+        .licence-input:focus {
+            border-color: var(--or);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+        }
+        .licence-input.error  { border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.15); }
+        .licence-input.success{ border-color: #27ae60; box-shadow: 0 0 0 3px rgba(39,174,96,0.15); }
+
+        .licence-error-msg {
+            color: #e74c3c;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+        .licence-success-msg {
+            color: #1a6b3a;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-activate {
+            width: 100%;
+            background: var(--bleu);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            margin-top: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-activate:hover  { background: var(--bleu-clair); }
+        .btn-activate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .licence-contact {
+            text-align: center;
+            font-size: 0.78rem;
+            color: #8a9aaa;
+            margin-top: 14px;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--or);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem;
+            color: var(--bleu); flex-shrink: 0;
+        }
+        .user-name { color: #fff; font-size: 0.82rem; font-weight: 500; line-height: 1.2; }
+        .user-role { color: rgba(255,255,255,0.4); font-size: 0.7rem; }
+
+        /* ── CONTENU PRINCIPAL ── */
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e8ecf0;
+            padding: 0 28px;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            color: var(--bleu);
+        }
+
+        /* Indicateur licence dans topbar */
+        .topbar-licence {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.78rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .topbar-licence.active  { background: #e8f8f0; color: #1a6b3a; }
+        .topbar-licence.warning { background: #fff8e5; color: #7d5a00; }
+        .topbar-licence.expired { background: #fdecea; color: #b71c1c; }
+
+        .page-content { padding: 28px; flex: 1; }
+
+        /* ── CARTES ── */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid #f0f2f5;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 16px 20px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: var(--bleu);
+        }
+
+        /* ── FORMULAIRES ── */
+        .form-control, .form-select {
+            border: 1.5px solid #dde3ea;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--or);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+        }
+        .form-label { font-size: 0.83rem; font-weight: 500; color: #5a6a7a; margin-bottom: 5px; }
+
+        /* ── BOUTONS ── */
+        .btn-primary {
+            background: var(--bleu);
+            border-color: var(--bleu);
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+            font-size: 0.88rem;
+        }
+        .btn-primary:hover { background: var(--bleu-clair); border-color: var(--bleu-clair); }
+
+        .btn-gold {
+            background: var(--or);
+            border-color: var(--or);
+            color: var(--bleu);
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+        .btn-gold:hover { background: var(--or-clair); border-color: var(--or-clair); color: var(--bleu); }
+
+        /* ── ALERTES ── */
+        .alert { border: none; border-radius: 10px; font-size: 0.88rem; }
+        .alert-success { background: #e8f8f0; color: #1a6b3a; }
+        .alert-danger  { background: #fdecea; color: #b71c1c; }
+        .alert-warning { background: #fff8e5; color: #7d5a00; }
+        .alert-info    { background: #e8f1ff; color: #0d3c8a; }
+
+        /* ── BADGES ── */
+        .badge-active   { background: #e8f8f0; color: #1a6b3a; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
+        .badge-inactive { background: #fdecea; color: #b71c1c; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
+        .badge-pending  { background: #fff8e5; color: #7d5a00; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
+
+        /* ── MESSAGES DJANGO ── */
+        .messages-container { position: fixed; top: 70px; right: 20px; z-index: 9999; width: 340px; }
+        .toast-msg {
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            display: flex; align-items: center; gap: 12px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--or);
+        }
+        .toast-msg.success { border-left-color: var(--succes); }
+        .toast-msg.error   { border-left-color: var(--danger); }
+        .toast-msg.warning { border-left-color: #f39c12; }
+        .toast-msg.info    { border-left-color: #3498db; }
+        @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+
+{# ── Calcul statut licence (disponible dans tous les templates) ── #}
+{% with cle=user.societe.cle_active %}
+
+<!-- ╔═ SIDEBAR ════════════════════════════════════════════════════ -->
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-title">WIBABI</div>
+        {% if user.societe %}
+        <div class="logo-sub">{{ user.societe.nom|truncatechars:22 }}</div>
+        {% endif %}
+    </div>
+
+    <nav class="sidebar-nav">
+
+        <!-- Principal -->
+        <div class="nav-section">Principal</div>
+        <a href="{% url 'accueil' %}" class="nav-link-item {% block nav_accueil %}{% endblock %}">
+            <i class="bi bi-grid"></i> Tableau de bord
+        </a>
+
+        {# ── Déterminer si la licence est expirée (chef uniquement) ── #}
+        {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and user.societe %}
+            {% if not cle %}
+                {% with licence_bloquee=True %}{% endwith %}
+            {% endif %}
+        {% endif %}
+
+        {# ── Raccourci : est-ce que le menu doit être bloqué ? ── #}
+        {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and not cle and user.societe %}
+
+        <!-- ⚠️ MENU BLOQUÉ — Licence expirée -->
+        <div class="sidebar-blocked-banner" onclick="ouvrirModalLicence()">
+            <i class="bi bi-lock-fill"></i>
+            <span>Licence expirée — Cliquez pour activer</span>
+        </div>
+
+        <div class="nav-section">Principal</div>
+        <span class="nav-link-item blocked"><i class="bi bi-box"></i> Produits</span>
+        <span class="nav-link-item blocked"><i class="bi bi-archive"></i> Mouvements</span>
+        <span class="nav-link-item blocked"><i class="bi bi-people"></i> Clients</span>
+        <span class="nav-link-item blocked"><i class="bi bi-receipt"></i> Factures</span>
+        <span class="nav-link-item blocked"><i class="bi bi-file-earmark-text"></i> Devis</span>
+        <span class="nav-link-item blocked"><i class="bi bi-bar-chart"></i> Rapports</span>
+
+        <div class="nav-section">Ma société</div>
+        <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe %}{% endblock %}">
+            <i class="bi bi-building"></i> Ma société
+        </a>
+
+        {% else %}
+
+        <!-- ✅ MENU NORMAL — Licence active -->
+
+        <!-- Stock — protégé par droits -->
+        {% if user.droit_stock_produit or user.is_superuser %}
+        <div class="nav-section">Stock</div>
+        {% url 'categories:liste' as url_categories %}
+        <a href="{{ url_categories|default:'#' }}" class="nav-link-item {% block nav_categories %}{% endblock %}">
+            <i class="bi bi-tags"></i> Catégories
+        </a>
+
+        {% url 'taux:liste' as url_taux %}
+        <a href="{{ url_taux|default:'#' }}" class="nav-link-item {% block nav_taux %}{% endblock %}">
+            <i class="bi bi-percent"></i> Taux
+        </a>
+
+        {% url 'produits:liste' as url_produits %}<a href="{{ url_produits|default:'#' }}" class="nav-link-item {% block nav_produits %}{% endblock %}">
+            <i class="bi bi-box"></i> Produits
+        </a>
+
+        {% url 'services:liste' as url_services %}
+        <a href="{{ url_services|default:'#' }}" class="nav-link-item {% block nav_services %}{% endblock %}">
+            <i class="bi bi-gear"></i> Services
+        </a>
+        
+        <a class="nav-link-item" data-bs-toggle="collapse" href="#submenuMouvements" role="button" aria-expanded="false" aria-controls="submenuMouvements">
+            <i class="bi bi-archive"></i> Mouvements
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <div class="collapse" id="submenuMouvements">
+            <div class="nav flex-column ms-3">
+                {% url 'stock:entrees' as url_entrees %}
+                <a href="{{ url_entrees|default:'#' }}" class="nav-link-item {% block nav_entrees %}{% endblock %}">
+                    <i class="bi bi-box-arrow-in-down me-2"></i> Entrées
+                </a>
+                {% url 'stock:sorties' as url_sorties %}
+                <a href="{{ url_sorties|default:'#' }}" class="nav-link-item {% block nav_sorties %}{% endblock %}">
+                    <i class="bi bi-box-arrow-up me-2"></i> Sorties
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Facturation — protégé par droits -->
+        {% if user.droit_facture_pnb or user.droit_facture_fdnb or user.is_superuser %}
+        <div class="nav-section">Facturation</div>
+
+        {% url 'fournisseurs:liste' as url_fournisseurs %}
+        <a href="{{ url_fournisseurs|default:'#' }}" class="nav-link-item {% block nav_fournisseurs %}{% endblock %}">
+            <i class="bi bi-truck"></i> Fournisseurs
+        </a>
+        {% url 'clients:liste' as url_clients %}<a href="{{ url_clients|default:'#' }}" class="nav-link-item {% block nav_clients %}{% endblock %}">
+            <i class="bi bi-people"></i> Clients
+        </a>
+        {% url 'facturer:liste' as url_factures %}<a href="{{ url_factures|default:'#' }}" class="nav-link-item {% block nav_factures %}{% endblock %}">
+            <i class="bi bi-receipt"></i> Factures
+        </a>
+        {% if user.droit_devis or user.is_superuser %}
+        {% url 'facturer:liste' as url_devis %}<a href="{{ url_devis|default:'#' }}" class="nav-link-item {% block nav_devis %}{% endblock %}">
+            <i class="bi bi-file-earmark-text"></i> Devis
+        </a>
+        {% endif %}
+        {% endif %}
+
+        <!-- Rapports — protégé par droits -->
+        {% if user.droit_rapports or user.is_superuser %}
+        <div class="nav-section">Analyse</div>
+        {% url 'rapports:facturation' as url_rapports %}<a href="{{ url_rapports|default:'#' }}" class="nav-link-item {% block nav_rapports %}{% endblock %}">
+            <i class="bi bi-bar-chart"></i> Rapports
+        </a>
+        {% endif %}
+
+        <!-- Société + Licence (DIRECTEUR uniquement) -->
+        {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser %}
+        <div class="nav-section">Ma société</div>
+        <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe_ok %}{% endblock %}">
+            <i class="bi bi-building"></i> Ma société
+        </a>
+        <a href="{% url 'equipe:liste' %}" class="nav-link-item {% block nav_equipe %}{% endblock %}">
+            <i class="bi bi-people-fill"></i> Équipe
+        </a>
+        {% if cle and cle.jours_restants <= 7 %}
+        <a href="#" onclick="ouvrirModalLicence(); return false;"
+           class="nav-link-item licence-alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Expire dans {{ cle.jours_restants }}j
+        </a>
+        {% else %}
+        <a href="{% url 'superadmin:saisir_cle' %}" 
+           onclick="ouvrirModalLicence(); return false;" 
+           class="nav-link-item {% block nav_renouveler %}{% endblock %}">
+            <i class="bi bi-key"></i> Renouveler licence
+        </a>
+        {% endif %}
+        {% endif %}
+
+        {% endif %}{# fin bloc menu normal #}
+
+        <!-- Administration — SUPERADMIN UNIQUEMENT -->
+        {% if user.is_superuser %}
+        <div class="nav-section">Administration</div>
+        <a href="{% url 'superadmin:dashboard' %}" class="nav-link-item {% block nav_superadmin %}{% endblock %}">
+            <i class="bi bi-shield-check"></i> Superadmin
+        </a>
+        
+        <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe_admin %}{% endblock %}">
+            <i class="bi bi-building"></i> Ma société
+        </a>
+        {% endif %}
+
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.initiales }}</div>
+            <div>
+                <div class="user-name">{{ user.nom_complet|truncatechars:20 }}</div>
+                <div class="user-role">{{ user.get_type_poste_display }}</div>
+            </div>
+        </div>
+        <a href="{% url 'accounts:logout' %}" class="nav-link-item mt-2" style="padding-left:0;">
+            <i class="bi bi-box-arrow-right"></i> Déconnexion
+        </a>
+    </div>
+</div>
+
+<!-- ╔═ CONTENU PRINCIPAL ══════════════════════════════════════════ -->
+<div class="main-content">
+    <div class="topbar">
+        <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+
+        <div class="d-flex align-items-center gap-3">
+
+            {# ── Indicateur licence dans la topbar (chef uniquement) ── #}
+            {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and user.societe %}
+                {% if cle %}
+                    {% if cle.jours_restants <= 3 %}
+                    <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence expired text-decoration-none">
+                        <i class="bi bi-exclamation-octagon-fill"></i>
+                        Licence expire dans {{ cle.jours_restants }}j
+                    </a>
+                    {% elif cle.jours_restants <= 7 %}
+                    <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence warning text-decoration-none">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        {{ cle.jours_restants }} jours restants
+                    </a>
+                    {% else %}
+                    <span class="topbar-licence active">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Licence active — {{ cle.jours_restants }}j
+                    </span>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence expired text-decoration-none">
+                    <i class="bi bi-x-circle-fill"></i> Aucune licence
+                </a>
+                {% endif %}
+            {% endif %}
+
+            <a href="{% url 'accounts:profil' %}" class="text-decoration-none" style="color:var(--texte); font-size:0.85rem;">
+                <i class="bi bi-person-circle me-1"></i>{{ user.nom }}
+            </a>
+        </div>
+    </div>
+
+    <div class="page-content">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+
+{# ══════════════════════════════════════════════════════════════
+   MODAL ACTIVATION LICENCE
+   Affiché automatiquement si licence expirée (DIRECTEUR uniquement)
+   Soumission AJAX → activation immédiate sans rechargement
+══════════════════════════════════════════════════════════════ #}
+{% if user.type_poste == "DIRECTEUR" and not user.is_superuser and user.societe %}
+<div class="licence-modal-overlay" id="licenceModal"
+     style="{% if cle %}display:none;{% endif %}">
+    <div class="licence-modal">
+
+        <div class="licence-modal-header" id="modalHeader">
+            <div class="licence-modal-icon">
+                <i class="bi bi-lock-fill" id="modalIcon"></i>
+            </div>
+            <h5 id="modalTitle">
+                {% if cle and cle.jours_restants <= 7 %}
+                    Votre licence expire bientôt
+                {% else %}
+                    Licence expirée — Accès bloqué
+                {% endif %}
+            </h5>
+            <p id="modalSubtitle">
+                {% if cle and cle.jours_restants <= 7 %}
+                    Il reste {{ cle.jours_restants }} jour(s). Entrez votre nouvelle clé pour continuer.
+                {% else %}
+                    Entrez la clé de licence reçue de l'administrateur pour débloquer votre accès.
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="licence-modal-body">
+            <label style="font-size:0.82rem;font-weight:500;color:#5a6a7a;display:block;margin-bottom:8px;">
+                Clé d'activation
+            </label>
+            <div class="licence-input-wrap">
+                <input type="text"
+                       id="licenceKeyInput"
+                       class="licence-input"
+                       placeholder="SOD-4567-12M-AB3D4E"
+                       maxlength="50"
+                       autocomplete="off"
+                       autocapitalize="characters"
+                       spellcheck="false">
+            </div>
+
+            <div class="licence-error-msg" id="licenceError">
+                <i class="bi bi-x-circle-fill"></i>
+                <span id="licenceErrorText">Clé invalide ou expirée.</span>
+            </div>
+            <div class="licence-success-msg" id="licenceSuccess">
+                <i class="bi bi-check-circle-fill"></i>
+                <span id="licenceSuccessText">Licence activée ! Rechargement en cours...</span>
+            </div>
+
+            <button class="btn-activate" id="btnActivate" onclick="activerLicence()">
+                <i class="bi bi-key-fill" id="btnIcon"></i>
+                <span id="btnText">Activer la licence</span>
+            </button>
+             <button class="btn btn-outline-danger w-100 mt-3" onclick="window.location.href='{% url 'accounts:logout' %}'">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Se déconnecter
+            </button>
+
+            <p class="licence-contact">
+                <i class="bi bi-info-circle me-1"></i>
+                Vous n'avez pas de clé ?
+                <strong>Contactez votre administrateur système.</strong>
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endwith %}
+
+{% else %}
+{# ── Pages non connectées (login, inscription) ── #}
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<!-- ╔═ MESSAGES ══════════════════════════════════════════════════ -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="toast-msg {{ message.tags }}" id="msg-{{ forloop.counter }}">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill text-success
+                    {% elif message.tags == 'error' %}bi-x-circle-fill text-danger
+                    {% elif message.tags == 'warning' %}bi-exclamation-triangle-fill text-warning
+                    {% else %}bi-info-circle-fill text-primary{% endif %}"></i>
+        <span style="font-size:0.85rem;">{{ message }}</span>
+        <button onclick="this.parentElement.remove()" style="border:none;background:none;margin-left:auto;cursor:pointer;color:#aaa;">✕</button>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    document.querySelectorAll('.toast-msg').forEach((el, i) => {
+        setTimeout(() => {
+            if (el) { el.style.animation = 'slideIn 0.3s reverse'; setTimeout(() => el.remove(), 300); }
+        }, 5000 + i * 500);
+    });
+</script>
+{% endif %}
+
+<script>
+    // ── Ouvrir / fermer le modal ──────────────────────────────────
+    function ouvrirModalLicence() {
+        const modal = document.getElementById('licenceModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('licenceKeyInput').focus(), 100);
+        }
+    }
+    function fermerModalLicence() {
+        const modal = document.getElementById('licenceModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    // Fermer en cliquant sur l'overlay (seulement si licence encore valide)
+    {% if cle %}
+    document.getElementById('licenceModal')?.addEventListener('click', function(e) {
+        if (e.target === this) fermerModalLicence();
+    });
+    {% endif %}
+
+    // Mise en forme automatique de la clé (majuscules)
+    document.getElementById('licenceKeyInput')?.addEventListener('input', function() {
+        const pos = this.selectionStart;
+        this.value = this.value.toUpperCase();
+        this.setSelectionRange(pos, pos);
+        // Réinitialiser les messages d'erreur/succès
+        resetModalMessages();
+    });
+
+    // Touche Entrée → soumettre
+    document.getElementById('licenceKeyInput')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') activerLicence();
+    });
+
+    function resetModalMessages() {
+        const input = document.getElementById('licenceKeyInput');
+        const errorDiv = document.getElementById('licenceError');
+        const successDiv = document.getElementById('licenceSuccess');
+        if (input) input.classList.remove('error', 'success');
+        if (errorDiv) errorDiv.style.display = 'none';
+        if (successDiv) successDiv.style.display = 'none';
+    }
+
+    // ── Activation AJAX ───────────────────────────────────────────
+    async function activerLicence() {
+        const input  = document.getElementById('licenceKeyInput');
+        const btn    = document.getElementById('btnActivate');
+        const btnIcon= document.getElementById('btnIcon');
+        const btnText= document.getElementById('btnText');
+        const errorDiv = document.getElementById('licenceError');
+        const errorTxt = document.getElementById('licenceErrorText');
+        const successDiv = document.getElementById('licenceSuccess');
+        const successTxt = document.getElementById('licenceSuccessText');
+
+        const cle = input ? input.value.trim() : '';
+
+        if (!cle) {
+            input.classList.add('error');
+            errorTxt.textContent = 'Veuillez saisir votre clé d'activation.';
+            errorDiv.style.display = 'flex';
+            input.focus();
+            return;
+        }
+
+        // État chargement
+        btn.disabled = true;
+        btnIcon.className = 'bi bi-arrow-repeat spin';
+        btnText.textContent = 'Vérification en cours...';
+        resetModalMessages();
+
+        // Animation rotation spinner
+        const style = document.createElement('style');
+        style.textContent = '.spin { animation: spin 0.8s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
+
+        try {
+            const formData = new FormData();
+            formData.append('cle_activation', cle);
+            formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+            const response = await fetch('{% url "superadmin:saisir_cle" %}', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            const data = await response.json();
+
+            if (data.ok) {
+                // ── Succès ─────────────────────────────────────────
+                input.classList.add('success');
+                successTxt.textContent = data.message || 'Licence activée ! Rechargement en cours...';
+                successDiv.style.display = 'flex';
+
+                // Changer l'en-tête du modal en vert
+                const header = document.getElementById('modalHeader');
+                if (header) header.className = 'licence-modal-header success';
+                const icon = document.getElementById('modalIcon');
+                if (icon) icon.className = 'bi bi-check-circle-fill';
+                const title = document.getElementById('modalTitle');
+                if (title) title.textContent = 'Licence activée avec succès !';
+                const subtitle = document.getElementById('modalSubtitle');
+                if (subtitle) subtitle.textContent = data.message || 'Votre accès est maintenant débloqué.';
+
+                btnIcon.className = 'bi bi-check-circle-fill';
+                btnText.textContent = 'Accès débloqué !';
+
+                // Recharger après 1.5s
+                setTimeout(() => window.location.reload(), 1500);
+
+            } else {
+                // ── Erreur ─────────────────────────────────────────
+                input.classList.add('error');
+                errorTxt.textContent = data.error || 'Clé invalide. Vérifiez et réessayez.';
+                errorDiv.style.display = 'flex';
+                input.focus();
+                input.select();
+
+                // Remettre le bouton
+                btn.disabled = false;
+                btnIcon.className = 'bi bi-key-fill';
+                btnText.textContent = 'Activer la licence';
+            }
+
+        } catch (err) {
+            errorTxt.textContent = 'Erreur de connexion. Veuillez réessayer.';
+            errorDiv.style.display = 'flex';
+            btn.disabled = false;
+            btnIcon.className = 'bi bi-key-fill';
+            btnText.textContent = 'Activer la licence';
+        }
+    }
+
+    // ── Utilitaire cookie CSRF ────────────────────────────────────
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            for (const cookie of document.cookie.split(';')) {
+                const c = cookie.trim();
+                if (c.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(c.slice(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ── Ouvrir automatiquement si licence expirée ─────────────────
+    {% if user.type_poste == "DIRECTEUR" and not user.is_superuser and user.societe %}
+        {% if not cle %}
+        // Licence expirée → modal automatique au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => ouvrirModalLicence(), 500);
+        });
+        {% endif %}
+    {% endif %}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

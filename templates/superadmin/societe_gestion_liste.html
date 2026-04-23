@@ -1,0 +1,105 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Gestion des Sociétés — WIBABI{% endblock %}
+{% block nav_societe_gestion %}active{% endblock %}
+
+{% block page_title %}Gestion des Sociétés{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Liste des Sociétés ({{ paginator.count }} au total)</h5>
+        <a href="{% url 'superadmin:societe_creer' %}" class="btn btn-gold btn-sm">
+            <i class="bi bi-plus-circle"></i> Nouvelle société
+        </a>
+    </div>
+
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Société</th>
+                    <th>NIF</th>
+                    <th>Gérant</th>
+                    <th>Email</th>
+                    <th>N° Départ Factures</th>
+                    <th>OBR</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for soc in societes %}
+                <tr>
+                    <td><strong>{{ soc.nom }}</strong></td>
+                    <td><code>{{ soc.nif }}</code></td>
+                    <td>{{ soc.nom_complet_gerant|default:"—" }}</td>
+                    <td>{{ soc.email_societe|default:"—" }}</td>
+                    <td>{{ soc.numero_depart|default:"—" }}</td>
+                    <td>
+                        {% if soc.obr_actif %}
+                            <span class="badge bg-success">Activé</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Désactivé</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'superadmin:societe_gestion_modifier' soc.pk %}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        Aucune société trouvée.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ====================== PAGINATION ====================== -->
+    {% if paginator.num_pages > 1 %}
+    <div class="card-footer bg-white">
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center mb-0">
+                
+                <!-- Bouton Précédent -->
+                {% if societes.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ societes.previous_page_number }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+                {% endif %}
+
+                <!-- Numéros de pages -->
+                {% for num in paginator.page_range %}
+                    {% if num == societes.number %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > societes.number|add:'-3' and num < societes.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Bouton Suivant -->
+                {% if societes.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ societes.next_page_number }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

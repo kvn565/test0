@@ -1,0 +1,218 @@
+{% extends 'base_superadmin.html' %}
+{% block title %}Utilisateurs — Administration{% endblock %}
+{% block page_title %}Utilisateurs{% endblock %}
+{% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">Tous les comptes du système</p>{% endblock %}
+{% block breadcrumb %}<span class="sep">›</span> Utilisateurs{% endblock %}
+{% block nav_utilisateurs %}active{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    {# ── Stats ── #}
+    {% if stats %}
+    <div class="col-12">
+        <div class="row g-3">
+            <div class="col-sm-4 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.total }}</div>
+                        <div class="stat-label">Total utilisateurs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="bi bi-person-check"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.actifs }}</div>
+                        <div class="stat-label">Actifs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-icon gold"><i class="bi bi-person-badge"></i></div>
+                    <div>
+                        <div class="stat-value">{{ stats.directeurs|default:0 }}</div>
+                        <div class="stat-label">Directeurs (chefs)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Filtres ── #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body py-3">
+                <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
+                    <div style="flex:1;min-width:200px;">
+                        <label class="form-label mb-1">Recherche</label>
+                        <input type="text" name="q" value="{{ q }}" class="form-control"
+                               placeholder="Nom, username..." style="height:38px;">
+                    </div>
+                    <div style="min-width:180px;">
+                        <label class="form-label mb-1">Poste</label>
+                        <select name="poste" class="form-select" style="height:38px;">
+                            <option value="">Tous les postes</option>
+                            {% for code, label in types_poste %}
+                            <option value="{{ code }}" {% if poste == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="min-width:140px;">
+                        <label class="form-label mb-1">Statut</label>
+                        <select name="statut" class="form-select" style="height:38px;">
+                            <option value="">Tous</option>
+                            <option value="actif"    {% if statut == 'actif' %}selected{% endif %}>Actif</option>
+                            <option value="inactif"  {% if statut == 'inactif' %}selected{% endif %}>Inactif</option>
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" style="height:38px;">
+                            <i class="bi bi-search me-1"></i>Filtrer
+                        </button>
+                        {% if q or poste or statut %}
+                        <a href="{% url 'superadmin:utilisateurs' %}" class="btn btn-outline-secondary" style="height:38px;">
+                            Réinitialiser
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# ── Tableau des utilisateurs ── #}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <span><i class="bi bi-people me-2" style="color:var(--or);"></i>
+                    {{ utilisateurs.paginator.count }} utilisateur{{ utilisateurs.paginator.count|pluralize }}
+                    {% if utilisateurs.paginator.num_pages > 1 %}
+                    — Page {{ utilisateurs.number }} / {{ utilisateurs.paginator.num_pages }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="card-body p-0">
+                {% if utilisateurs %}
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Société</th>
+                                <th>Poste</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                                <th>Inscription</th>
+                                <th>Dernière connexion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in utilisateurs %}
+                            <tr>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:32px;height:32px;border-radius:50%;background:var(--or);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;color:var(--bleu);flex-shrink:0;">
+                                            {{ u.initiales }}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight:500;font-size:0.87rem;color:var(--bleu);">{{ u.nom_complet }}</div>
+                                            <div style="font-size:0.75rem;color:#8a9aaa;">@{{ u.username }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if u.societe %}
+                                        <a href="{% url 'superadmin:societe_detail' u.societe.pk %}" 
+                                           class="text-decoration-none" style="font-size:0.85rem;color:var(--bleu);">
+                                            {{ u.societe.nom|truncatechars:18 }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span style="font-size:0.82rem;{% if u.type_poste == 'DIRECTEUR' %}color:#0d3c8a;font-weight:600;{% else %}color:#5a6a7a;{% endif %}">
+                                        {{ u.get_type_poste_display }}
+                                    </span>
+                                </td>
+                                <td style="font-size:0.82rem;color:#5a6a7a;">{{ u.email|default:"—" }}</td>
+                                <td>
+                                    {% if u.actif %}
+                                        <span class="badge-active">Actif</span>
+                                    {% else %}
+                                        <span class="badge-inactive">Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:0.78rem;color:#8a9aaa;">{{ u.date_creation|date:"d/m/Y" }}</td>
+                                <td style="font-size:0.78rem;color:#8a9aaa;">
+                                    {% if u.derniere_connexion %}
+                                        {{ u.derniere_connexion|date:"d/m/Y H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-5 text-center" style="color:#8a9aaa;">
+                    <i class="bi bi-people fs-1 d-block mb-3" style="opacity:0.3;"></i>
+                    <p>Aucun utilisateur trouvé.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ====================== PAGINATION ====================== #}
+            {% if utilisateurs.paginator.num_pages > 1 %}
+            <div class="card-footer bg-white py-3">
+                <nav aria-label="Pagination des utilisateurs">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- Précédent -->
+                        {% if utilisateurs.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ utilisateurs.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if poste %}&poste={{ poste }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+                        {% endif %}
+
+                        <!-- Numéros de pages -->
+                        {% for num in utilisateurs.paginator.page_range %}
+                            {% if num == utilisateurs.number %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > utilisateurs.number|add:'-3' and num < utilisateurs.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if poste %}&poste={{ poste }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Suivant -->
+                        {% if utilisateurs.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ utilisateurs.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if poste %}&poste={{ poste }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

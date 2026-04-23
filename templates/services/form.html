@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ titre }}{% endblock %}
+{% block breadcrumb_parent %}Services{% endblock %}
+{% block breadcrumb_current %}{{ titre }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">{{ titre }}</div>
+    </div>
+    <a href="{% url 'services:liste' %}" class="btn-outline-custom">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-5">
+        <div class="card">
+            <div style="padding:24px;">
+
+                <!-- Icône + titre -->
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;
+                            padding-bottom:16px; border-bottom:1px solid var(--border-color);">
+                    <div style="width:42px; height:42px; background:#f0faf5; border-radius:10px;
+                                display:flex; align-items:center; justify-content:center;
+                                border:1.5px solid #bbdfc9;">
+                        <i class="bi bi-gear-wide-connected" style="color:var(--primary); font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:15px; font-weight:700;">{{ titre }}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">
+                            {% if service %}
+                                Modifiez les informations du service
+                            {% else %}
+                                Entrez les informations du nouveau service
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Désignation -->
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Désignation <span class="required">*</span></label>
+                        {{ form.designation }}
+                        {% if form.designation.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.designation.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Prix de vente -->
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Prix de vente <span class="required">*</span></label>
+                        {{ form.prix_vente }}
+                        {% if form.prix_vente.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.prix_vente.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Taux TVA -->
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Taux TVA</label>
+                        {{ form.taux_tva }}
+                        {% if form.taux_tva.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.taux_tva.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Statut <span class="required">*</span></label>
+                        {{ form.statut }}
+                        {% if form.statut.errors %}
+                        <div style="color:#dc2626; font-size:12px; margin-top:4px;">
+                            {{ form.statut.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:24px;">
+                        <a href="{% url 'services:liste' %}"
+                           class="btn-outline-custom" style="flex:1; justify-content:center;">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn-primary-custom"
+                                style="flex:2; justify-content:center;">
+                            <i class="bi bi-check-lg"></i> {{ action }}
+                        </button>
+                    </div>
+                </form>
+
+                {% if service %}
+                <div style="text-align:center; margin-top:12px;">
+                    <a href="{% url 'services:supprimer' service.pk %}"
+                       style="font-size:12.5px; color:#dc2626; text-decoration:none;">
+                        <i class="bi bi-trash"></i> Supprimer ce service
+                    </a>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

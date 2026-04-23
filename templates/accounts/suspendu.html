@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Compte suspendu — WIBABI{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card text-center" style="border:1.5px solid #fdecea;">
+      <div class="card-body p-5">
+        <div style="width:72px;height:72px;background:#fdecea;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+          <i class="bi bi-x-octagon-fill" style="font-size:2rem;color:#e74c3c;"></i>
+        </div>
+        <h4 style="font-family:'Playfair Display',serif;color:#b71c1c;">Accès suspendu</h4>
+        {% if societe %}
+        <p style="color:#8a9aaa;font-size:0.88rem;margin:8px 0 24px;">
+          La licence de <strong style="color:var(--bleu);">{{ societe.nom }}</strong> a été révoquée par l'administrateur.
+        </p>
+        {% else %}
+        <p style="color:#8a9aaa;font-size:0.88rem;margin:8px 0 24px;">Votre licence a été révoquée par l'administrateur.</p>
+        {% endif %}
+        <div style="background:#fdecea;border-radius:12px;padding:16px;margin-bottom:24px;font-size:0.83rem;color:#b71c1c;">
+          <i class="bi bi-info-circle me-2"></i>
+          Contrairement à une expiration, une <strong>révocation</strong> ne peut pas être résolue
+          en saisissant une clé. Contactez directement votre administrateur.
+        </div>
+        <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger">
+          <i class="bi bi-box-arrow-left me-2"></i>Se déconnecter
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

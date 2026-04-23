@@ -1,0 +1,310 @@
+{% comment %}
+    Template d'impression Facture A4 - Format OBR Officiel
+    Version ultra-compacte : marges très réduites
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ facture.numero }}</title>
+    <style>
+        @page { 
+            size: A4 portrait; 
+            margin: 0; 
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8.8pt;
+            color: #000;
+            background: #fff;
+            line-height: 1.18;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 4mm 8mm 12mm 8mm;   /* Marges fortement réduites */
+            box-sizing: border-box;
+            position: relative;
+            background: #fff;
+        }
+
+        /* Barre titre */
+        .title-bar {
+            background-color: #0f2a4a;
+            color: white;
+            padding: 6px 0;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .facture-title {
+            font-size: 13pt;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* Parties Vendeur / Client - Ultra compact */
+        .parties {
+            display: flex;
+            gap: 12px;
+            margin: 8px 0 10px 0;
+        }
+
+        .partie {
+            flex: 1;
+        }
+
+        .partie caption {
+            font-weight: bold;
+            color: #0f2a4a;
+            font-size: 9.2pt;
+            margin-bottom: 4px;
+        }
+
+        .partie td {
+            padding: 2px 5px;
+            font-size: 8.7pt;
+            border: none;
+            line-height: 1.15;
+        }
+
+        .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 165px;
+            color: #0f2a4a;
+        }
+
+        /* Tableau principal */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0 8px 0;
+        }
+
+        .main-table th,
+        .main-table td {
+            border: 1px solid #333;
+            padding: 3.5px 5px;
+            font-size: 8.7pt;
+        }
+
+        .main-table th {
+            background-color: #0f2a4a;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 9pt;
+        }
+
+        .main-table td:nth-child(2) { 
+            text-align: left; 
+            width: 40%;
+        }
+
+        .main-table td:nth-child(3),
+        .main-table td:nth-child(4),
+        .main-table td:nth-child(5),
+        .main-table td:nth-child(6),
+        .main-table td:nth-child(7) {
+            text-align: right;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            background-color: #f1f3f5;
+            font-size: 9.2pt;
+        }
+
+        /* Autres sections */
+        .lettres {
+            margin: 6px 0 8px 0;
+            font-size: 9pt;
+            font-style: italic;
+        }
+
+        .identifiant {
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 9.4pt;
+            margin: 6px 0 6px 0;
+            font-weight: bold;
+        }
+
+        .qr-container {
+            text-align: left;
+            margin: 4px 0 8px 2px;
+        }
+
+        .qr-container img {
+            max-width: 105px;
+            /* Bordure supprimée */
+            padding: 0;
+        }
+
+        .signature {
+            margin-top: 15px;
+            text-align: right;
+            font-size: 9pt;
+        }
+
+        .signature .line {
+            border-top: 1.8px solid #000;
+            width: 240px;
+            margin: 6px 0 4px auto;
+        }
+
+        /* Pied de page très serré */
+        .footer {
+            position: absolute;
+            bottom: 6mm;
+            left: 8mm;
+            right: 8mm;
+            text-align: center;
+            font-size: 7.8pt;
+            color: #333;
+        }
+
+        .footer hr {
+            border-top: 1.5px solid #0f2a4a;
+            margin: 5px 0 4px 0;
+        }
+
+        .footer .title {
+            font-weight: bold;
+            color: #0f2a4a;
+            margin-bottom: 1px;
+        }
+
+        @media print {
+            .page {
+                padding: 4mm 8mm 12mm 8mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- Barre titre -->
+    <div class="title-bar">
+        <div class="facture-title">
+            FACTURE N° {{ facture.numero }} du {{ facture.date_facture|date:"Y-m-d" }} {{ facture.heure_facture|time:"H:i:s" }}
+        </div>
+    </div>
+
+    <!-- Identification Vendeur / Client -->
+    <div class="parties">
+        <!-- Vendeur -->
+        <div class="partie">
+            <table>
+                <caption><span class="title">A. IDENTIFICATEUR DU VENDEUR</span></caption>
+                <tr><td><span class="label">Nom et prénom ou Raison sociale</span></td><td>: {{ societe.nom }}</td></tr>
+                <tr><td><span class="label">NIF</span></td><td>: {{ societe.nif|default:"—" }}</td></tr>
+                <tr><td><span class="label">Registre de commerce</span></td><td>: {{ societe.registre|default:"—" }}</td></tr>
+                <tr><td><span class="label">Tel</span></td><td>: {{ societe.telephone|default:"—" }}</td></tr>
+                <tr><td><span class="label">Email</span></td><td>: {{ societe.email_societe|default:"—" }}</td></tr>
+                <tr><td><span class="label">Commune</span></td><td>: {{ societe.commune|default:"—" }}</td></tr>
+                <tr><td><span class="label">Quartier</span></td><td>: {{ societe.quartier|default:"—" }}</td></tr>
+                <tr><td><span class="label">Avenue</span></td><td>: {{ societe.avenue|default:"—" }}</td></tr>
+                <tr><td><span class="label">No</span></td><td>: {{ societe.numero|default:"—" }}</td></tr>
+                <tr><td><span class="label">Assujetti à la TVA</span></td><td>: {% if societe.assujeti_tva %}Oui{% else %}Non{% endif %}</td></tr>
+                <tr><td><span class="label">Centre Fiscal</span></td><td>: {{ societe.centre_fiscale|default:"—" }}</td></tr>
+                <tr><td><span class="label">Forme Juridique</span></td><td>: {{ societe.forme|default:"—" }}</td></tr>
+                <tr><td><span class="label">Secteur d'activités</span></td><td>: {{ societe.secteur|default:"—" }}</td></tr>
+            </table>   
+        </div>
+
+        <!-- Client -->
+        <div class="partie">
+            <table>
+                <caption><span class="title">B. IDENTIFICATEUR DU CLIENT</span></caption>
+                <tr><td><span class="label">Nom du client</span></td><td>: {{ facture.client.nom|default:"—" }}</td></tr>
+                <tr><td><span class="label">NIF</span></td><td>: {{ facture.client.nif|default:"—" }}</td></tr>
+                <tr><td><span class="label">Résident à</span></td><td>: {{ facture.client.adresse|default:"—" }}</td></tr>
+                <tr><td><span class="label">Assujetti à la TVA</span></td><td>: {% if facture.client.assujeti_tva %}Oui{% else %}Non{% endif %}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <p style="font-size:9pt; margin:6px 0 8px 0;"><strong>Doit ce qui suit :</strong></p>
+
+    <!-- Tableau des lignes -->
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>DESCRIPTION</th>
+                <th>QTE</th>
+                <th>P.U HTVA</th>
+                <th>P.T HTVA</th>
+                <th>TVA</th>
+                <th>P.T TVAC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in lignes %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ ligne.designation }}</td>
+                <td>{{ ligne.quantite|floatformat:0 }}</td>
+                <td>{{ ligne.prix_ht|floatformat:2 }}</td>
+                <td>{{ ligne.montant_ht|floatformat:2 }}</td>
+                <td>{{ ligne.montant_tva|floatformat:2 }}</td>
+                <td>{{ ligne.montant_ttc|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="4" style="text-align:right;">Total</td>
+                <td style="text-align:right;">{{ facture.total_ht|floatformat:2 }}</td>
+                <td style="text-align:right;">{{ facture.total_tva|floatformat:2 }}</td>
+                <td style="text-align:right;">{{ facture.total_ttc|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Montant en lettres -->
+    <div class="lettres">
+        <strong>Nous disons :</strong> 
+        {{ montant_lettres|default:"Montant en lettres non disponible" }}
+    </div>
+
+    <!-- Identifiant -->
+    <div class="identifiant">
+        Identifiant : <strong>{{ facture.invoice_identifier|default:facture.numero_obr }}</strong>
+    </div>
+
+    <!-- QR Code (bordure supprimée) -->
+    <div class="qr-container">
+        {% if qr_code_url %}
+            <img src="{{ qr_code_url }}" alt="QR Code OBR">
+        {% else %}
+            <p style="color:#999; font-size:8pt;">QR Code non disponible</p>
+        {% endif %}
+    </div>
+
+    <!-- Signature -->
+    <div class="signature">
+        <div class="line"></div>
+        <strong>Directeur Gérant</strong><br>
+        {{ societe.nom_complet_gerant|default:"NSAVYUMUREMYI Blaise" }}
+    </div>
+
+</div>
+
+<!-- Pied de page très serré -->
+<div class="footer">
+    <hr>
+    <div class="title">Document officiel conforme aux normes OBR</div>
+    <p>Facture électronique certifiée - Burundi Revenue Authority (OBR)</p>
+</div>
+
+</body>
+</html>

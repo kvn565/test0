@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Rapport Entrées{% endblock %}
+{% block breadcrumb_parent %}Rapports{% endblock %}
+{% block breadcrumb_current %}Entrées / Achats{% endblock %}
+
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">
+            <i class="bi {{ rapport_icone }}" style="color:{{ rapport_clr }};"></i> {{ titre }}
+        </div>
+        <div class="page-subtitle">Mouvements d'entrée en stock sur la période sélectionnée</div>
+    </div>
+
+    <!-- Boutons Export + Navigation -->
+    <div style="display:flex; gap:10px; align-items:center;">
+        {% if lignes %}
+        <a href="{% url 'rapports:export_entrees_excel' %}" class="btn btn-success btn-sm" target="_blank">
+            <i class="bi bi-file-earmark-excel"></i> Excel
+        </a>
+        <a href="{% url 'rapports:export_entrees_pdf' %}" class="btn btn-danger btn-sm" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> PDF
+        </a>
+        {% endif %}
+
+        <a href="{% url 'rapports:sorties' %}" class="btn-outline-custom">
+            <i class="bi bi-box-arrow-up"></i> Sorties
+        </a>
+        <a href="{% url 'rapports:stock_actuel' %}" class="btn-outline-custom">
+            <i class="bi bi-archive"></i> Stock actuel
+        </a>
+    </div>
+</div>
+
+{% include 'rapports/_filtres.html' %}
+
+<!-- Totaux -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ totaux.nb|default:0 }}</div>
+            <div class="stat-label">Entrées</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ totaux.total_qte|default:0|floatformat:0 }}</div>
+            <div class="stat-label">Quantité totale</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="stat-card">
+            <div class="stat-value" style="color:{{ rapport_clr }};">
+                {{ totaux.total_valeur|default:0|floatformat:0 }} BIF
+            </div>
+            <div class="stat-label">Valeur totale (prix de revient)</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    {% if lignes %}
+    <div style="overflow-x:auto;">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Fournisseur</th>
+                    <th>Quantité</th>
+                    <th>Prix revient</th>
+                    <th>Montant total</th>
+                    <th>OBR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in lignes %}
+                <tr>
+                    <td style="font-size:12px; color:var(--text-muted);">
+                        {{ e.date_entree|date:"d/m/Y"|default:"—" }}
+                    </td>
+                    <td>
+                        <span class="badge-essai">{{ e.type_entree|default:"—" }}</span>
+                    </td>
+                    <td>
+                        <div style="font-weight:600; font-size:13px;">{{ e.produit.designation }}</div>
+                        <div style="font-size:11px; color:var(--text-muted);">{{ e.produit.code|default:"—" }}</div>
+                    </td>
+                    <td style="font-size:12.5px; color:var(--text-muted);">
+                        {{ e.produit.categorie.nom|default:"—" }}
+                    </td>
+                    <td style="font-size:12.5px;">
+                        {{ e.fournisseur.nom|default:"—" }}
+                    </td>
+                    <td style="font-weight:600;">
+                        {{ e.quantite|default:0 }} {{ e.produit.unite|default:"—" }}
+                    </td>
+                    <td style="font-size:12.5px;">
+                        {{ e.prix_revient|floatformat:0|default:0 }} BIF
+                    </td>
+                    <td style="font-weight:600; color:{{ rapport_clr }};">
+                        {{ e.montant_total|floatformat:0|default:0 }} BIF
+                    </td>
+                    <td>
+                        {% if e.statut_obr == 'ENVOYE' %}
+                            <span class="badge-active">Envoyé</span>
+                        {% elif e.statut_obr == 'ECHEC' %}
+                            <span class="badge-inactive">Échec</span>
+                        {% else %}
+                            <span class="badge-pending">Attente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:80px 20px; color:#64748b;">
+        <i class="bi bi-box-arrow-in-down" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
+        <div style="font-size:15px; font-weight:600;">Aucune entrée trouvée</div>
+        <div style="font-size:13px; margin-top:8px;">Ajustez les filtres pour afficher les résultats</div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
