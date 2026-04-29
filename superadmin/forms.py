@@ -1,15 +1,15 @@
-# superadmin/forms.py — VERSION FINALE AVEC LOGO
 from datetime import timedelta
 from django import forms
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
+
 from .models import CleActivation, Utilisateur
 from societe.models import Societe
 
 
-# ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
 #  SOCIÉTÉ — création par le superadmin
-# ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
 class SocieteForm(forms.ModelForm):
     class Meta:
         model = Societe
@@ -40,15 +40,13 @@ class SocieteForm(forms.ModelForm):
     def clean_nif(self):
         nif = self.cleaned_data.get('nif', '').strip()
         if not self.instance.pk and Societe.objects.filter(nif=nif).exists():
-            raise forms.ValidationError(
-                "Une société avec ce NIF existe déjà dans le système."
-            )
+            raise forms.ValidationError("Une société avec ce NIF existe déjà dans le système.")
         return nif
 
 
-# ──────────────────────────────────────────────
-#  Clé d’activation
-# ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
+#  CLÉ D’ACTIVATION
+# ═══════════════════════════════════════════════════════════════
 class CleActivationForm(forms.ModelForm):
     class Meta:
         model = CleActivation
@@ -96,27 +94,25 @@ class CleActivationForm(forms.ModelForm):
         return cleaned
 
 
-# ──────────────────────────────────────────────
-#  Révocation de clé
-# ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
+#  RÉVOCATION DE CLÉ
+# ═══════════════════════════════════════════════════════════════
 class RevoquerCleForm(forms.Form):
     motif = forms.CharField(
         label="Raison de la révocation",
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4,
-                                     'placeholder': "Ex: Défaut de paiement, non-respect du contrat…"}),
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': "Ex: Défaut de paiement, non-respect du contrat…"
+        }),
         required=True,
     )
 
 
-# ──────────────────────────────────────────────
-#  Inscription chef — premier accès
-# ──────────────────────────────────────────────
-# ──────────────────────────────────────────────
-#  Inscription chef — Version corrigée (stockage sécurisé des infos du chef)
-# ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
+#  INSCRIPTION CHEF
+# ═══════════════════════════════════════════════════════════════
 class InscriptionChefForm(forms.Form):
-    # Section 1 : Société — Le chef saisit UNIQUEMENT le NIF
-    # Le nom de la société est affiché en lecture seule dans le template (pas dans le form)
     nif = forms.CharField(
         label="NIF (Numéro d'Identification Fiscale)",
         max_length=50,
@@ -128,55 +124,33 @@ class InscriptionChefForm(forms.Form):
         help_text="Saisissez exactement le NIF fourni par l'administrateur système."
     )
 
-    # Champs que le chef complète / met à jour sur la société existante
     registre = forms.CharField(
-        label="Registre de commerce",
-        max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
+        label="Registre de commerce", max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'}), required=True
     )
     boite_postal = forms.CharField(
-        label="Boîte postale",
-        max_length=50,
-        required=False,
+        label="Boîte postale", max_length=50, required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     telephone = forms.CharField(
-        label="Téléphone de la société",
-        max_length=50,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
+        label="Téléphone de la société", max_length=50,
+        widget=forms.TextInput(attrs={'class': 'form-control'}), required=True
     )
     email_societe = forms.EmailField(
-        label="Email officiel de la société",
-        required=False,
+        label="Email officiel de la société", required=False,
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
 
-    province = forms.CharField(
-        label="Province", max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    commune = forms.CharField(
-        label="Commune", max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    quartier = forms.CharField(
-        label="Quartier", max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    avenue = forms.CharField(
-        label="Avenue", max_length=150,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    numero = forms.CharField(
-        label="Numéro", max_length=20, required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
+    province = forms.CharField(label="Province", max_length=100,
+                               widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    commune = forms.CharField(label="Commune", max_length=100,
+                              widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    quartier = forms.CharField(label="Quartier", max_length=100,
+                               widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    avenue = forms.CharField(label="Avenue", max_length=150,
+                             widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    numero = forms.CharField(label="Numéro", max_length=20, required=False,
+                             widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     centre_fiscale = forms.ChoiceField(
         label="Centre fiscal",
@@ -185,108 +159,54 @@ class InscriptionChefForm(forms.Form):
         required=True
     )
 
-    # Assujettis — Utilisation de BooleanField + Checkbox (beaucoup plus propre)
-    assujeti_tva = forms.BooleanField(
-        label="Assujetti à la TVA",
-        required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
-    )
-    assujeti_tc = forms.BooleanField(
-        label="Assujetti à la Taxe de Consommation (TC)",
-        required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
-    )
-    assujeti_pfl = forms.BooleanField(
-        label="Assujetti au Prélèvement Forfaitaire Libératoire (PFL)",
-        required=False,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
-    )
+    assujeti_tva = forms.BooleanField(label="Assujetti à la TVA", required=False,
+                                      widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+    assujeti_tc = forms.BooleanField(label="Assujetti à la Taxe de Consommation (TC)", required=False,
+                                     widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+    assujeti_pfl = forms.BooleanField(label="Assujetti au Prélèvement Forfaitaire Libératoire (PFL)", required=False,
+                                      widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
-    forme = forms.CharField(
-        label="Forme juridique",
-        max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: SARL, SA, SPRL…'}),
-        required=True
-    )
-    secteur = forms.CharField(
-        label="Secteur d'activité",
-        max_length=250,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Commerce général, Services, Import/Export…'}),
-        required=True
-    )
+    forme = forms.CharField(label="Forme juridique", max_length=100,
+                            widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    secteur = forms.CharField(label="Secteur d'activité", max_length=250,
+                              widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
 
-    logo = forms.ImageField(
-        label="Logo de la société",
-        required=False,
-        widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
-        help_text="Format recommandé : PNG ou JPG (max 2 Mo)"
-    )
+    logo = forms.ImageField(label="Logo de la société", required=False,
+                            widget=forms.ClearableFileInput(attrs={'class': 'form-control'}))
 
-    nom_complet_gerant = forms.CharField(
-        label="Nom complet du gérant",
-        max_length=200,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
+    nom_complet_gerant = forms.CharField(label="Nom complet du gérant", max_length=200, required=False,
+                                         widget=forms.TextInput(attrs={'class': 'form-control'}))
 
-    # Section 2 : Informations personnelles du chef
-    chef_nom = forms.CharField(
-        label="Votre nom", max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    chef_postnom = forms.CharField(
-        label="Votre post-nom", max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    chef_prenom = forms.CharField(
-        label="Votre prénom", max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    chef_email = forms.EmailField(
-        label="Votre email professionnel",
-        required=False,
-        widget=forms.EmailInput(attrs={'class': 'form-control'})
-    )
+    chef_nom = forms.CharField(label="Votre nom", max_length=100,
+                               widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    chef_postnom = forms.CharField(label="Votre post-nom", max_length=100,
+                                   widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    chef_prenom = forms.CharField(label="Votre prénom", max_length=100,
+                                  widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    chef_email = forms.EmailField(label="Votre email professionnel", required=False,
+                                  widget=forms.EmailInput(attrs={'class': 'form-control'}))
 
-    # Section 3 : Compte de connexion
-    chef_username = forms.CharField(
-        label="Nom d'utilisateur",
-        max_length=150,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'off'}),
-        required=True
-    )
-    chef_password1 = forms.CharField(
-        label="Mot de passe",
-        min_length=8,
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        required=True
-    )
-    chef_password2 = forms.CharField(
-        label="Confirmer le mot de passe",
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        required=True
-    )
+    chef_username = forms.CharField(label="Nom d'utilisateur", max_length=150,
+                                    widget=forms.TextInput(attrs={'class': 'form-control'}), required=True)
+    chef_password1 = forms.CharField(label="Mot de passe", min_length=8,
+                                     widget=forms.PasswordInput(attrs={'class': 'form-control'}), required=True)
+    chef_password2 = forms.CharField(label="Confirmer le mot de passe",
+                                     widget=forms.PasswordInput(attrs={'class': 'form-control'}), required=True)
 
-    # ====================== VALIDATIONS ======================
     def clean_nif(self):
         nif = self.cleaned_data.get('nif', '').strip().upper()
         try:
             societe = Societe.objects.get(nif=nif)
         except Societe.DoesNotExist:
-            raise forms.ValidationError("Ce NIF n'existe pas dans le système. Contactez l'administrateur.")
+            raise forms.ValidationError("Ce NIF n'existe pas dans le système.")
 
         now = timezone.now()
         cle_active = societe.cles_activation.filter(
-            statut='ACTIVE',
-            date_debut__lte=now,
-            date_fin__gte=now
+            statut='ACTIVE', date_debut__lte=now, date_fin__gte=now
         ).first()
 
         if not cle_active:
-            raise forms.ValidationError("Aucune licence active pour ce NIF. Contactez l'administrateur.")
+            raise forms.ValidationError("Aucune licence active pour ce NIF.")
 
         if Utilisateur.objects.filter(societe=societe, type_poste='DIRECTEUR').exists():
             raise forms.ValidationError("Un directeur est déjà inscrit pour cette société.")
@@ -303,22 +223,17 @@ class InscriptionChefForm(forms.Form):
 
     def clean(self):
         cleaned = super().clean()
-        p1 = cleaned.get('chef_password1')
-        p2 = cleaned.get('chef_password2')
-
-        if p1 and p2 and p1 != p2:
+        if cleaned.get('chef_password1') != cleaned.get('chef_password2'):
             self.add_error('chef_password2', "Les deux mots de passe ne correspondent pas.")
 
-        # On passe les objets utiles à la vue
         cleaned['_societe'] = getattr(self, '_societe', None)
         cleaned['_cle_active'] = getattr(self, '_cle_active', None)
-
         return cleaned
 
 
-# ──────────────────────────────────────────────
-#  Clé payante
-# ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
+#  CLÉ PAYANTE
+# ═══════════════════════════════════════════════════════════════
 class ClePayanteForm(forms.Form):
     cle_activation = forms.CharField(
         label="Clé de licence", max_length=50,
@@ -328,119 +243,74 @@ class ClePayanteForm(forms.Form):
             'style': 'font-family: monospace; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;',
             'autocomplete': 'off', 'autofocus': 'autofocus',
         }),
-        help_text="Clé reçue de l'administrateur système après votre période d'essai."
     )
 
     def clean_cle_activation(self):
         return self.cleaned_data.get('cle_activation', '').strip().upper()
 
-    def verifier_pour_societe(self, societe):
-        cle_saisie = self.cleaned_data.get('cle_activation', '')
-        success, message, cle_obj = CleActivation.verifier_pour_setup(cle_saisie, societe.nif)
-        return success, message, cle_obj
 
-
-# ──────────────────────────────────────────────
-#  Utilisateurs (CRUD)
-# ──────────────────────────────────────────────
-_DROITS_WIDGETS = {k: forms.CheckboxInput(attrs={'class': 'form-check-input'}) for k in [
-    'droit_stock_categorie','droit_stock_produit','droit_stock_fournisseur',
-    'droit_stock_entree','droit_stock_sortie','droit_facture_pnb','droit_facture_fdnb',
-    'droit_facture_particulier','droit_devis','droit_rapports','is_superuser','actif']}
-
-_CHAMPS_IDENTITE = ['nom','postnom','prenom','username','email','type_poste','photo']
-_CHAMPS_DROITS = list(_DROITS_WIDGETS.keys())
-
-
+# ═══════════════════════════════════════════════════════════════
+#  UTILISATEURS
+# ═══════════════════════════════════════════════════════════════
 class UtilisateurCreationForm(UserCreationForm):
-    password1 = forms.CharField(label="Mot de passe", widget=forms.PasswordInput(attrs={'class':'form-control'}))
-    password2 = forms.CharField(label="Confirmer", widget=forms.PasswordInput(attrs={'class':'form-control'}))
-
     class Meta:
         model = Utilisateur
-        fields = _CHAMPS_IDENTITE + _CHAMPS_DROITS
-        widgets = {**{f: forms.TextInput(attrs={'class':'form-control'}) for f in ['nom','postnom','prenom','username']},
-                   'email': forms.EmailInput(attrs={'class':'form-control'}),
-                   'type_poste': forms.Select(attrs={'class':'form-control'}),
-                   'photo': forms.FileInput(attrs={'class':'form-control'}),
-                   **_DROITS_WIDGETS}
+        fields = ['nom', 'postnom', 'prenom', 'username', 'email', 'type_poste', 'photo',
+                  'droit_stock_categorie', 'droit_stock_produit', 'droit_stock_fournisseur',
+                  'droit_stock_entree', 'droit_stock_sortie', 'droit_facture_pnb',
+                  'droit_facture_fdnb', 'droit_facture_particulier', 'droit_devis',
+                  'droit_rapports', 'is_superuser', 'actif']
 
 
 class UtilisateurModificationForm(forms.ModelForm):
     class Meta:
         model = Utilisateur
-        fields = _CHAMPS_IDENTITE + _CHAMPS_DROITS
-        widgets = {**{f: forms.TextInput(attrs={'class':'form-control'}) for f in ['nom','postnom','prenom','username']},
-                   'email': forms.EmailInput(attrs={'class':'form-control'}),
-                   'type_poste': forms.Select(attrs={'class':'form-control'}),
-                   'photo': forms.FileInput(attrs={'class':'form-control'}),
-                   **_DROITS_WIDGETS}
+        fields = ['nom', 'postnom', 'prenom', 'username', 'email', 'type_poste', 'photo',
+                  'droit_stock_categorie', 'droit_stock_produit', 'droit_stock_fournisseur',
+                  'droit_stock_entree', 'droit_stock_sortie', 'droit_facture_pnb',
+                  'droit_facture_fdnb', 'droit_facture_particulier', 'droit_devis',
+                  'droit_rapports', 'is_superuser', 'actif']
 
 
 class ChangerMotDePasseForm(forms.Form):
-    nouveau_mot_de_passe = forms.CharField(label="Nouveau mot de passe", min_length=8,
-                                          widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    confirmer_mot_de_passe = forms.CharField(label="Confirmer le mot de passe",
-                                             widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    nouveau_mot_de_passe = forms.CharField(
+        label="Nouveau mot de passe", min_length=8,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    confirmer_mot_de_passe = forms.CharField(
+        label="Confirmer le mot de passe",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
 
     def clean(self):
         cleaned = super().clean()
-        password = cleaned.get('nouveau_mot_de_passe')
-        confirm = cleaned.get('confirmer_mot_de_passe')
-        if password and confirm and password != confirm:
+        if cleaned.get('nouveau_mot_de_passe') != cleaned.get('confirmer_mot_de_passe'):
             raise forms.ValidationError("Les deux mots de passe ne correspondent pas.")
         return cleaned
 
 
-    # ──────────────────────────────────────────────
-#  SocieteGeranceForm — Gestion par le superadmin
-#  (Nom complet du gérant, Email société, Numéro de départ des factures)
-# ──────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════
+#  GESTION GÉRANCE
+# ═══════════════════════════════════════════════════════════════
 class SocieteGeranceForm(forms.ModelForm):
-    """
-    Formulaire réservé au superadmin pour gérer les informations de gestion de la société.
-    """
     class Meta:
         model = Societe
-        fields = [
-            'nom_complet_gerant',
-            'email_societe',
-            'numero_depart',
-        ]
+        fields = ['nom_complet_gerant', 'email_societe', 'numero_depart']
         widgets = {
-            'nom_complet_gerant': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ex: Jean Claude Nkurunziza'
-            }),
-            'email_societe': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'contact@societe.bi'
-            }),
-            'numero_depart': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'placeholder': '1000'
-            }),
+            'nom_complet_gerant': forms.TextInput(attrs={'class': 'form-control'}),
+            'email_societe': forms.EmailInput(attrs={'class': 'form-control'}),
+            'numero_depart': forms.NumberInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'nom_complet_gerant': "Nom complet du gérant",
             'email_societe': "Email officiel de la société",
             'numero_depart': "Numéro de départ des factures",
         }
-        help_texts = {
-            'nom_complet_gerant': "Apparaîtra sur les factures et documents officiels.",
-            'email_societe': "Email principal utilisé pour les notifications.",
-            'numero_depart': "Valeur de départ pour la numérotation automatique des factures (ex: FN-2026-0001).",
-        }
 
 
-# ──────────────────────────────────────────────
-#  SocieteAdminConfigForm — Configuration OBR (eBMS)
-# ──────────────────────────────────────────────
-# ──────────────────────────────────────────────
-#  SocieteAdminConfigForm — Configuration OBR
-# ──────────────────────────────────────────────
-# Dans superadmin/forms.py
-
+# ═══════════════════════════════════════════════════════════════
+#  CONFIGURATION OBR (eBMS) — Avec obr_base_url
+# ═══════════════════════════════════════════════════════════════
 class SocieteAdminConfigForm(forms.ModelForm):
     obr_password = forms.CharField(
         label="Mot de passe OBR",
@@ -455,13 +325,38 @@ class SocieteAdminConfigForm(forms.ModelForm):
 
     class Meta:
         model = Societe
-        fields = ['obr_username', 'obr_password', 'obr_system_id', 'obr_actif']
+        fields = [
+            'obr_actif',
+            'obr_username',
+            'obr_system_id',
+            'obr_base_url',      # ← Champ ajouté (URL de l'API OBR)
+        ]
+        widgets = {
+            'obr_actif': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'obr_username': forms.TextInput(attrs={'class': 'form-control'}),
+            'obr_system_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'obr_base_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://ebms.obr.gov.bi:9443/ebms_api'
+            }),
+        }
+        labels = {
+            'obr_actif': "Activer l'intégration OBR (eBMS)",
+            'obr_username': "Nom d'utilisateur OBR",
+            'obr_system_id': "System ID OBR",
+            'obr_base_url': "URL Base API OBR",
+        }
+        help_texts = {
+            'obr_base_url': (
+                'URL de base de l\'API OBR. Laissez ce champ vide pour utiliser '
+                'l\'URL par défaut : https://ebms.obr.gov.bi:9443/ebms_api'
+            ),
+        }
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         password = self.cleaned_data.get('obr_password')
 
-        # Si aucun nouveau mot de passe n'est saisi, on garde l'ancien
         if not password and self.instance.pk:
             instance.obr_password = Societe.objects.get(pk=self.instance.pk).obr_password
 

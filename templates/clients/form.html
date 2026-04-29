@@ -36,9 +36,9 @@
                         </label>
                         {{ form.nom }}
                         {% if form.nom.errors %}
-                        <div style="color:#e74c3c;font-size:0.78rem;margin-top:5px;">
-                            <i class="bi bi-exclamation-circle me-1"></i>{{ form.nom.errors.0 }}
-                        </div>
+                            <div class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ form.nom.errors.0 }}
+                            </div>
                         {% endif %}
                     </div>
 
@@ -59,21 +59,29 @@
                         <small id="feedback-nif" class="form-text d-block mt-1" style="min-height:1.2em;"></small>
 
                         {% if form.nif.errors %}
-                        <div style="color:#e74c3c;font-size:0.78rem;margin-top:5px;">
-                            {{ form.nif.errors.0 }}
-                        </div>
+                            <div class="text-danger small mt-1">
+                                {{ form.nif.errors.0 }}
+                            </div>
                         {% endif %}
                     </div>
 
+                    {# ── Type de client ── #}
                     <div class="col-md-6">
                         <label class="form-label">
                             Type de client
                             <span style="color:#aab;font-weight:400;">(optionnel)</span>
                         </label>
                         {{ form.type_client }}
+                        
+                        {% if form.type_client.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ form.type_client.errors.0 }}
+                            </div>
+                        {% endif %}
+
                         <div style="font-size:0.74rem;color:#aab;margin-top:4px;">
                             <a href="{% url 'clients:types' %}" style="color:var(--or);">
-                                Gérer les types
+                                <i class="bi bi-gear me-1"></i>Gérer les types
                             </a>
                         </div>
                     </div>
@@ -85,6 +93,11 @@
                             <span style="color:#aab;font-weight:400;">(optionnel)</span>
                         </label>
                         {{ form.adresse }}
+                        {% if form.adresse.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.adresse.errors.0 }}
+                            </div>
+                        {% endif %}
                     </div>
 
                     {# ── TVA ── #}
@@ -92,18 +105,25 @@
                         <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8f9fb;border-radius:10px;border:1.5px solid #eef0f4;">
                             {{ form.assujeti_tva }}
                             <div>
-                                <label class="form-label" style="margin:0;cursor:pointer;">Assujetti TVA</label>
+                                <label class="form-label" style="margin:0;cursor:pointer;">
+                                    Assujetti à la TVA
+                                </label>
                                 <div style="font-size:0.76rem;color:#8a9aaa;margin-top:1px;">
                                     Cocher si ce client est assujetti à la TVA
                                 </div>
                             </div>
                         </div>
+                        {% if form.assujeti_tva.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.assujeti_tva.errors.0 }}
+                            </div>
+                        {% endif %}
                     </div>
 
                 </div>
 
                 {# ── Boutons ── #}
-                <div style="display:flex;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid #f0f2f5;">
+                <div style="display:flex;gap:10px;margin-top:28px;padding-top:20px;border-top:1px solid #f0f2f5;">
                     <button type="submit" class="btn btn-gold">
                         <i class="bi bi-check-circle me-2"></i>
                         {% if mode == 'modifier' %}Enregistrer les modifications{% else %}Créer le client{% endif %}
@@ -114,15 +134,16 @@
         </div>
     </div>
 
+    {# ── Info création ── #}
     {% if mode == 'modifier' and client %}
-    <div style="margin-top:10px;padding:10px 14px;background:#fafbfc;border-radius:8px;font-size:0.76rem;color:#aab;">
-        <i class="bi bi-calendar me-1"></i>Client enregistré le {{ client.date_creation|date:"d/m/Y" }}
+    <div style="margin-top:12px;padding:10px 14px;background:#fafbfc;border-radius:8px;font-size:0.76rem;color:#aab;">
+        <i class="bi bi-calendar me-1"></i>
+        Client enregistré le {{ client.date_creation|date:"d/m/Y à H:i" }}
     </div>
     {% endif %}
 
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
@@ -132,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btn) return;
 
     btn.addEventListener('click', async () => {
-        const nifInput = document.querySelector('#id_nif');  // id généré par Django
+        const nifInput = document.querySelector('#id_nif');
         const nomInput = document.querySelector('#id_nom');
         const feedback = document.getElementById('feedback-nif');
 
@@ -159,18 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
 
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP ${response.status}`);
-            }
-
             const data = await response.json();
 
             if (data.ok) {
-                nomInput.value = data.nom_officiel;
-                feedback.innerHTML = '<i class="bi bi-check-circle-fill me-1 text-success"></i> ' + data.message;
+                nomInput.value = data.nom_officiel || '';
+                feedback.innerHTML = `<i class="bi bi-check-circle-fill me-1 text-success"></i> ${data.message}`;
                 feedback.className = 'text-success';
             } else {
-                feedback.innerHTML = '<i class="bi bi-x-circle-fill me-1 text-danger"></i> ' + data.message;
+                feedback.innerHTML = `<i class="bi bi-x-circle-fill me-1 text-danger"></i> ${data.message}`;
                 feedback.className = 'text-danger';
             }
         } catch (err) {
@@ -186,7 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <style>
-    .spin { animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { 
+        animation: spin 1s linear infinite; 
+    }
+    @keyframes spin { 
+        to { transform: rotate(360deg); } 
+    }
 </style>
 {% endblock %}

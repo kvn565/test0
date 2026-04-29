@@ -1,12 +1,15 @@
 from django.db import models
 from django.utils import timezone
-from societe.models import Societe
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from societe.models import Societe   # ou from .models import Societe si c'est le même fichier
 
 
 class TypeClient(models.Model):
     """
     Type de client propre à chaque société.
-    Ex: Particulier, Entreprise, ONG, Administration, etc.
+    Par défaut : Particulier, Société locale, Société étrangère
     """
     societe = models.ForeignKey(
         Societe,
@@ -15,6 +18,7 @@ class TypeClient(models.Model):
         verbose_name="Société",
     )
     nom = models.CharField(max_length=100, verbose_name="Type de client")
+    est_defaut = models.BooleanField(default=False, verbose_name="Type par défaut")
 
     class Meta:
         verbose_name = "Type de client"
@@ -23,7 +27,7 @@ class TypeClient(models.Model):
         unique_together = [('societe', 'nom')]   # Un type par société
 
     def __str__(self):
-        return f"{self.nom} ({self.societe.nom})"
+        return self.nom
 
     @property
     def nb_clients(self):
@@ -57,13 +61,12 @@ class Client(models.Model):
         blank=True,
         null=True,
         verbose_name="NIF",
-        help_text="Numéro d'Identification Fiscale (vérifiable via checkTIN)"
+        help_text="Numéro d'Identification Fiscale"
     )
 
     assujeti_tva = models.BooleanField(
         default=False,
-        verbose_name="Assujetti à la TVA",
-        help_text="Correspond à vat_customer_payer dans l'API OBR"
+        verbose_name="Assujetti à la TVA"
     )
 
     # ── Adresse ─────────────────────────────────────────────────────────
@@ -72,20 +75,14 @@ class Client(models.Model):
     commune = models.CharField(max_length=100, blank=True, null=True)
     quartier = models.CharField(max_length=100, blank=True, null=True)
     avenue = models.CharField(max_length=100, blank=True, null=True)
-    numero = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro")
+    numero = models.CharField(max_length=20, blank=True, null=True)
 
     telephone = models.CharField(max_length=30, blank=True, null=True, verbose_name="Téléphone")
 
     # ── Champs OBR ───────────────────────────────────────────────────────
     verifie_obr = models.BooleanField(default=False, verbose_name="Vérifié par OBR")
-    date_verification = models.DateTimeField(null=True, blank=True, verbose_name="Date de vérification OBR")
-    nom_obr_officiel = models.CharField(
-        max_length=150,
-        blank=True,
-        null=True,
-        verbose_name="Nom officiel retourné par OBR",
-        help_text="Ne pas modifier manuellement"
-    )
+    date_verification = models.DateTimeField(null=True, blank=True)
+    nom_obr_officiel = models.CharField(max_length=150, blank=True, null=True)
 
     # ── Traçabilité ──────────────────────────────────────────────────────
     cree_par = models.ForeignKey(
@@ -93,51 +90,49 @@ class Client(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='clients_crees',
-        verbose_name="Créé par"
+        related_name='clients_crees'
     )
-    date_creation = models.DateTimeField(default=timezone.now, verbose_name="Date de création")
+    date_creation = models.DateTimeField(default=timezone.now)
     date_modification = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Client"
         verbose_name_plural = "Clients"
         ordering = ['nom']
-        unique_together = [
-            ('societe', 'nif'),      # Un même NIF ne peut exister qu'une fois par société
-        ]
+        unique_together = [('societe', 'nif')]
 
     def __str__(self):
-        nif_str = f" — NIF {self.nif}" if self.nif else ""
-        type_str = f" ({self.type_client.nom})" if self.type_client else ""
-        return f"{self.nom}{type_str}{nif_str}"
+        return f"{self.nom} ({self.type_client.nom if self.type_client else 'Sans type'})"
 
     @property
     def vat_customer_payer(self):
-        """Valeur attendue par l'API OBR (addInvoice)"""
         return "1" if self.assujeti_tva else "0"
 
     @property
     def adresse_complete(self):
-        parts = []
-        if self.adresse:
-            parts.append(self.adresse)
-        elif self.avenue or self.numero or self.quartier or self.commune:
-            if self.avenue:
-                parts.append(self.avenue)
-            if self.numero:
-                parts.append(f"N° {self.numero}")
-            if self.quartier:
-                parts.append(self.quartier)
-            if self.commune:
-                parts.append(self.commune)
-            if self.province:
-                parts.append(self.province)
+        parts = [p for p in [self.adresse, self.avenue, f"N°{self.numero}" if self.numero else None,
+                             self.quartier, self.commune, self.province] if p]
         return ", ".join(parts) if parts else "—"
 
-    def marquer_comme_verifie_obr(self, nom_officiel: str):
-        """Méthode utilitaire après un checkTIN réussi"""
-        self.nom_obr_officiel = nom_officiel.strip()
-        self.verifie_obr = True
-        self.date_verification = timezone.now()
-        self.save(update_fields=['nom_obr_officiel', 'verifie_obr', 'date_verification'])
+
+# ====================== SIGNAL POUR CRÉER LES TYPES PAR DÉFAUT ======================
+
+@receiver(post_save, sender=Societe)
+def creer_types_clients_par_defaut(sender, instance, created, **kwargs):
+    """
+    Crée automatiquement les 3 types de clients par défaut 
+    lorsqu'une nouvelle société est créée.
+    """
+    if created:  # Seulement à la création de la société
+        types_defaut = [
+            {"nom": "Particulier", "est_defaut": True},
+            {"nom": "Société locale", "est_defaut": True},
+            {"nom": "Société étrangère", "est_defaut": True},
+        ]
+
+        for t in types_defaut:
+            TypeClient.objects.get_or_create(
+                societe=instance,
+                nom=t["nom"],
+                defaults={"est_defaut": t["est_defaut"]}
+            )

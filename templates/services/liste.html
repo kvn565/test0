@@ -5,126 +5,128 @@
 
 {% block content %}
 
-<div class="page-header">
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">⚙️ Services</div>
-        <div class="page-subtitle">{{ total }} service{{ total|pluralize }} enregistré{{ total|pluralize }}</div>
+        <h1 class="page-title mb-1">
+            <i class="bi bi-gear-wide-connected me-2"></i>Services
+        </h1>
+        <p class="text-muted mb-0">
+            {{ total }} service{{ total|pluralize:"s" }} enregistré{{ total|pluralize:"s" }}
+        </p>
     </div>
-    <a href="{% url 'services:nouveau' %}" class="btn-primary-custom">
+    
+    <a href="{% url 'services:nouveau' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg"></i> Nouveau service
     </a>
 </div>
 
+<!-- Messages -->
 {% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-2" role="alert">
-      {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  {% endfor %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
 {% endif %}
 
-<!-- Recherche -->
-<div class="card mb-3">
-    <div style="padding:14px 18px;">
-        <form method="get" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <div style="position:relative; flex:1; min-width:200px; max-width:380px;">
-                <i class="bi bi-search" style="position:absolute; left:11px; top:50%;
-                   transform:translateY(-50%); color:var(--text-muted); font-size:13px;"></i>
-                <input type="text" name="q" value="{{ q }}"
-                       placeholder="Rechercher un service..."
-                       class="form-control-custom" style="padding-left:34px;">
+<!-- Recherche / Filtres -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
+            <div class="flex-grow-1 position-relative" style="min-width: 260px;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" name="q" value="{{ q }}" 
+                       class="form-control ps-5" 
+                       placeholder="Rechercher un service...">
             </div>
-            <button type="submit" class="btn-primary-custom">
-                <i class="bi bi-funnel"></i> Rechercher
-            </button>
-            {% if q %}
-            <a href="{% url 'services:liste' %}" class="btn-outline-custom">
-                <i class="bi bi-x-lg"></i> Effacer
-            </a>
-            {% endif %}
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i> Rechercher
+                </button>
+                {% if q %}
+                    <a href="{% url 'services:liste' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Effacer
+                    </a>
+                {% endif %}
+            </div>
         </form>
     </div>
 </div>
 
-<!-- Liste -->
-<div class="card">
+<!-- Tableau des Services -->
+<div class="card shadow-sm border-0">
     {% if services %}
-    <div style="overflow-x:auto;">
-        <table class="table table-custom mb-0">
-            <thead>
-                <tr>
-                    <th style="width:40px;">#</th>
-                    <th>Désignation</th>
-                    <th>Date création</th>
-                    <th style="text-align:right;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for service in services %}
-                <tr>
-                    <td style="color:var(--text-muted); font-size:12px;">{{ forloop.counter }}</td>
-                    <td>
-                        <div style="font-weight:600; font-size:13.5px;">{{ service.designation }}</div>
-                    </td>
-                    <td style="color:var(--text-muted); font-size:12.5px;">
-                        {{ service.date_creation|date:"d/m/Y" }}
-                    </td>
-                    <td style="text-align:right;">
-                        <div style="display:flex; gap:6px; justify-content:flex-end;">
-                            <a href="{% url 'services:modifier' service.pk %}"
-                               class="btn-sm-icon" title="Modifier">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Désignation</th>
+                        <th>Date de création</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td class="text-muted">{{ forloop.counter }}</td>
+                        <td class="fw-medium">{{ service.designation }}</td>
+                        <td class="text-muted small">
+                            {{ service.date_creation|date:"d/m/Y" }}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'services:modifier' service.pk %}" 
+                               class="btn btn-sm btn-outline-primary me-1" title="Modifier">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                            <!-- Bouton supprimer supprimé comme demandé -->
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <!-- ====================== PAGINATION ====================== -->
-    {% include "stock/pagination.html" %}
+        <!-- Pagination -->
+        {% include "stock/pagination.html" %}
 
-    <!-- Footer info -->
-    <div style="padding:12px 18px; border-top:1px solid var(--border-color); 
-                font-size:12px; color:var(--text-muted); text-align:right;">
-        Page {{ page_obj.number }} sur {{ paginator.num_pages }} 
-        • {{ services|length }} service{{ services|length|pluralize }} affiché{{ services|length|pluralize:"s" }}
-    </div>
+        <div class="card-footer bg-white text-muted small text-end py-3">
+            Page {{ page_obj.number }} sur {{ paginator.num_pages }} 
+            • {{ services|length }} service{{ services|length|pluralize:"s" }} affiché{{ services|length|pluralize:"s" }}
+        </div>
 
     {% else %}
-    <!-- État vide -->
-    <div style="text-align:center; padding:60px 20px;">
-        <div style="width:64px; height:64px; background:#f0faf5; border-radius:16px;
-                    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
-            <i class="bi bi-gear-wide-connected" style="font-size:28px; color:#a3c9b0;"></i>
-        </div>
-        <div style="font-size:15px; font-weight:700; margin-bottom:6px;">
+        <!-- État vide -->
+        <div class="text-center py-5 my-5">
+            <i class="bi bi-gear-wide-connected display-1 text-muted opacity-50 mb-3 d-block"></i>
+            <h5 class="text-muted mb-2">
+                {% if q %}
+                    Aucun résultat pour « {{ q }} »
+                {% else %}
+                    Aucun service enregistré
+                {% endif %}
+            </h5>
+            <p class="text-muted mb-4">
+                {% if q %}
+                    Essayez avec un autre mot-clé.
+                {% else %}
+                    Commencez par ajouter votre premier service.
+                {% endif %}
+            </p>
+
             {% if q %}
-                Aucun résultat pour « {{ q }} »
+                <a href="{% url 'services:liste' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg"></i> Réinitialiser la recherche
+                </a>
             {% else %}
-                Aucun service enregistré
+                <a href="{% url 'services:nouveau' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Ajouter un service
+                </a>
             {% endif %}
         </div>
-        <div style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">
-            {% if q %}
-                Essayez avec un autre mot-clé.
-            {% else %}
-                Commencez par ajouter votre premier service.
-            {% endif %}
-        </div>
-        {% if q %}
-        <a href="{% url 'services:liste' %}" class="btn-outline-custom">
-            <i class="bi bi-x-lg"></i> Réinitialiser
-        </a>
-        {% else %}
-        <a href="{% url 'services:nouveau' %}" class="btn-primary-custom">
-            <i class="bi bi-plus-lg"></i> Ajouter un service
-        </a>
-        {% endif %}
-    </div>
     {% endif %}
 </div>
 

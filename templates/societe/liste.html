@@ -3,6 +3,7 @@
 {% block nav_societe %}active{% endblock %}
 
 {% block content %}
+
 <div class="row g-4">
 
     {% if not societe %}
@@ -16,23 +17,23 @@
     </div>
     {% else %}
 
-    {# ── En-tête société ── #}
+    <!-- En-tête société -->
     <div class="col-12">
-        <div class="card" style="background:linear-gradient(135deg,var(--bleu) 0%,#1a3f6f 100%);border:none;color:#fff;">
+        <div class="card" style="background:linear-gradient(135deg, var(--bleu) 0%, #1a3f6f 100%); border:none; color:#fff;">
             <div class="card-body p-4 d-flex align-items-center gap-4">
                 <!-- Logo -->
-                <div style="width:80px;height:80px;border-radius:16px;overflow:hidden;flex-shrink:0;
-                            {% if societe.logo %}background:url('{{ societe.logo.url }}') center/cover;{% else %}background:rgba(201,168,76,0.25);border:3px solid rgba(201,168,76,0.5);{% endif %}">
+                <div style="width:80px; height:80px; border-radius:16px; overflow:hidden; flex-shrink:0;
+                            {% if societe.logo %}background:url('{{ societe.logo.url }}') center/cover;{% else %}background:rgba(201,168,76,0.25); border:3px solid rgba(201,168,76,0.5);{% endif %}">
                     {% if not societe.logo %}
                     <div class="h-100 d-flex align-items-center justify-content-center">
-                        <i class="bi bi-building" style="font-size:2.2rem;color:var(--or);"></i>
+                        <i class="bi bi-building" style="font-size:2.2rem; color:var(--or);"></i>
                     </div>
                     {% endif %}
                 </div>
 
                 <div style="flex:1;">
-                    <h3 style="font-family:'Playfair Display',serif;margin:0 0 6px;">{{ societe.nom }}</h3>
-                    <div class="d-flex flex-wrap gap-3" style="font-size:0.9rem;opacity:0.85;">
+                    <h3 style="font-family:'Playfair Display',serif; margin:0 0 6px;">{{ societe.nom }}</h3>
+                    <div class="d-flex flex-wrap gap-3" style="font-size:0.9rem; opacity:0.85;">
                         <span><i class="bi bi-fingerprint me-1"></i>NIF : <strong>{{ societe.nif }}</strong></span>
                         {% if societe.email_societe %}
                         <span><i class="bi bi-envelope me-1"></i>{{ societe.email_societe }}</span>
@@ -44,27 +45,21 @@
                 </div>
 
                 <div class="text-end">
-                    {% if societe.infos_completes %}
-                    <span class="badge bg-success px-3 py-2">
-                        <i class="bi bi-check-circle-fill me-1"></i>Profil complet
-                    </span>
-                    {% else %}
-                    <button onclick="ouvrirFormulaire()" class="btn btn-warning btn-sm">
-                        <i class="bi bi-exclamation-triangle me-1"></i>Compléter le profil
+                    <button onclick="ouvrirModalModification()" class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Modifier ma société
                     </button>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    {# ── Identité légale ── #}
+    <!-- Identité légale -->
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-file-earmark-text me-2" style="color:var(--or);"></i>Identité légale</span>
-                <button onclick="ouvrirFormulaire()" class="btn btn-sm btn-gold">
-                    <i class="bi bi-pencil me-1"></i>Modifier
+                <button onclick="ouvrirModalModification()" class="btn btn-sm btn-gold">
+                    <i class="bi bi-pencil me-1"></i> Modifier
                 </button>
             </div>
             <div class="card-body p-0">
@@ -97,7 +92,7 @@
         </div>
     </div>
 
-    {# ── Adresse complète ── #}
+    <!-- Adresse complète -->
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header">
@@ -129,9 +124,67 @@
 
 </div>
 
-<!-- Modal de modification (inchangé) -->
+<!-- ====================== MODAL DE MODIFICATION ====================== -->
 {% if societe and form %}
-<!-- ... ton modal reste identique ... -->
+<div class="modal fade" id="modalModificationSociete" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier les informations de {{ societe.nom }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" id="formModificationSociete">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" onclick="soumettreModification()" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Enregistrer les modifications
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function ouvrirModalModification() {
+    const modal = new bootstrap.Modal(document.getElementById('modalModificationSociete'));
+    modal.show();
+}
+
+function soumettreModification() {
+    const form = document.getElementById('formModificationSociete');
+    if (!form) return;
+
+    const formData = new FormData(form);
+
+    fetch("{% url 'societe:ajax_modifier' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            alert(data.message || "Modifications enregistrées avec succès !");
+            location.reload();   // Recharge la page pour voir les changements
+        } else {
+            alert("Erreur : " + (data.message || data.errors || "Veuillez vérifier les informations."));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Erreur de connexion au serveur.");
+    });
+}
+</script>
 {% endblock %}

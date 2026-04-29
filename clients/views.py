@@ -8,7 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Client, TypeClient
 from .forms import ClientForm, TypeClientForm
-from .utils.obr_api import check_tin 
+from .utils.obr_api import check_tin
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -16,10 +16,7 @@ from .utils.obr_api import check_tin
 # ─────────────────────────────────────────────────────────────────
 
 def _check_droit(request):
-    """
-    Vérifie que l'utilisateur connecté peut accéder au module clients.
-    Droit requis : avoir au moins un droit facture, ou être DIRECTEUR.
-    """
+    """Vérifie les droits d'accès au module clients"""
     if request.user.is_superuser:
         return None, "Superadmin n'a pas de société directe."
 
@@ -28,19 +25,20 @@ def _check_droit(request):
         return None, "Aucune société associée à votre compte."
 
     a_droit_facture = (
-        request.user.droit_facture_pnb
-        or request.user.droit_facture_fdnb
-        or request.user.droit_facture_particulier
-        or request.user.type_poste == 'DIRECTEUR'
+        request.user.droit_facture_pnb or
+        request.user.droit_facture_fdnb or
+        request.user.droit_facture_particulier or
+        request.user.type_poste == 'DIRECTEUR'
     )
+
     if not a_droit_facture:
-        return None, "Vous n'avez pas les droits pour gérer les clients."
+        return None, "Vous n'avez pas les droits nécessaires pour gérer les clients."
 
     return societe, None
 
 
 # ─────────────────────────────────────────────────────────────────
-#  TYPES DE CLIENT (inchangé)
+#  TYPES DE CLIENT
 # ─────────────────────────────────────────────────────────────────
 
 @login_required
@@ -50,7 +48,8 @@ def types_clients(request):
         messages.error(request, err)
         return redirect('accueil')
 
-    types = TypeClient.objects.filter(societe=societe)
+    types = TypeClient.objects.filter(societe=societe).order_by('nom')
+
     return render(request, 'clients/types.html', {
         'types': types,
         'total': types.count(),
@@ -74,9 +73,9 @@ def creer_type_client(request):
         form = TypeClientForm(societe=societe)
 
     return render(request, 'clients/type_form.html', {
-        'form':  form,
+        'form': form,
         'titre': 'Nouveau type de client',
-        'mode':  'creer',
+        'mode': 'creer',
     })
 
 
@@ -93,16 +92,16 @@ def edit_type_client(request, pk):
         form = TypeClientForm(societe=societe, data=request.POST, instance=type_client)
         if form.is_valid():
             form.save()
-            messages.success(request, f"✅ Type « {type_client.nom} » modifié.")
+            messages.success(request, f"✅ Type « {type_client.nom} » modifié avec succès.")
             return redirect('clients:types')
     else:
         form = TypeClientForm(societe=societe, instance=type_client)
 
     return render(request, 'clients/type_form.html', {
-        'form':        form,
-        'titre':       f'Modifier — {type_client.nom}',
+        'form': form,
+        'titre': f'Modifier — {type_client.nom}',
         'type_client': type_client,
-        'mode':        'modifier',
+        'mode': 'modifier',
     })
 
 
@@ -116,27 +115,23 @@ def delete_type_client(request, pk):
     type_client = get_object_or_404(TypeClient, pk=pk, societe=societe)
 
     if request.method == 'POST':
-        nb = type_client.nb_clients
-        if nb > 0:
+        if type_client.nb_clients > 0:
             messages.error(
                 request,
-                f"❌ Impossible de supprimer « {type_client.nom} » : "
-                f"{nb} client(s) utilisent ce type."
+                f"❌ Impossible de supprimer « {type_client.nom} » : {type_client.nb_clients} client(s) l'utilisent."
             )
             return redirect('clients:types')
 
         nom = type_client.nom
         type_client.delete()
-        messages.success(request, f"✅ Type « {nom} » supprimé.")
+        messages.success(request, f"✅ Type « {nom} » supprimé avec succès.")
         return redirect('clients:types')
 
-    return render(request, 'clients/type_supprimer.html', {
-        'type_client': type_client,
-    })
+    return render(request, 'clients/type_supprimer.html', {'type_client': type_client})
 
 
 # ─────────────────────────────────────────────────────────────────
-#  CLIENTS - LISTE AVEC PAGINATION
+#  CLIENTS
 # ─────────────────────────────────────────────────────────────────
 
 @login_required
@@ -146,15 +141,14 @@ def liste_clients(request):
         messages.error(request, err)
         return redirect('accueil')
 
-    q           = request.GET.get('q', '').strip()
+    q = request.GET.get('q', '').strip()
     type_filtre = request.GET.get('type', '')
-    tva_filtre  = request.GET.get('tva', '')
-    page_num    = request.GET.get('page', 1)          # ← Ajout pagination
+    tva_filtre = request.GET.get('tva', '')
+    page_num = request.GET.get('page', 1)
 
-    # Requête de base
     clients = Client.objects.filter(societe=societe)\
         .select_related('type_client')\
-        .order_by('-date_creation', 'nom')   # Ordre cohérent
+        .order_by('-date_creation', 'nom')
 
     # Filtres
     if q:
@@ -165,38 +159,34 @@ def liste_clients(request):
         )
 
     if type_filtre:
-        clients = clients.filter(type_client__pk=type_filtre)
+        clients = clients.filter(type_client_id=type_filtre)
 
     if tva_filtre == '1':
         clients = clients.filter(assujeti_tva=True)
     elif tva_filtre == '0':
         clients = clients.filter(assujeti_tva=False)
 
-    # ====================== PAGINATION ======================
-    paginator = Paginator(clients, 5)   # 5 clients par page
-
+    # Pagination
+    paginator = Paginator(clients, 10)   # Je recommande 10 au lieu de 5
     try:
         clients_page = paginator.page(page_num)
-    except PageNotAnInteger:
+    except (PageNotAnInteger, EmptyPage):
         clients_page = paginator.page(1)
-    except EmptyPage:
-        clients_page = paginator.page(paginator.num_pages)
 
-    types = TypeClient.objects.filter(societe=societe)
+    types = TypeClient.objects.filter(societe=societe).order_by('nom')
 
     return render(request, 'clients/liste.html', {
-        'clients':      clients_page,      # ← Objet paginé (important)
-        'q':            q,
-        'type_filtre':  type_filtre,
-        'tva_filtre':   tva_filtre,
-        'types':        types,
-        'total':        Client.objects.filter(societe=societe).count(),
-        'paginator':    paginator,
-        'page_obj':     clients_page,
+        'clients': clients_page,
+        'types': types,
+        'q': q,
+        'type_filtre': type_filtre,
+        'tva_filtre': tva_filtre,
+        'total': Client.objects.filter(societe=societe).count(),
+        'paginator': paginator,
+        'page_obj': clients_page,
     })
 
 
-# Les autres fonctions restent inchangées
 @login_required
 def creer_client(request):
     societe, err = _check_droit(request)
@@ -207,16 +197,16 @@ def creer_client(request):
     if request.method == 'POST':
         form = ClientForm(societe=societe, data=request.POST)
         if form.is_valid():
-            c = form.save()
-            messages.success(request, f"✅ Client « {c.nom} » créé avec succès.")
+            client = form.save()
+            messages.success(request, f"✅ Client « {client.nom} » créé avec succès.")
             return redirect('clients:liste')
     else:
         form = ClientForm(societe=societe)
 
     return render(request, 'clients/form.html', {
-        'form':  form,
+        'form': form,
         'titre': 'Nouveau client',
-        'mode':  'creer',
+        'mode': 'creer',
     })
 
 
@@ -233,16 +223,16 @@ def edit_client(request, pk):
         form = ClientForm(societe=societe, data=request.POST, instance=client)
         if form.is_valid():
             form.save()
-            messages.success(request, f"✅ Client « {client.nom} » modifié.")
+            messages.success(request, f"✅ Client « {client.nom} » modifié avec succès.")
             return redirect('clients:liste')
     else:
         form = ClientForm(societe=societe, instance=client)
 
     return render(request, 'clients/form.html', {
-        'form':   form,
-        'titre':  f'Modifier — {client.nom}',
+        'form': form,
+        'titre': f'Modifier — {client.nom}',
         'client': client,
-        'mode':   'modifier',
+        'mode': 'modifier',
     })
 
 
@@ -256,23 +246,19 @@ def delete_client(request, pk):
     client = get_object_or_404(Client, pk=pk, societe=societe)
 
     if request.method == 'POST':
-        nom = client.nom
-        nb  = client.nb_factures
-        if nb > 0:
+        if hasattr(client, 'nb_factures') and client.nb_factures > 0:
             messages.error(
                 request,
-                f"❌ Impossible de supprimer « {nom} » : "
-                f"{nb} facture(s) associée(s). Archivez-les d'abord."
+                f"❌ Impossible de supprimer « {client.nom} » : {client.nb_factures} facture(s) associée(s)."
             )
             return redirect('clients:liste')
 
+        nom = client.nom
         client.delete()
-        messages.success(request, f"✅ Client « {nom} » supprimé.")
+        messages.success(request, f"✅ Client « {nom} » supprimé avec succès.")
         return redirect('clients:liste')
 
-    return render(request, 'clients/supprimer.html', {
-        'client': client,
-    })
+    return render(request, 'clients/supprimer.html', {'client': client})
 
 
 @login_required
@@ -284,10 +270,7 @@ def ajax_verifier_nif(request):
 
     nif = request.POST.get('nif', '').strip()
     if not nif:
-        return JsonResponse({
-            'ok': False,
-            'message': 'Veuillez saisir un NIF valide.'
-        })
+        return JsonResponse({'ok': False, 'message': 'Veuillez saisir un NIF valide.'})
 
     nom_officiel, erreur = check_tin(societe, nif)
 
@@ -300,5 +283,5 @@ def ajax_verifier_nif(request):
     else:
         return JsonResponse({
             'ok': False,
-            'message': erreur or 'NIF non reconnu ou erreur de connexion OBR.'
+            'message': erreur or 'NIF non reconnu par l\'OBR.'
         })

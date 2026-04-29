@@ -77,6 +77,17 @@ class Societe(models.Model):
         verbose_name="Identifiant système OBR",
         help_text="Ex: ws440077324400027 — fourni par l'OBR avec le mot de passe.",
     )
+
+
+    obr_base_url = models.URLField(
+    verbose_name="URL API OBR (personnalisée)",
+    max_length=255,
+    blank=True,
+    null=True,
+    default="https://ebms.obr.gov.bi:9443/ebms_api",  # ← ajouter ce default
+    help_text="Laisser vide pour utiliser par défaut : https://ebms.obr.gov.bi:9443/ebms_api"
+    )
+
     obr_actif = models.BooleanField(
         default=False,
         verbose_name="Intégration OBR activée",

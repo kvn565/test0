@@ -450,44 +450,47 @@ def ajax_info_produit(request, pk):
 
     taux_tva = int(produit.taux_tva_valeur) if hasattr(produit, 'taux_tva_valeur') else 18
 
-    data = {
+    return JsonResponse({
         'ok': True,
         'designation': produit.designation or '—',
         'prix_ttc': float(produit.prix_vente_tvac or 0),
         'taux_tva': taux_tva,
-        'stock': float(produit.stock_disponible),
-    }
-
-    # Ajout minimal pour facture d'avoir
-    if request.GET.get('facture_originale'):
-        try:
-            fo = Facture.objects.get(pk=request.GET.get('facture_originale'), type_facture='FN')
-            ligne = fo.lignes.filter(produit_id=pk).first()
-            if ligne:
-                data['quantite_max'] = float(ligne.quantite)
-        except:
-            pass
-
-    return JsonResponse(data)
+        'stock': float(produit.stock_disponible),        # ← SANS parenthèses !
+    })
 
 
 @require_http_methods(["GET"])
 @login_required
 def ajax_info_service(request, pk):
+    """Retourne les informations d'un service pour le formulaire de facture"""
     societe, err = _check_droit(request)
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
     service = get_object_or_404(Service, pk=pk, societe=societe)
 
-    taux_tva = int(service.taux_tva.valeur) if service.taux_tva and service.taux_tva.valeur is not None else 18
+    # === PRIX ===
+    prix_vente = float(service.prix_vente or 0)
+
+    # === TAUX TVA ===
+    # On gère le cas où taux_tva est None ou si le champ s'appelle 'valeur'
+    if service.taux_tva:
+        # Essaie d'abord 'valeur', puis 'taux' (au cas où)
+        taux_value = getattr(service.taux_tva, 'valeur', None) or getattr(service.taux_tva, 'taux', None)
+        taux_tva = int(taux_value) if taux_value is not None else 18
+    else:
+        taux_tva = 18  # Taux par défaut
+
+    # Calcul du prix TTC
+    prix_ttc = prix_vente * (1 + taux_tva / 100)
 
     return JsonResponse({
         'ok': True,
         'designation': service.designation or '—',
-        'prix_ttc': float(service.prix or 0),
+        'prix_ht': round(prix_vente, 2),
+        'prix_ttc': round(prix_ttc, 2),
         'taux_tva': taux_tva,
-        'stock': '—',
+        'stock': '—',                    # Les services n'ont pas de stock
     })
 
 
@@ -547,21 +550,6 @@ def ajax_ajouter_ligne(request):
 
                 stock_avant = produit.stock_disponible
 
-                # ====================== VALIDATION SPÉCIFIQUE POUR FACTURE D'AVOIR ======================
-                if facture.type_facture == 'FA' and facture.facture_originale:
-                    ligne_originale = facture.facture_originale.lignes.filter(
-                        produit_id=produit_id
-                    ).first()
-
-                    if ligne_originale and quantite > ligne_originale.quantite:
-                        return JsonResponse({
-                            'ok': False,
-                            'error': f'La quantité ne peut pas dépasser {float(ligne_originale.quantite)} '
-                                     f'(quantité vendue sur la facture originale {facture.facture_originale.display_numero}).'
-                        }, status=400)
-                # =======================================================================================
-
-                # Vérification doublon dans la facture en cours
                 if facture.lignes.filter(produit_id=produit_id).exists():
                     return JsonResponse({
                         'ok': False,
@@ -582,7 +570,7 @@ def ajax_ajouter_ligne(request):
                 taux_tva = Decimal(str(service.taux_tva.valeur if getattr(service.taux_tva, 'valeur', None) else 18))
 
             # Création de la ligne
-            ligne = LigneFacture.objects.create(
+            LigneFacture.objects.create(
                 facture=facture,
                 designation=designation,
                 prix_vente_tvac=prix_ttc,
@@ -592,11 +580,11 @@ def ajax_ajouter_ligne(request):
                 service=service,
             )
 
-            # Recalcul des totaux
-            facture.recalculer_totaux()
+            # ====================== CALCUL ET SAUVEGARDE FORCÉE DES TOTAUX ======================
+            facture.recalculer_totaux()           # Calcul + save
             facture = Facture.objects.get(pk=facture.pk)   # Rechargement complet
 
-            # Calcul du stock pour la réponse
+            # Calcul dynamique du stock pour l'interface
             if produit:
                 produit.refresh_from_db()
                 stock_avant = produit.stock_disponible
@@ -616,7 +604,7 @@ def ajax_ajouter_ligne(request):
 
     return JsonResponse({
         'ok': True,
-        'ligne_id': ligne.pk,
+        'ligne_id': ligne.pk if 'ligne' in locals() else None,
         'designation': designation,
         'quantite': float(quantite),
         'prix_ttc': float(prix_ttc),
@@ -632,50 +620,64 @@ def ajax_ajouter_ligne(request):
 #  AJAX SUPPRIMER LIGNE — RESTAURER STOCK SI FN
 # ──────────────────────────────────────────────
 
+# ──────────────────────────────────────────────
+#  AJAX — SUPPRIMER LIGNE (Version Finale Corrigée)
+# ──────────────────────────────────────────────
 @login_required
 @require_POST
-def ajax_supprimer_ligne(request):
+def ajax_supprimer_ligne(request, pk):
+    """Supprime une ligne de facture et ajuste le stock si nécessaire"""
     societe, err = _check_droit(request)
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    try:
-        data = json.loads(request.body)
-        ligne_id = data.get('ligne_id')
-    except Exception:
-        return JsonResponse({'ok': False, 'error': 'JSON invalide'}, status=400)
+    # Récupération sécurisée de la ligne
+    ligne = get_object_or_404(
+        LigneFacture.objects.select_related('facture', 'produit', 'service'),
+        pk=pk,
+        facture__societe=societe
+    )
 
-    ligne = get_object_or_404(LigneFacture, pk=ligne_id, facture__societe=societe)
     facture = ligne.facture
     produit = ligne.produit
+    quantite = ligne.quantite
 
     try:
         with transaction.atomic():
-            if produit and facture.type_facture in ['FN', 'FA']:
-                # Inverse de l'ajout :
-                # Si on supprime une FN → on doit remettre la quantité (comme FA)
-                # Si on supprime une FA → on doit enlever la quantité (comme FN)
-                inverse_type = 'FA' if facture.type_facture == 'FN' else 'FN'
-                produit.ajuster_stock(
-                    quantite=ligne.quantite,
-                    type_facture=inverse_type,
-                    facture=facture
-                )
+            # ====================== AJUSTEMENT STOCK ======================
+            if produit:
+                if facture.type_facture == 'FN':
+                    # Suppression dans FN → on restitue le stock
+                    produit.ajuster_stock(ligne, est_suppression=True)
 
+                elif facture.type_facture == 'FA':
+                    # Suppression dans FA → on enlève du stock (inverse de l'avoir)
+                    # On peut aussi ignorer selon ta logique métier
+                    produit.ajuster_stock(ligne, est_suppression=True)
+
+            # ====================== SUPPRESSION ======================
             ligne.delete()
+
+            # Recalcul des totaux
             facture.recalculer_totaux()
+            facture.save()
 
+        return JsonResponse({
+            'ok': True,
+            'message': 'Ligne supprimée avec succès',
+            'total_ht': float(facture.total_ht or 0),
+            'total_tva': float(facture.total_tva or 0),
+            'total_ttc': float(facture.total_ttc or 0),
+        })
+
+    except ValueError as ve:
+        return JsonResponse({'ok': False, 'error': str(ve)}, status=400)
     except Exception as e:
-        logger.exception(f"Erreur suppression ligne {ligne_id}")
-        return JsonResponse({'ok': False, 'error': 'Erreur lors de la suppression'}, status=500)
-
-    return JsonResponse({
-        'ok': True,
-        'total_ht': float(facture.total_ht),
-        'total_tva': float(facture.total_tva),
-        'total_ttc': float(facture.total_ttc),
-    })
-
+        logger.exception(f"Erreur suppression ligne {pk} de la facture {facture.pk}")
+        return JsonResponse({
+            'ok': False, 
+            'error': 'Erreur interne lors de la suppression de la ligne'
+        }, status=500)
 
 # ──────────────────────────────────────────────
 #  HELPERS (ajout recommandé)

@@ -5,129 +5,136 @@
 
 {% block content %}
 
+<!-- Page Header -->
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">
+        <h1 class="page-title mb-1">
             <i class="bi {{ rapport_icone }}" style="color:{{ rapport_clr }};"></i> {{ titre }}
-        </div>
-        <div class="page-subtitle">Inventaire en temps réel — quantités disponibles par produit</div>
+        </h1>
+        <p class="text-muted mb-0">
+            Inventaire en temps réel — quantités disponibles par produit
+        </p>
     </div>
 
     <!-- Boutons Export + Navigation -->
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div class="d-flex gap-2 align-items-center">
         {% if lignes %}
-        <a href="{% url 'rapports:export_stock_excel' %}" class="btn btn-success btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-excel"></i> Excel
-        </a>
-        <a href="{% url 'rapports:export_stock_pdf' %}" class="btn btn-danger btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-pdf"></i> PDF
-        </a>
+            <a href="{% url 'rapports:export_stock_excel' %}" class="btn btn-success" target="_blank">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a href="{% url 'rapports:export_stock_pdf' %}" class="btn btn-danger" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </a>
         {% endif %}
 
-        <a href="{% url 'rapports:entrees' %}" class="btn-outline-custom">
+        <a href="{% url 'rapports:entrees' %}" class="btn btn-outline-secondary">
             <i class="bi bi-box-arrow-in-down"></i> Entrées
         </a>
-        <a href="{% url 'rapports:facturation' %}" class="btn-outline-custom">
+        <a href="{% url 'rapports:facturation' %}" class="btn btn-outline-secondary">
             <i class="bi bi-receipt"></i> Facturation
         </a>
     </div>
 </div>
 
+<!-- Filtres -->
 {% include 'rapports/_filtres.html' %}
 
 <!-- Totaux -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value">{{ nb|default:0 }}</div>
-            <div class="stat-label">Produits</div>
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-primary">{{ nb|default:0 }}</div>
+                <div class="text-muted small">Produits en stock</div>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value" style="color:#ef4444;">
-                {{ lignes|length|default:0 }}
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-danger">{{ lignes|length|default:0 }}</div>
+                <div class="text-muted small">dont en rupture</div>
             </div>
-            <div class="stat-label">dont en rupture</div>
         </div>
     </div>
     <div class="col-12 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value" style="color:var(--primary);">
-                {{ total_valeur|floatformat:0|default:0 }} BIF
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold" style="color:{{ rapport_clr }}">
+                    {{ total_valeur|floatformat:0|default:0 }} BIF
+                </div>
+                <div class="text-muted small">Valeur totale du stock (PMP)</div>
             </div>
-            <div class="stat-label">Valeur totale (PMP)</div>
         </div>
     </div>
 </div>
 
-<div class="card">
+<!-- Tableau du Stock Actuel -->
+<div class="card shadow-sm border-0">
     {% if lignes %}
-    <div style="overflow-x:auto;">
-        <table class="table table-custom mb-0">
-            <thead>
-                <tr>
-                    <th>Produit</th>
-                    <th>Catégorie</th>
-                    <th>Unité</th>
-                    <th>Entré</th>
-                    <th>Sorti</th>
-                    <th>Vendu</th>
-                    <th>Stock dispo</th>
-                    <th>PMP</th>
-                    <th>Valeur stock</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for l in lignes %}
-                <tr {% if l.alerte %}style="background:#fff5f5;"{% endif %}>
-                    <td>
-                        <div style="font-weight:600; font-size:13px;">{{ l.produit.designation }}</div>
-                        <div style="font-size:11px; color:var(--text-muted);">{{ l.produit.code|default:"—" }}</div>
-                    </td>
-                    <td style="font-size:12.5px; color:var(--text-muted);">
-                        {{ l.produit.categorie.nom|default:"—" }}
-                    </td>
-                    <td style="font-size:12.5px;">{{ l.produit.unite|default:"—" }}</td>
-                    <td style="font-size:12.5px; color:#10b981; font-weight:600;">+{{ l.qte_entree|default:0 }}</td>
-                    <td style="font-size:12.5px; color:#f59e0b;">-{{ l.qte_sortie|default:0 }}</td>
-                    <td style="font-size:12.5px; color:#8b5cf6;">-{{ l.qte_vente|default:0 }}</td>
-                    <td>
-                        {% if l.alerte %}
-                            <span class="badge-inactive" style="font-size:13px; font-weight:700;">⚠ {{ l.stock|default:0 }}</span>
-                        {% else %}
-                            <span style="font-weight:700; color:#10b981; font-size:13px;">{{ l.stock|default:0 }}</span>
-                        {% endif %}
-                    </td>
-                    <td style="font-size:12.5px;">{{ l.prix_moyen|floatformat:0|default:0 }} BIF</td>
-                    <td style="font-weight:600; font-size:13px;">{{ l.valeur_stock|floatformat:0|default:0 }} BIF</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr style="background:#f8fafc; font-weight:700;">
-                    <td colspan="8" style="text-align:right; padding:12px 16px;">Total valeur stock :</td>
-                    <td style="padding:12px 16px; color:var(--primary); font-size:14px;">
-                        {{ total_valeur|floatformat:0|default:0 }} BIF
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Produit</th>
+                        <th>Catégorie</th>
+                        <th>Unité</th>
+                        <th class="text-end">Entré</th>
+                        <th class="text-end">Sorti</th>
+                        <th class="text-end">Vendu</th>
+                        <th class="text-end">Stock disponible</th>
+                        <th class="text-end">PMP</th>
+                        <th class="text-end">Valeur stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in lignes %}
+                    <tr {% if l.alerte %}class="table-danger"{% endif %}>
+                        <td>
+                            <div class="fw-medium">{{ l.produit.designation }}</div>
+                            <small class="text-muted">{{ l.produit.code|default:"—" }}</small>
+                        </td>
+                        <td class="text-muted">{{ l.produit.categorie.nom|default:"—" }}</td>
+                        <td class="text-muted">{{ l.produit.unite|default:"—" }}</td>
+                        <td class="text-end text-success fw-medium">+{{ l.qte_entree|default:0 }}</td>
+                        <td class="text-end text-warning">-{{ l.qte_sortie|default:0 }}</td>
+                        <td class="text-end text-purple">-{{ l.qte_vente|default:0 }}</td>
+                        <td class="text-end fw-bold {% if l.alerte %}text-danger{% else %}text-success{% endif %}">
+                            {{ l.stock|default:0 }} {{ l.produit.unite|default:"—" }}
+                            {% if l.alerte %}<span class="ms-1">⚠</span>{% endif %}
+                        </td>
+                        <td class="text-end">{{ l.prix_moyen|floatformat:0|default:0 }} BIF</td>
+                        <td class="text-end fw-semibold" style="color:{{ rapport_clr }}">
+                            {{ l.valeur_stock|floatformat:0|default:0 }} BIF
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light fw-bold">
+                        <td colspan="8" class="text-end py-3">Valeur totale du stock (PMP) :</td>
+                        <td class="text-end py-3" style="color:{{ rapport_clr }}; font-size:15px;">
+                            {{ total_valeur|floatformat:0|default:0 }} BIF
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     {% else %}
-    <div style="text-align:center; padding:80px 20px; color:#64748b;">
-        <i class="bi bi-archive" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
-        <div style="font-size:15px; font-weight:600;">Aucun produit trouvé</div>
-        <div style="font-size:13px; margin-top:8px;">Modifiez les filtres pour afficher les résultats</div>
-    </div>
+        <!-- État vide -->
+        <div class="text-center py-5 my-5">
+            <i class="bi bi-archive display-1 text-muted opacity-50 mb-3 d-block"></i>
+            <h5 class="text-muted mb-2">Aucun produit trouvé</h5>
+            <p class="text-muted">Modifiez les filtres pour afficher les résultats.</p>
+        </div>
     {% endif %}
 </div>
 
 <!-- Note explicative -->
-<div style="margin-top:16px; font-size:12.5px; color:var(--text-muted); padding:0 4px;">
-    <i class="bi bi-info-circle"></i>
-    Stock disponible = Entrées − Sorties hors vente − Lignes facturées.<br>
-    PMP = Prix Moyen Pondéré calculé sur toutes les entrées.
+<div class="mt-4 text-muted small px-2">
+    <i class="bi bi-info-circle me-1"></i>
+    Stock disponible = Entrées − Sorties hors vente − Quantités vendues (facturées).<br>
+    PMP = Prix Moyen Pondéré calculé sur toutes les entrées du produit.
 </div>
 
 {% endblock %}

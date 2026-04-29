@@ -5,101 +5,96 @@
 
 {% block content %}
 
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">
+        <h1 class="page-title mb-1">
             {% if taux %}✏️ Modifier un taux TVA{% else %}➕ Nouveau taux TVA{% endif %}
-        </div>
-        <div class="page-subtitle">
+        </h1>
+        <p class="text-muted mb-0">
             {% if taux %}
                 Modification de « {{ taux.nom }} »
             {% else %}
-                Définissez le libellé et la valeur du taux
+                Définissez le libellé et la valeur du taux de TVA
             {% endif %}
-        </div>
+        </p>
     </div>
-    <a href="{% url 'taux:liste' %}" class="btn-outline-custom">
+    <a href="{% url 'taux:liste' %}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left"></i> Retour
     </a>
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-12 col-md-7 col-lg-5">
-        <div class="card">
-            <div style="padding:24px;">
+    <div class="col-12 col-lg-6 col-xl-5">
 
-                <!-- Icône + titre -->
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;
-                            padding-bottom:16px; border-bottom:1px solid var(--border-color);">
-                    <div style="width:44px; height:44px; background:#f0f4ff; border-radius:10px;
-                                display:flex; align-items:center; justify-content:center;
-                                border:1.5px solid #c3cfe8; flex-shrink:0;">
-                        <i class="bi bi-percent" style="color:var(--primary); font-size:19px;"></i>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+
+                <!-- En-tête avec icône -->
+                <div class="d-flex align-items-center gap-3 mb-4 pb-4 border-bottom">
+                    <div class="bg-light rounded-3 p-3">
+                        <i class="bi bi-percent text-primary fs-3"></i>
                     </div>
                     <div>
-                        <div style="font-size:15px; font-weight:700;">{{ titre }}</div>
-                        <div style="font-size:12px; color:var(--text-muted);">
+                        <h5 class="mb-1 fw-semibold">{{ titre }}</h5>
+                        <div class="text-muted small">
                             {% if taux %}
-                                Modifiez les champs puis enregistrez
+                                Modifiez les informations puis enregistrez
                             {% else %}
-                                Les champs marqués <span style="color:#dc2626;">*</span> sont obligatoires
+                                Les champs marqués <span class="text-danger">*</span> sont obligatoires
                             {% endif %}
                         </div>
                     </div>
                 </div>
 
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
                 <form method="post" novalidate>
                     {% csrf_token %}
 
-                    <!-- Libellé -->
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Libellé <span class="required">*</span>
-                        </label>
-                        {{ form.nom }}
-                        {% if form.nom.errors %}
-                        <div style="color:#dc2626; font-size:12px; margin-top:4px; display:flex; align-items:center; gap:5px;">
-                            <i class="bi bi-exclamation-circle"></i> {{ form.nom.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
+                    <div class="row g-4">
 
-                    <!-- Valeur -->
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Valeur (%) <span class="required">*</span>
-                        </label>
-                        <div style="position:relative;">
-                            {{ form.valeur }}
-                            <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
-                                         color:var(--text-muted); font-size:13px; pointer-events:none;">%</span>
+                        <!-- Libellé -->
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Libellé <span class="text-danger">*</span></label>
+                            {{ form.nom }}
+                            {{ form.nom.errors }}
                         </div>
-                        {% if form.valeur.errors %}
-                        <div style="color:#dc2626; font-size:12px; margin-top:4px; display:flex; align-items:center; gap:5px;">
-                            <i class="bi bi-exclamation-circle"></i> {{ form.valeur.errors.0 }}
+
+                        <!-- Valeur -->
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Valeur (%) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                {{ form.valeur }}
+                                <span class="input-group-text">%</span>
+                            </div>
+                            {{ form.valeur.errors }}
+                            <div class="form-text">
+                                Entrez <strong>0</strong> pour un taux exonéré, <strong>18</strong> pour 18%, etc.
+                            </div>
                         </div>
-                        {% endif %}
-                        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">
-                            Entrez 0 pour un taux exonéré, 18 pour 18%, etc.
-                        </div>
+
                     </div>
 
                     {% if taux %}
-                    <div style="background:var(--body-bg); border-radius:8px; padding:10px 14px;
-                                margin-top:4px; margin-bottom:16px; font-size:12px; color:var(--text-muted);">
-                        <i class="bi bi-clock"></i>
-                        Créé le {{ taux.date_creation|date:"d/m/Y à H:i" }}
+                    <div class="mt-4 pt-3 border-top">
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>
+                            Créé le {{ taux.date_creation|date:"d/m/Y à H:i" }}
+                        </small>
                     </div>
                     {% endif %}
 
-                    <!-- Boutons -->
-                    <div style="display:flex; gap:10px; margin-top:24px;">
-                        <a href="{% url 'taux:liste' %}"
-                           class="btn-outline-custom" style="flex:1; justify-content:center;">
+                    <!-- Boutons - Alignés à droite comme dans le formulaire Produit -->
+                    <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                        <a href="{% url 'taux:liste' %}" 
+                           class="btn btn-outline-secondary px-4">
                             <i class="bi bi-x-lg"></i> Annuler
                         </a>
-                        <button type="submit" class="btn-primary-custom"
-                                style="flex:1; justify-content:center;">
+                        <button type="submit" class="btn btn-primary px-4">
                             <i class="bi bi-check-lg"></i> {{ action }}
                         </button>
                     </div>
@@ -108,15 +103,8 @@
             </div>
         </div>
 
-        {% if taux %}
-        <div style="text-align:center; margin-top:14px;">
-            <a href="{% url 'taux:supprimer' taux.pk %}"
-               style="font-size:12.5px; color:#dc2626; text-decoration:none;">
-                <i class="bi bi-trash"></i> Supprimer ce taux
-            </a>
-        </div>
-        {% endif %}
-
+        <!-- Lien supprimer supprimé comme demandé -->
+        
     </div>
 </div>
 

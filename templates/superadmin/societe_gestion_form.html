@@ -35,7 +35,16 @@
                             <h6 class="section-title mb-3">
                                 <i class="bi bi-cloud-upload me-1"></i>Configuration API OBR (eBMS)
                             </h6>
+                            
                             {{ obr_form.as_p }}
+
+                            <!-- Message d'aide pour obr_base_url -->
+                            <div class="alert alert-info mt-3 small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                <strong>URL API OBR :</strong><br>
+                                Laissez ce champ vide pour utiliser l’URL par défaut : 
+                                <code>https://ebms.obr.gov.bi:9443/ebms_api</code>
+                            </div>
 
                             <div class="alert alert-warning mt-3 small">
                                 <i class="bi bi-exclamation-triangle me-1"></i>

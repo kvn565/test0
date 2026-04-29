@@ -300,16 +300,27 @@ class SocieteAdmin(admin.ModelAdmin):
         #  Identifiants fournis par l'OBR lors de l'enregistrement
         #  Contact OBR : 22282525 / innocent.kanyanzira@obr.gov.bi
         # ══════════════════════════════════════════════════════════
+        
         ('🔐 Configuration OBR (eBMS)', {
-            'fields': ('obr_actif', 'obr_username', 'obr_password', 'obr_system_id', 'obr_statut_badge'),
+            'fields': (
+                'obr_actif', 
+                'obr_username', 
+                'obr_password', 
+                'obr_system_id', 
+                'obr_base_url',           # ← AJOUTÉ ICI
+                'obr_statut_badge',
+            ),
             'description': (
                 '<strong>Ces informations sont fournies par l\'OBR</strong> lors de l\'enregistrement '
                 'du système de facturation électronique.<br>'
+                'Laissez <strong>obr_base_url</strong> vide pour utiliser l\'URL par défaut : '
+                '<code>https://ebms.obr.gov.bi:9443/ebms_api</code><br>'
                 '📞 Tél : 22282525 ou 22282832 &nbsp;|&nbsp; '
                 '✉️ innocent.kanyanzira@obr.gov.bi'
             ),
-            'classes': ('collapse',),  # Repliée par défaut pour ne pas encombrer
+            'classes': ('collapse',),
         }),
+
         ('Licence actuelle', {
             'fields': ('licence_affichage',),
             'description': "Ajoutez une clé d'activation dans le tableau ci-dessous."

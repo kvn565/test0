@@ -506,11 +506,7 @@
         {% url 'facturer:liste' as url_factures %}<a href="{{ url_factures|default:'#' }}" class="nav-link-item {% block nav_factures %}{% endblock %}">
             <i class="bi bi-receipt"></i> Factures
         </a>
-        {% if user.droit_devis or user.is_superuser %}
-        {% url 'facturer:liste' as url_devis %}<a href="{{ url_devis|default:'#' }}" class="nav-link-item {% block nav_devis %}{% endblock %}">
-            <i class="bi bi-file-earmark-text"></i> Devis
-        </a>
-        {% endif %}
+        
         {% endif %}
 
         <!-- Rapports — protégé par droits -->

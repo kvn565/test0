@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Détail Produit — {{ produit.designation }}{% endblock %}
+{% block breadcrumb_parent %}Produits{% endblock %}
+{% block breadcrumb_current %}{{ produit.code }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title mb-1">
+            <i class="bi bi-tag me-2"></i>
+            {{ produit.designation }}
+        </h1>
+        <p class="text-muted mb-0">
+            Code : <strong>{{ produit.code }}</strong> — 
+            {{ produit.get_origine_display }}
+        </p>
+    </div>
+    
+    <div class="d-flex gap-2">
+        <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+        <a href="{% url 'produits:modifier' produit.pk %}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Modifier
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Colonne gauche - Informations principales -->
+    <div class="col-12 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>Informations générales
+                </h5>
+                
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted py-3" style="width: 35%;">Code produit</td>
+                        <td class="fw-medium">{{ produit.code }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Désignation</td>
+                        <td class="fw-medium">{{ produit.designation }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Catégorie</td>
+                        <td>{{ produit.categorie.nom }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Unité de mesure</td>
+                        <td>{{ produit.unite }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Origine</td>
+                        <td>
+                            <span class="badge {% if produit.origine == 'LOCAL' %}bg-success{% else %}bg-primary{% endif %}">
+                                {{ produit.get_origine_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Statut</td>
+                        <td>
+                            <span class="badge {% if produit.statut == 'ACTIF' %}bg-success{% elif produit.statut == 'INACTIF' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ produit.get_statut_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Créé le</td>
+                        <td>{{ produit.date_creation|date:"d/m/Y à H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Dernière modification</td>
+                        <td>{{ produit.date_modification|date:"d/m/Y à H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colonne droite - Prix & Informations OBR -->
+    <div class="col-12 col-lg-5">
+        <!-- Prix -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-currency-exchange me-2 text-success"></i>Prix de vente
+                </h5>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Prix HT</span>
+                    <span class="fw-bold fs-5">{{ produit.prix_vente|floatformat:0 }} {{ produit.devise }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Prix TTC ({{ produit.taux_tva_valeur }}%)</span>
+                    <span class="fw-bold text-success fs-5">{{ produit.prix_vente_tvac|floatformat:0 }} {{ produit.devise }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations OBR (si importé) -->
+        {% if produit.est_importe %}
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-globe me-2 text-info"></i>Informations OBR / Douane
+                </h5>
+                
+                <table class="table table-borderless small mb-0">
+                    <tr>
+                        <td class="text-muted">Référence DMC</td>
+                        <td class="text-end">{{ produit.reference_dmc|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Rubrique tarifaire</td>
+                        <td class="text-end">{{ produit.rubrique_tarifaire|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Nombre par paquet</td>
+                        <td class="text-end">{{ produit.nombre_par_paquet|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Conditionnement</td>
+                        <td class="text-end">{{ produit.description_paquet|default:"—" }}</td>
+                    </tr>
+                </table>
+
+                {% if not produit.infos_obr_completes %}
+                <div class="alert alert-warning mt-4 small">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    Certaines informations OBR sont manquantes.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

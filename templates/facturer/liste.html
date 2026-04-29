@@ -26,6 +26,7 @@
             </button>
         {% endif %}
     </div>
+
     {# Messages Django #}
     {% if messages %}
     <div class="col-12">
@@ -159,7 +160,7 @@
                                     {% elif f.statut_obr == 'ECHEC' %}
                                         <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Échec</span>
                                     {% elif f.statut_obr == 'ANNULE' %}
-                                        <span class="badge bg-danger">Annulée avec sucess</span>
+                                        <span class="badge bg-secondary">Annulée</span>
                                     {% else %}
                                         <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> En attente</span>
                                     {% endif %}

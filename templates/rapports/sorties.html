@@ -5,126 +5,138 @@
 
 {% block content %}
 
+<!-- Page Header -->
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">
+        <h1 class="page-title mb-1">
             <i class="bi {{ rapport_icone }}" style="color:{{ rapport_clr }};"></i> {{ titre }}
-        </div>
-        <div class="page-subtitle">Mouvements de sortie stock hors vente sur la période sélectionnée</div>
+        </h1>
+        <p class="text-muted mb-0">
+            Mouvements de sortie stock hors vente sur la période sélectionnée
+        </p>
     </div>
 
     <!-- Boutons Export + Navigation -->
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div class="d-flex gap-2 align-items-center">
         {% if lignes %}
-        <a href="{% url 'rapports:export_sorties_excel' %}" class="btn btn-success btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-excel"></i> Excel
-        </a>
-        <a href="{% url 'rapports:export_sorties_pdf' %}" class="btn btn-danger btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-pdf"></i> PDF
-        </a>
+            <a href="{% url 'rapports:export_sorties_excel' %}" class="btn btn-success" target="_blank">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a href="{% url 'rapports:export_sorties_pdf' %}" class="btn btn-danger" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </a>
         {% endif %}
 
-        <a href="{% url 'rapports:entrees' %}" class="btn-outline-custom">
+        <a href="{% url 'rapports:entrees' %}" class="btn btn-outline-secondary">
             <i class="bi bi-box-arrow-in-down"></i> Entrées
         </a>
-        <a href="{% url 'rapports:stock_actuel' %}" class="btn-outline-custom">
+        <a href="{% url 'rapports:stock_actuel' %}" class="btn btn-outline-secondary">
             <i class="bi bi-archive"></i> Stock actuel
         </a>
     </div>
 </div>
 
+<!-- Filtres -->
 {% include 'rapports/_filtres.html' %}
 
 <!-- Totaux -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value">{{ totaux.nb|default:0 }}</div>
-            <div class="stat-label">Sorties</div>
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-primary">{{ totaux.nb|default:0 }}</div>
+                <div class="text-muted small">Nombre de sorties</div>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value">{{ totaux.total_qte|default:0|floatformat:0 }}</div>
-            <div class="stat-label">Quantité totale</div>
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold">{{ totaux.total_qte|default:0|floatformat:0 }}</div>
+                <div class="text-muted small">Quantité totale</div>
+            </div>
         </div>
     </div>
     <div class="col-12 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value" style="color:{{ rapport_clr }};">
-                {{ totaux.total_valeur|default:0|floatformat:0 }} BIF
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold" style="color:{{ rapport_clr }}">
+                    {{ totaux.total_valeur|default:0|floatformat:0 }} BIF
+                </div>
+                <div class="text-muted small">Valeur totale</div>
             </div>
-            <div class="stat-label">Valeur totale</div>
         </div>
     </div>
 </div>
 
-<div class="card">
+<!-- Tableau des Sorties -->
+<div class="card shadow-sm border-0">
     {% if lignes %}
-    <div style="overflow-x:auto;">
-        <table class="table table-custom mb-0">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Produit</th>
-                    <th>Code</th>
-                    <th>Quantité</th>
-                    <th>Prix unit.</th>
-                    <th>Montant</th>
-                    <th>Commentaire</th>
-                    <th>OBR</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for s in lignes %}
-                <tr>
-                    <td style="font-size:12px; color:var(--text-muted);">
-                        {{ s.date_sortie|date:"d/m/Y"|default:"—" }}
-                    </td>
-                    <td>
-                        <span class="badge-inactive" style="background:#fef2f2;">
-                            {{ s.type_sortie|default:"—" }}
-                        </span>
-                    </td>
-                    <td style="font-weight:600; font-size:13px;">
-                        {{ s.entree_stock.produit.designation|default:"—" }}
-                    </td>
-                    <td style="font-size:11.5px; color:var(--text-muted);">
-                        {{ s.entree_stock.produit.code|default:"—" }}
-                    </td>
-                    <td style="font-weight:600;">
-                        {{ s.quantite|default:0 }} {{ s.entree_stock.produit.unite|default:"—" }}
-                    </td>
-                    <td style="font-size:12.5px;">
-                        {{ s.prix|floatformat:0|default:0 }} BIF
-                    </td>
-                    <td style="font-weight:600; color:{{ rapport_clr }};">
-                        {{ s.montant_total|floatformat:0|default:0 }} BIF
-                    </td>
-                    <td style="font-size:12px; color:var(--text-muted); max-width:200px;">
-                        {{ s.commentaire|default:"—"|truncatechars:40 }}
-                    </td>
-                    <td>
-                        {% if s.statut_obr == 'ENVOYE' %}
-                            <span class="badge-active">Envoyé</span>
-                        {% elif s.statut_obr == 'ECHEC' %}
-                            <span class="badge-inactive">Échec</span>
-                        {% else %}
-                            <span class="badge-pending">Attente</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Produit</th>
+                        <th>Code</th>
+                        <th class="text-end">Quantité</th>
+                        <th class="text-end">Prix unitaire</th>
+                        <th class="text-end">Montant total</th>
+                        <th>Commentaire</th>
+                        <th>Statut OBR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in lignes %}
+                    <tr>
+                        <td class="text-muted small">
+                            {{ s.date_sortie|date:"d/m/Y"|default:"—" }}
+                        </td>
+                        <td>
+                            <span class="badge bg-danger-subtle text-danger">
+                                {{ s.get_type_sortie_display|default:s.type_sortie }}
+                            </span>
+                        </td>
+                        <td class="fw-medium">
+                            {{ s.entree_stock.produit.designation|default:"—" }}
+                        </td>
+                        <td class="text-muted small">
+                            {{ s.entree_stock.produit.code|default:"—" }}
+                        </td>
+                        <td class="text-end fw-medium">
+                            {{ s.quantite|default:0 }} {{ s.entree_stock.produit.unite|default:"—" }}
+                        </td>
+                        <td class="text-end">{{ s.prix|floatformat:0|default:0 }} BIF</td>
+                        <td class="text-end fw-semibold" style="color:{{ rapport_clr }}">
+                            {{ s.montant_total|floatformat:0|default:0 }} BIF
+                        </td>
+                        <td class="text-muted small" style="max-width: 220px;">
+                            {{ s.commentaire|default:"—"|truncatechars:45 }}
+                        </td>
+                        <td>
+                            {% if s.statut_obr == 'ENVOYE' %}
+                                <span class="badge bg-success">Envoyé</span>
+                            {% elif s.statut_obr == 'ECHEC' %}
+                                <span class="badge bg-danger">Échec</span>
+                            {% elif s.statut_obr == 'EN_ATTENTE' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% else %}
+                                <span class="badge bg-secondary">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
-    <div style="text-align:center; padding:80px 20px; color:#64748b;">
-        <i class="bi bi-box-arrow-up" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
-        <div style="font-size:15px; font-weight:600;">Aucune sortie trouvée</div>
-        <div style="font-size:13px; margin-top:8px;">Ajustez les filtres pour afficher les résultats</div>
-    </div>
+        <!-- État vide -->
+        <div class="text-center py-5 my-5">
+            <i class="bi bi-box-arrow-up display-1 text-muted opacity-50 mb-3 d-block"></i>
+            <h5 class="text-muted mb-2">Aucune sortie trouvée</h5>
+            <p class="text-muted">Ajustez les filtres pour afficher les résultats.</p>
+        </div>
     {% endif %}
 </div>
 

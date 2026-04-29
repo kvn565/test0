@@ -80,17 +80,12 @@
                         </p>
                         {% endif %}
 
-                        {# Actions #}
+                        {# Actions ── Modifié : suppression de l'icône de poubelle #}
                         <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid #f0f2f5;">
                             <a href="{% url 'categories:modifier' cat.pk %}"
                                class="btn btn-sm btn-outline-secondary flex-fill">
                                 <i class="bi bi-pencil me-1"></i>Modifier
                             </a>
-                            {% if cat.nb_produits == 0 %}
-                            
-                            {% else %}
-                            
-                            {% endif %}
                         </div>
                     </div>
                     <div style="padding:8px 16px;background:#fafbfc;border-top:1px solid #f0f2f5;font-size:0.72rem;color:#aab;">

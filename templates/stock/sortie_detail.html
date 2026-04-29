@@ -5,60 +5,81 @@
 
 {% block content %}
 
-<div class="page-header">
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">📤 Sortie stock #{{ sortie.pk }}</div>
-        <div class="page-subtitle">{{ sortie.get_type_sortie_display }} — {{ sortie.date_sortie|date:"d/m/Y" }}</div>
+        <h1 class="page-title mb-1">
+            <i class="bi bi-box-arrow-up-right me-2"></i>Sortie stock #{{ sortie.pk }}
+        </h1>
+        <p class="text-muted mb-0">
+            {{ sortie.get_type_sortie_display }} — {{ sortie.date_sortie|date:"d/m/Y" }}
+        </p>
     </div>
-    <div style="display:flex; gap:8px;">
-        <a href="{% url 'stock:sortie_modifier' sortie.pk %}" class="btn-outline-custom"><i class="bi bi-pencil"></i> Modifier</a>
-        <a href="{% url 'stock:sorties' %}" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Retour</a>
+    
+    <div class="d-flex gap-2">
+        <a href="{% url 'stock:sorties' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
     </div>
 </div>
 
-<div class="row g-3">
-    <div class="col-12 col-md-7">
-        <div class="card">
-            <div style="padding:20px;">
-                <div style="font-size:13px; font-weight:700; margin-bottom:16px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Informations</div>
-                <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted); width:40%;">Type de sortie</td>
-                        <td style="padding:10px 0; font-weight:600;"><span class="badge-inactive">{{ sortie.get_type_sortie_display }}</span></td>
-                    </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Produit</td>
-                        <td style="padding:10px 0; font-weight:600;">{{ sortie.produit.designation }}</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Code produit</td>
-                        <td style="padding:10px 0;">{{ sortie.produit.code }}</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Entrée stock liée</td>
-                        <td style="padding:10px 0;">
-                            <a href="{% url 'stock:entree_detail' sortie.entree_stock.pk %}" style="color:var(--primary);">Entrée #{{ sortie.entree_stock.pk }}</a>
+<div class="row g-4">
+    <!-- Colonne gauche - Informations -->
+    <div class="col-12 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>Informations générales
+                </h5>
+                
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted py-3" style="width: 40%;">Type de sortie</td>
+                        <td class="fw-medium py-3">
+                            <span class="badge bg-danger-subtle text-danger">{{ sortie.get_type_sortie_display }}</span>
                         </td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Code sortie</td>
-                        <td style="padding:10px 0;">{{ sortie.code|default:"—" }}</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Date de sortie</td>
-                        <td style="padding:10px 0;">{{ sortie.date_sortie|date:"d/m/Y" }}</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Commentaire</td>
-                        <td style="padding:10px 0; font-size:12px;">{{ sortie.commentaire|default:"—" }}</td>
+                    <tr>
+                        <td class="text-muted py-3">Produit</td>
+                        <td class="fw-medium py-3">{{ sortie.produit.designation }}</td>
                     </tr>
                     <tr>
-                        <td style="padding:10px 0; color:var(--text-muted);">Statut OBR</td>
-                        <td style="padding:10px 0;">
-                            {% if sortie.statut_obr == 'ENVOYE' %}<span class="badge-active">Envoyé</span>
-                            {% elif sortie.statut_obr == 'ECHEC' %}<span class="badge-inactive">Échec</span>
-                            {% elif sortie.statut_obr == 'EN_ATTENTE' %}<span class="badge-pending">En attente</span>
-                            {% else %}<span class="badge-revoked">Non concerné</span>{% endif %}
+                        <td class="text-muted py-3">Code produit</td>
+                        <td class="py-3"><code>{{ sortie.produit.code }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Entrée stock liée</td>
+                        <td class="py-3">
+                            <a href="{% url 'stock:entree_detail' sortie.entree_stock.pk %}" 
+                               class="text-primary text-decoration-none">
+                                Entrée #{{ sortie.entree_stock.pk }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Code sortie</td>
+                        <td class="py-3">{{ sortie.code|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Date de sortie</td>
+                        <td class="py-3">{{ sortie.date_sortie|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Commentaire</td>
+                        <td class="py-3 text-muted">{{ sortie.commentaire|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted py-3">Statut OBR</td>
+                        <td class="py-3">
+                            {% if sortie.statut_obr == 'ENVOYE' %}
+                                <span class="badge bg-success">Envoyé</span>
+                            {% elif sortie.statut_obr == 'ECHEC' %}
+                                <span class="badge bg-danger">Échec</span>
+                            {% elif sortie.statut_obr == 'EN_ATTENTE' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Non concerné</span>
+                            {% endif %}
                         </td>
                     </tr>
                 </table>
@@ -66,22 +87,34 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-5">
-        <div class="card">
-            <div style="padding:20px;">
-                <div style="font-size:13px; font-weight:700; margin-bottom:16px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Quantités & Prix</div>
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <div style="background:#fff1f0; border-radius:8px; padding:14px; text-align:center;">
-                        <div style="font-size:24px; font-weight:800; color:#ef4444;">{{ sortie.quantite }} {{ sortie.produit.unite }}</div>
-                        <div style="font-size:12px; color:var(--text-muted);">Quantité sortie</div>
+    <!-- Colonne droite - Quantités & Prix -->
+    <div class="col-12 col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-currency-exchange me-2 text-primary"></i>Quantités & Prix
+                </h5>
+                
+                <div class="d-flex flex-column gap-3">
+                    <!-- Quantité sortie -->
+                    <div class="bg-danger-subtle rounded-3 p-4 text-center">
+                        <div class="fs-2 fw-bold text-danger">{{ sortie.quantite }}</div>
+                        <div class="text-muted small">{{ sortie.produit.unite }}</div>
+                        <div class="mt-1 text-muted">Quantité sortie</div>
                     </div>
-                    <div style="background:#f9fafb; border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:13px; color:var(--text-muted);">Prix unitaire</span>
-                        <span style="font-weight:700;">{{ sortie.prix|floatformat:0 }} BIF</span>
+
+                    <!-- Prix unitaire -->
+                    <div class="d-flex justify-content-between align-items-center bg-white border rounded-3 p-3">
+                        <span class="text-muted">Prix unitaire</span>
+                        <span class="fw-semibold">{{ sortie.prix|floatformat:0 }} BIF</span>
                     </div>
-                    <div style="background:#fff8e1; border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #fbbf24;">
-                        <span style="font-size:13px; color:#92400e;">Montant total</span>
-                        <span style="font-weight:800; color:#92400e;">{{ sortie.montant_total|floatformat:0 }} BIF</span>
+
+                    <!-- Montant total -->
+                    <div class="d-flex justify-content-between align-items-center border border-warning rounded-3 p-3 bg-warning-subtle">
+                        <span class="fw-medium text-warning-emphasis">Montant total</span>
+                        <span class="fw-bold text-warning-emphasis fs-5">
+                            {{ sortie.montant_total|floatformat:0 }} BIF
+                        </span>
                     </div>
                 </div>
             </div>

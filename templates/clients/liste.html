@@ -144,12 +144,12 @@
                                 {{ client.date_creation|date:"d/m/Y" }}
                             </td>
                             <td style="text-align:right;white-space:nowrap;">
+                                <!-- Seul le bouton Modifier reste -->
                                 <a href="{% url 'clients:modifier' client.pk %}"
-                                   class="btn btn-sm btn-outline-secondary me-1"
+                                   class="btn btn-sm btn-outline-secondary"
                                    title="Modifier">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                
                             </td>
                         </tr>
                         {% endfor %}

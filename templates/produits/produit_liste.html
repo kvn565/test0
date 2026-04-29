@@ -167,10 +167,12 @@
                             {% endif %}
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'produits:modifier' p.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Modifier">
-                                <i class="bi bi-pencil"></i>
+                            <!-- Icône Voir le produit -->
+                            <a href="{% url 'produits:detail' p.pk %}" 
+                               class="btn btn-sm btn-outline-info" 
+                               title="Voir le détail du produit">
+                                <i class="bi bi-eye"></i>
                             </a>
-                            
                         </td>
                     </tr>
                     {% endfor %}

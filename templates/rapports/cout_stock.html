@@ -5,156 +5,162 @@
 
 {% block content %}
 
+<!-- Page Header -->
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">
+        <h1 class="page-title mb-1">
             <i class="bi {{ rapport_icone }}" style="color:{{ rapport_clr }};"></i> {{ titre }}
-        </div>
-        <div class="page-subtitle">Détail des lignes de facture — produits et services vendus (nets des avoirs)</div>
+        </h1>
+        <p class="text-muted mb-0">
+            Détail des lignes de facture — produits et services vendus (nets des avoirs)
+        </p>
     </div>
 
-    <!-- Boutons Export + Navigation -->
-    <div style="display:flex; gap:10px; align-items:center;">
+    <!-- Boutons d'export et navigation -->
+    <div class="d-flex gap-2 align-items-center">
         {% if lignes %}
-        <a href="{% url 'rapports:export_cout_stock_excel' %}" class="btn btn-success btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-excel"></i> Excel
-        </a>
-        <a href="{% url 'rapports:export_cout_stock_pdf' %}" class="btn btn-danger btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-pdf"></i> PDF
-        </a>
+            <a href="{% url 'rapports:export_cout_stock_excel' %}" class="btn btn-success" target="_blank">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a href="{% url 'rapports:export_cout_stock_pdf' %}" class="btn btn-danger" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </a>
         {% endif %}
 
-        <a href="{% url 'rapports:facturation' %}" class="btn-outline-custom">
+        <a href="{% url 'rapports:facturation' %}" class="btn btn-outline-secondary">
             <i class="bi bi-receipt"></i> Facturation
         </a>
-        <a href="{% url 'rapports:stock_actuel' %}" class="btn-outline-custom">
+        <a href="{% url 'rapports:stock_actuel' %}" class="btn btn-outline-secondary">
             <i class="bi bi-archive"></i> Stock actuel
         </a>
     </div>
 </div>
 
+<!-- Filtres -->
 {% with show_service_filter=True %}
-{% include 'rapports/_filtres.html' %}
+    {% include 'rapports/_filtres.html' %}
 {% endwith %}
 
 <!-- Totaux Nets -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="stat-value">{{ nb|default:0 }}</div>
-            <div class="stat-label">Lignes nettes</div>
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-primary">{{ nb|default:0 }}</div>
+                <div class="text-muted small">Lignes nettes</div>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="stat-value">{{ total_ht|floatformat:0|default:0 }} BIF</div>
-            <div class="stat-label">Total HT Net</div>
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold">{{ total_ht|floatformat:0|default:0 }} BIF</div>
+                <div class="text-muted small">Total HT Net</div>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="stat-value" style="color:#f59e0b;">{{ total_tva|floatformat:0|default:0 }} BIF</div>
-            <div class="stat-label">Total TVA Net</div>
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-warning">{{ total_tva|floatformat:0|default:0 }} BIF</div>
+                <div class="text-muted small">Total TVA Net</div>
+            </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="stat-value" style="color:{{ rapport_clr }};">{{ total_ttc|floatformat:0|default:0 }} BIF</div>
-            <div class="stat-label">Total TTC Net</div>
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold" style="color:{{ rapport_clr }}">{{ total_ttc|floatformat:0|default:0 }} BIF</div>
+                <div class="text-muted small">Total TTC Net</div>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Information sur les avoirs -->
 {% if totaux.nb_avoirs and totaux.nb_avoirs > 0 %}
-<div class="alert alert-warning mb-3">
+<div class="alert alert-warning">
     <i class="bi bi-info-circle me-2"></i>
     <strong>Attention :</strong> Les lignes provenant des {{ totaux.nb_avoirs }} facture(s) d’avoir (FA) 
     ont été <strong>soustraites</strong> des totaux ci-dessus.
 </div>
 {% endif %}
 
-<div class="card">
+<!-- Tableau -->
+<div class="card shadow-sm border-0">
     {% if lignes %}
-    <div style="overflow-x:auto;">
-        <table class="table table-custom mb-0">
-            <thead>
-                <tr>
-                    <th>Facture</th>
-                    <th>Date</th>
-                    <th>Client</th>
-                    <th>Désignation</th>
-                    <th>Type</th>
-                    <th>Qté</th>
-                    <th>PU HT</th>
-                    <th>TVA %</th>
-                    <th>Montant HT</th>
-                    <th>Montant TTC</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for l in lignes %}
-                <tr>
-                    <td>
-                        <a href="{% url 'facturer:detail' l.facture.pk %}" 
-                           style="color:var(--primary); font-weight:600; font-size:12.5px;">
-                            {{ l.facture.numero|default:"—" }}
-                        </a>
-                    </td>
-                    <td style="font-size:12px; color:var(--text-muted);">
-                        {{ l.facture.date_facture|date:"d/m/Y"|default:"—" }}
-                    </td>
-                    <td style="font-size:12.5px;">
-                        {{ l.facture.client.nom|default:"—" }}
-                    </td>
-                    <td style="font-weight:600; font-size:13px;">
-                        {% if l.produit %}{{ l.produit.designation }}
-                        {% elif l.service %}{{ l.service.designation }}
-                        {% else %}{{ l.designation|default:"—" }}{% endif %}
-                    </td>
-                    <td>
-                        {% if l.facture.type_facture == 'FA' %}
-                            <span class="badge bg-warning text-dark">Avoir (FA)</span>
-                        {% elif l.produit %}
-                            <span class="badge-active">Produit</span>
-                        {% else %}
-                            <span class="badge-essai">Service</span>
-                        {% endif %}
-                    </td>
-                    <td style="font-weight:600;">{{ l.quantite|default:0 }}</td>
-                    <td style="font-size:12.5px;">
-                        {{ l.prix_unitaire_ht|floatformat:0|default:0 }} BIF
-                    </td>
-                    <td style="font-size:12.5px; color:#f59e0b;">
-                        {{ l.taux_tva|default:"0" }} %
-                    </td>
-                    <td style="font-size:12.5px;">
-                        {{ l.montant_ht|floatformat:0|default:0 }} BIF
-                    </td>
-                    <td style="font-weight:600; color:{{ rapport_clr }};">
-                        {{ l.montant_ttc|floatformat:0|default:0 }} BIF
-                        {% if l.facture.type_facture == 'FA' %}<small class="text-danger"> (–)</small>{% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr style="background:#f8fafc; font-weight:700; font-size:13px;">
-                    <td colspan="8" style="text-align:right; padding:12px 16px;">Totaux Nets (après soustraction des avoirs) :</td>
-                    <td style="padding:12px 16px;">{{ total_ht|floatformat:0|default:0 }} BIF</td>
-                    <td style="padding:12px 16px; color:{{ rapport_clr }}; font-size:14px;">
-                        {{ total_ttc|floatformat:0|default:0 }} BIF
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Facture</th>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Désignation</th>
+                        <th>Type</th>
+                        <th class="text-end">Qté</th>
+                        <th class="text-end">PU HT</th>
+                        <th class="text-end">TVA %</th>
+                        <th class="text-end">Montant HT</th>
+                        <th class="text-end">Montant TTC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in lignes %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'facturer:detail' l.facture.pk %}" 
+                               class="fw-medium text-primary text-decoration-none">
+                                {{ l.facture.numero|default:"—" }}
+                            </a>
+                        </td>
+                        <td class="text-muted small">
+                            {{ l.facture.date_facture|date:"d/m/Y"|default:"—" }}
+                        </td>
+                        <td>{{ l.facture.client.nom|default:"—" }}</td>
+                        <td class="fw-medium">
+                            {% if l.produit %}{{ l.produit.designation }}
+                            {% elif l.service %}{{ l.service.designation }}
+                            {% else %}{{ l.designation|default:"—" }}{% endif %}
+                        </td>
+                        <td>
+                            {% if l.facture.type_facture == 'FA' %}
+                                <span class="badge bg-warning text-dark">Avoir (FA)</span>
+                            {% elif l.produit %}
+                                <span class="badge bg-info-subtle text-info">Produit</span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success">Service</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-medium">{{ l.quantite|default:0 }}</td>
+                        <td class="text-end">{{ l.prix_unitaire_ht|floatformat:0|default:0 }} BIF</td>
+                        <td class="text-end text-warning">{{ l.taux_tva|default:"0" }} %</td>
+                        <td class="text-end">{{ l.montant_ht|floatformat:0|default:0 }} BIF</td>
+                        <td class="text-end fw-semibold" style="color:{{ rapport_clr }}">
+                            {{ l.montant_ttc|floatformat:0|default:0 }} BIF
+                            {% if l.facture.type_facture == 'FA' %}<small class="text-danger"> (–)</small>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light fw-bold">
+                        <td colspan="8" class="text-end py-3">Totaux Nets (après soustraction des avoirs) :</td>
+                        <td class="text-end py-3">{{ total_ht|floatformat:0|default:0 }} BIF</td>
+                        <td class="text-end py-3" style="color:{{ rapport_clr }}; font-size:15px;">
+                            {{ total_ttc|floatformat:0|default:0 }} BIF
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     {% else %}
-    <div style="text-align:center; padding:80px 20px; color:#64748b;">
-        <i class="bi bi-calculator" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
-        <div style="font-size:15px; font-weight:600;">Aucune vente trouvée</div>
-        <div style="font-size:13px; margin-top:8px;">Ajustez les filtres pour afficher les résultats</div>
-    </div>
+        <!-- État vide -->
+        <div class="text-center py-5 my-5">
+            <i class="bi bi-calculator display-1 text-muted opacity-50 mb-3 d-block"></i>
+            <h5 class="text-muted mb-2">Aucune vente trouvée</h5>
+            <p class="text-muted">Ajustez les filtres pour afficher les résultats.</p>
+        </div>
     {% endif %}
 </div>
 

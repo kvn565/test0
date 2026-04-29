@@ -248,3 +248,50 @@ def ajax_importer_dmc(request):
             'success': False,
             'error': str(e) or "Erreur lors de la récupération des données OBR."
         }, status=400)
+
+
+
+# ====================== HELPER ======================
+def _get_societe_and_check_droit(request):
+    """Vérifie les droits et retourne la société de l'utilisateur"""
+    societe = getattr(request.user, 'societe', None)
+    if not societe:
+        messages.error(request, "Vous n'êtes rattaché à aucune société.")
+        return None
+
+    type_poste = getattr(request.user, 'type_poste', None)
+    has_right = (
+        type_poste == 'DIRECTEUR' or 
+        getattr(request.user, 'droit_stock_produit', False)
+    )
+    
+    if not has_right:
+        messages.error(request, "Vous n'avez pas les droits nécessaires pour gérer les produits.")
+        return None
+
+    return societe
+
+# ── DÉTAIL D'UN PRODUIT ─────────────────────────────────────────────────────
+@login_required
+def produit_detail(request, pk):
+    """Affichage détaillé d'un produit"""
+    societe = _get_societe_and_check_droit(request)
+    if not societe:
+        return redirect('accueil')
+
+    produit = get_object_or_404(
+        Produit.objects.select_related('categorie', 'taux_tva', 'societe'),
+        pk=pk,
+        societe=societe
+    )
+
+    context = {
+        'produit': produit,
+        'est_importe': produit.est_importe,
+        'infos_obr_completes': produit.infos_obr_completes,
+        'stock_disponible': produit.stock_disponible,
+        'prix_tvac': produit.prix_vente_tvac,
+        'tva_montant': produit.tva_montant,
+    }
+
+    return render(request, 'produits/produit_detail.html', context)

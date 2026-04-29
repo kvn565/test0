@@ -1165,11 +1165,9 @@ def societe_gestion_liste(request):
 @superadmin_required
 def societe_gestion_modifier(request, pk):
     """
-    Modifier les paramètres importants d'une société :
-    - Nom complet du gérant
-    - Email de la société
-    - Numéro de départ des factures
-    - Configuration OBR (username, password, system_id, actif)
+    Page de modification avancée pour le superadmin :
+    - Informations de gérance (gérant, email, numéro de départ)
+    - Configuration complète OBR (username, password, system_id, base_url, actif)
     """
     societe = get_object_or_404(Societe, pk=pk)
 
@@ -1178,17 +1176,18 @@ def societe_gestion_modifier(request, pk):
         obr_form = SocieteAdminConfigForm(request.POST, instance=societe)
 
         if form.is_valid() and obr_form.is_valid():
-            form.save()
-            obr_form.save()
+            with transaction.atomic():
+                form.save()
+                obr_form.save()
+
             messages.success(
                 request, 
                 f"✅ Paramètres de la société « {societe.nom} » mis à jour avec succès."
             )
             return redirect('superadmin:societe_gestion_liste')
         
-        # Si une des deux formes a des erreurs, on les affiche
         else:
-            messages.error(request, "Veuillez corriger les erreurs dans le formulaire.")
+            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
 
     else:
         form     = SocieteGeranceForm(instance=societe)
@@ -1198,5 +1197,5 @@ def societe_gestion_modifier(request, pk):
         'form': form,
         'obr_form': obr_form,
         'societe': societe,
-        'page_title': f"Modifier {societe.nom}",
+        'page_title': f"Modifier les paramètres de {societe.nom}",
     })

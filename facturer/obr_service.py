@@ -1,31 +1,27 @@
-# obr_service.py — VERSION FINALE (alignée doc OBR v0.5 - 11/10/2023)
-# Login + addInvoice_confirm + AddStockMovement + synchro stock après succès
+# obr_service.py — VERSION FINALE (alignée doc OBR v0.5)
+# API totalement dynamique par société + vérification société active
 
 import requests
 import logging
 import time
-import json
-import urllib3
 from decimal import Decimal
 
 from django.utils import timezone
 from django.core.cache import cache
 from django.conf import settings
 from django.db import transaction
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+
 from .models import Facture, FacturePendingOBR, LigneFacture
-from stock.models import SortieStock, EntreeStock   # ← Ajout nécessaire
+from stock.models import SortieStock, EntreeStock
 from stock.obr_service import envoyer_entree_stock, envoyer_sortie_stock
 
-
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
+logging.getLogger("urllib3").setLevel(logging.ERROR)
 
 # ─── CONFIGURATION ─────────────────────────────────────────────────────────
-OBR_BASE_URL = "https://ebms.obr.gov.bi:9443/ebms_api"
 TIMEOUT = 45
 MAX_RETRIES = 5
 BASE_RETRY_DELAY = 8
@@ -33,69 +29,104 @@ BASE_RETRY_DELAY = 8
 CACHE_TOKEN_KEY_TEMPLATE = "obr_token_{societe_pk}"
 CACHE_TOKEN_TIMEOUT = 2700  # 45 min
 
-# IMPORTANT : passez à True en production + certificat valide
 VERIFY_CERT = not settings.DEBUG
 if not VERIFY_CERT:
     logger.warning("⚠️ VERIFY_CERT désactivé → uniquement pour développement !")
 
 ENDPOINT_LOGIN          = "/login/"
 ENDPOINT_ADD_INVOICE    = "/addInvoice_confirm/"
-ENDPOINT_CANCEL_INVOICE  = "/cancelInvoice/"
+ENDPOINT_CANCEL_INVOICE = "/cancelInvoice/"
 ENDPOINT_ADD_STOCK_MOVE = "/AddStockMovement/"
+
+
+# ─── HELPERS DYNAMIQUES ─────────────────────────────────────────────────────
+def get_obr_base_url(societe):
+    """Retourne l'URL de base OBR pour une société."""
+    url = getattr(societe, 'obr_base_url', None)
+    if not url or not str(url).strip():
+        raise ValueError(
+            f"URL Base OBR non configurée pour la société '{societe.nom}' (pk={societe.pk}). "
+            f"Veuillez renseigner le champ obr_base_url dans l'administration."
+        )
+    return str(url).strip().rstrip('/')
+
+
+def build_obr_url(societe, endpoint):
+    """Construit l'URL complète pour un endpoint donné."""
+    return f"{get_obr_base_url(societe)}{endpoint}"
+
+
+# ─── VÉRIFICATION SOCIÉTÉ ACTIVE ───────────────────────────────────────────
+def check_societe_active(societe):
+    """
+    Vérifie que la société est active avant toute opération OBR.
+    Lève une ValueError claire si la société est désactivée.
+    """
+    if not getattr(societe, 'actif', True):   # True par défaut si le champ n'existe pas encore
+        logger.warning(f"[OBR] ACCÈS REFUSÉ - Société '{societe.nom}' (pk={societe.pk}) est désactivée.")
+        raise ValueError(
+            f"La société '{societe.nom}' est désactivée. "
+            f"Impossible d'envoyer des données vers l'OBR."
+        )
 
 
 # ─── TOKEN ─────────────────────────────────────────────────────────────────
 def get_obr_token(societe):
-    """
-    Récupère le token OBR pour une société, avec mise en cache.
-    """
     cache_key = CACHE_TOKEN_KEY_TEMPLATE.format(societe_pk=societe.pk)
     token = cache.get(cache_key)
     if token:
         return token
 
-    # Vérifie que les identifiants existent
     if not societe.obr_username or not societe.obr_password:
-        raise ValueError(f"Identifiants OBR manquants pour {societe.nom}")
+        raise ValueError(f"Identifiants OBR manquants pour la société '{societe.nom}' (pk={societe.pk})")
 
-    # Prépare la requête
-    url = f"{OBR_BASE_URL}{ENDPOINT_LOGIN}"
+    # Vérification société active AVANT toute connexion
+    check_societe_active(societe)
+
+    url = build_obr_url(societe, ENDPOINT_LOGIN)
+
     payload = {
         "username": societe.obr_username,
         "password": societe.obr_password
     }
 
-    # Envoi de la requête
+    logger.info(f"[OBR] Login société '{societe.nom}' → {url}")
     resp = requests.post(url, json=payload, timeout=TIMEOUT, verify=VERIFY_CERT)
     resp.raise_for_status()
     data = resp.json()
 
-    # Vérifie la réponse
     if not data.get("success"):
-        raise ValueError(f"Login OBR échoué : {data.get('msg')}")
+        raise ValueError(f"Login OBR échoué pour '{societe.nom}' : {data.get('msg')}")
 
-    # Récupère le token et le met en cache
     token = data["result"]["token"]
     cache.set(cache_key, token, CACHE_TOKEN_TIMEOUT)
+    logger.info(f"[OBR] Token obtenu et mis en cache pour société '{societe.nom}'")
     return token
 
+
+def invalidate_obr_token(societe):
+    """Invalide le token en cache pour une société donnée."""
+    cache_key = CACHE_TOKEN_KEY_TEMPLATE.format(societe_pk=societe.pk)
+    cache.delete(cache_key)
+    logger.info(f"[OBR] Token invalidé pour société '{societe.nom}'")
+
+
 def get_obr_headers(societe):
+    """Retourne les headers avec token Bearer."""
     return {
         "Authorization": f"Bearer {get_obr_token(societe)}",
         "Content-Type": "application/json"
     }
 
 
-# ─── PAYLOAD FACTURE ───────────────────────────────────────────────────────
+# ─── PAYLOAD FACTURE (inchangé) ────────────────────────────────────────────
 def build_invoice_payload(facture):
     societe = facture.societe
     client  = facture.client
     lignes  = facture.lignes.select_related('produit', 'service').all()
 
-    # Format date + heure
     datetime_str = f"{facture.date_facture.strftime('%Y-%m-%d')} {facture.heure_facture.strftime('%H:%M:%S')}"
 
-    # Mapping mode paiement
     payment_mapping = {'CAISSE': '1', 'BANQUE': '2', 'CREDIT': '3', 'AUTRES': '4'}
     payment_type_obr = payment_mapping.get(facture.mode_paiement, '1')
 
@@ -134,12 +165,10 @@ def build_invoice_payload(facture):
         "invoice_items": []
     }
 
-    # Référence pour FA/RC
     if facture.type_facture in ['FA', 'RC'] and facture.facture_originale:
         payload["invoice_ref"] = facture.facture_originale.numero[:30]
         payload["cn_motif"] = facture.motif_avoir[:500] if facture.motif_avoir else "Avoir / Annulation"
 
-    # Lignes — champs obligatoires + taxes conditionnelles
     for ligne in lignes:
         prix_ht  = float(ligne.prix_ht)
         quantite = float(ligne.quantite)
@@ -164,19 +193,22 @@ def build_invoice_payload(facture):
     return payload
 
 
+# ─── ENVOI FACTURE ─────────────────────────────────────────────────────────
 def envoyer_facture_obr(facture):
-    """Envoie la facture à l'OBR + synchronise les mouvements de stock existants (sans recréation)"""
+    """Envoie la facture à l'OBR uniquement si la société est active."""
     societe = facture.societe
     pending, _ = FacturePendingOBR.objects.get_or_create(facture=facture)
     pending.retry_count = (pending.retry_count or 0) + 1
     pending.save(update_fields=['retry_count'])
 
     try:
+        # VÉRIFICATION SOCIÉTÉ ACTIVE
+        check_societe_active(societe)
+
         payload = build_invoice_payload(facture)
+        url = build_obr_url(societe, ENDPOINT_ADD_INVOICE)
 
-        logger.info(f"[OBR] Début envoi facture {facture.numero} | Type: {facture.type_facture}")
-
-        url = f"{OBR_BASE_URL}{ENDPOINT_ADD_INVOICE}"
+        logger.info(f"[OBR] Début envoi facture {facture.numero} | Société: {societe.nom} → {url}")
 
         for attempt in range(1, MAX_RETRIES + 1):
             try:
@@ -189,15 +221,14 @@ def envoyer_facture_obr(facture):
                 )
 
                 if resp.status_code in (401, 403):
-                    logger.warning("Token invalide → refresh")
-                    cache.delete(CACHE_TOKEN_KEY_TEMPLATE.format(societe_pk=societe.pk))
+                    logger.warning(f"[OBR] Token invalide pour '{societe.nom}' → refresh")
+                    invalidate_obr_token(societe)
                     continue
 
                 if resp.status_code == 200:
                     data = resp.json()
 
                     if data.get("success"):
-                        # Mise à jour facture
                         facture.statut_obr = "ENVOYE"
                         facture.message_obr = data.get("msg", "Succès")
                         facture.date_envoi_obr = timezone.now()
@@ -209,13 +240,11 @@ def envoyer_facture_obr(facture):
                         pending.message = data.get("msg", "OK")
                         pending.save()
 
-                        # ====================== SYNCHRO STOCK (sans duplication) ======================
+                        # Synchro Stock
                         try:
                             if facture.type_facture == 'FN':
-                                # Mise à jour des sorties SN existantes
                                 sorties = SortieStock.objects.filter(
-                                    facture=facture,
-                                    statut_obr='EN_ATTENTE'
+                                    facture=facture, statut_obr='EN_ATTENTE'
                                 ).select_related('entree_stock', 'entree_stock__produit')
 
                                 for sortie in sorties:
@@ -233,7 +262,6 @@ def envoyer_facture_obr(facture):
                                         sortie.save(update_fields=['statut_obr', 'message_obr'])
 
                             elif facture.type_facture == 'FA':
-                                # Mise à jour des entrées ER existantes (celles créées dans ajuster_stock)
                                 traiter_stock_pour_avoir(facture)
 
                         except Exception as stock_err:
@@ -241,16 +269,15 @@ def envoyer_facture_obr(facture):
 
                         return {'success': True, 'message': data.get("msg", "Facture envoyée avec succès")}
 
-                # Gestion erreur
                 data = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else {}
                 msg = data.get("msg") or f"Erreur HTTP {resp.status_code}"
-                logger.warning(f"[OBR] Échec tentative {attempt}: {msg}")
+                logger.warning(f"[OBR] Échec tentative {attempt} pour '{societe.nom}': {msg}")
                 pending.message = msg
                 pending.save(update_fields=['message'])
 
             except requests.RequestException as e:
                 msg = f"Tentative {attempt} - Erreur réseau: {str(e)}"
-                logger.error(msg)
+                logger.error(f"[OBR] {msg} | Société: {societe.nom}")
                 pending.message = msg
                 pending.save(update_fields=['message'])
                 time.sleep(BASE_RETRY_DELAY)
@@ -259,99 +286,23 @@ def envoyer_facture_obr(facture):
         pending.save()
         return {'success': False, 'message': f"Échec après {MAX_RETRIES} tentatives"}
 
+    except ValueError as ve:
+        logger.warning(f"[OBR] Validation échouée pour facture {facture.numero}: {ve}")
+        pending.statut = "FAILED"
+        pending.message = str(ve)
+        pending.save()
+        return {'success': False, 'message': str(ve)}
+
     except Exception as e:
-        logger.exception(f"[OBR] Erreur critique facture {facture.numero}")
+        logger.exception(f"[OBR] Erreur critique facture {facture.numero} | Société: {societe.nom}")
         pending.statut = "FAILED"
         pending.message = str(e)
         pending.save()
         return {'success': False, 'message': str(e)}
 
 
-@transaction.atomic
-def traiter_stock_pour_avoir(facture):
-    """Met à jour et envoie les entrées ER existantes pour les factures d'avoir (FA)"""
-    if facture.type_facture != 'FA':
-        return
-
-    logger.info(f"[STOCK] Traitement avoir FA {facture.numero}")
-
-    # On récupère les entrées ER déjà créées dans ajuster_stock (pas de recréation !)
-    entrees = EntreeStock.objects.filter(
-        facture=facture,
-        type_entree='ER',
-        statut_obr='EN_ATTENTE'
-    ).select_related('produit')
-
-    for entree in entrees:
-        try:
-            result = envoyer_entree_stock(entree)
-
-            success = result[0] if isinstance(result, tuple) else result.get('success', False)
-            msg = result[1] if isinstance(result, tuple) else result.get('message', '')
-
-            if success:
-                entree.statut_obr = 'ENVOYE'
-                entree.message_obr = msg or 'Envoyé avec succès à l\'OBR'
-                entree.save(update_fields=['statut_obr', 'message_obr'])
-                logger.info(f"[STOCK] Entrée ER #{entree.pk} → ENVOYE")
-            else:
-                entree.statut_obr = 'ECHEC'
-                entree.message_obr = msg or 'Échec envoi'
-                entree.save(update_fields=['statut_obr', 'message_obr'])
-                logger.warning(f"[STOCK] Entrée ER #{entree.pk} → ECHEC : {msg}")
-
-        except Exception as e:
-            logger.error(f"[STOCK] Erreur sur entrée ER {entree.pk}: {e}", exc_info=True)
-            entree.statut_obr = 'ECHEC'
-            entree.message_obr = str(e)[:500]
-            entree.save(update_fields=['statut_obr', 'message_obr'])
-            
-# ─── VUE AJAX (appel frontend) ─────────────────────────────────────────────
-@login_required
-@require_POST
-def ajax_envoyer_obr(request, pk):
-    """Envoi de la facture à l'OBR"""
-    facture = get_object_or_404(Facture, pk=pk, societe=request.user.societe)
-
-    if facture.statut_obr != 'EN_ATTENTE':
-        return JsonResponse({
-            'ok': False, 
-            'error': f"Statut actuel : {facture.get_statut_obr_display()}"
-        }, status=400)
-
-    if facture.lignes.count() == 0:
-        return JsonResponse({'ok': False, 'error': 'Facture vide'}, status=400)
-
-    try:
-        result = envoyer_facture_obr(facture)
-        
-        return JsonResponse({
-            'ok': True,
-            'message': result.get('message', 'Facture envoyée avec succès à l’OBR'),
-            'signature': facture.electronic_signature,
-            'registered_number': facture.obr_registered_number,
-            'date_envoi': facture.date_envoi_obr.isoformat() if facture.date_envoi_obr else None,
-        })
-    except ValueError as ve:
-        return JsonResponse({'ok': False, 'error': str(ve)}, status=400)
-    except Exception as e:
-        logger.exception(f"Erreur envoi OBR facture {pk}")
-        return JsonResponse({'ok': False, 'error': 'Erreur serveur'}, status=500)
-
-
-
 # ─── ANNULATION FACTURE ────────────────────────────────────────────────────
-
-# ─── ANNULATION FACTURE (alignée doc OBR v0.5) ────────────────────────────────────────────────────
-
 def annuler_facture_obr(facture, motif: str):
-    """
-    Version corrigée :
-    - Toujours retourne {success, message}
-    - API appelée hors transaction
-    - Mise à jour DB sécurisée
-    """
-
     if not motif or not motif.strip():
         return {'success': False, 'message': "Motif obligatoire"}
 
@@ -359,28 +310,33 @@ def annuler_facture_obr(facture, motif: str):
     societe = facture.societe
 
     try:
-        message_obr = ""
+        # Vérification société active
+        check_societe_active(societe)
 
-        # ================= API OBR =================
         if facture.statut_obr == 'ENVOYE':
-
             if not facture.invoice_identifier:
                 return {'success': False, 'message': "invoice_identifier manquant"}
+
+            url = build_obr_url(societe, ENDPOINT_CANCEL_INVOICE)
 
             payload = {
                 "invoice_identifier": facture.invoice_identifier,
                 "cn_motif": motif
             }
 
-            url = f"{OBR_BASE_URL}{ENDPOINT_CANCEL_INVOICE}"
+            logger.info(f"[OBR] Annulation facture {facture.numero} | Société: {societe.nom}")
 
             resp = requests.post(
-                url,
-                json=payload,
-                headers=get_obr_headers(societe),
-                timeout=TIMEOUT,
-                verify=VERIFY_CERT
+                url, json=payload, headers=get_obr_headers(societe),
+                timeout=TIMEOUT, verify=VERIFY_CERT
             )
+
+            if resp.status_code in (401, 403):
+                invalidate_obr_token(societe)
+                resp = requests.post(
+                    url, json=payload, headers=get_obr_headers(societe),
+                    timeout=TIMEOUT, verify=VERIFY_CERT
+                )
 
             if resp.status_code != 200:
                 try:
@@ -388,36 +344,25 @@ def annuler_facture_obr(facture, motif: str):
                     msg = data.get("msg", f"HTTP {resp.status_code}")
                 except:
                     msg = resp.text[:300]
-
                 return {'success': False, 'message': msg}
 
             data = resp.json()
-
             if not data.get("success"):
                 return {'success': False, 'message': data.get("msg", "Refus OBR")}
 
             message_obr = data.get("msg", "Annulation OBR réussie")
-
         else:
             message_obr = f"Annulée localement - Motif : {motif}"
 
-        # ================= DATABASE =================
         with transaction.atomic():
-
             pending, _ = FacturePendingOBR.objects.get_or_create(facture=facture)
 
             facture.statut_obr = 'ANNULE'
             facture.message_obr = message_obr
             facture.motif_avoir = f"Annulation : {motif}"
-            facture.date_annulation = timezone.now()   # ✅ AJOUT IMPORTANT
+            facture.date_annulation = timezone.now()
 
-            facture.save(update_fields=[
-                'statut_obr',
-                'message_obr',
-                'motif_avoir',
-                'date_annulation'
-            ])
-
+            facture.save(update_fields=['statut_obr', 'message_obr', 'motif_avoir', 'date_annulation'])
             pending.statut = "SUCCESS"
             pending.message = message_obr
             pending.save(update_fields=['statut', 'message'])
@@ -425,8 +370,7 @@ def annuler_facture_obr(facture, motif: str):
         return {'success': True, 'message': message_obr}
 
     except Exception as e:
-        logger.exception(f"[OBR Cancel] Erreur facture {facture.numero}")
-
+        logger.exception(f"[OBR Cancel] Erreur facture {facture.numero} | Société: {societe.nom}")
         try:
             pending, _ = FacturePendingOBR.objects.get_or_create(facture=facture)
             pending.statut = "FAILED"
@@ -434,18 +378,12 @@ def annuler_facture_obr(facture, motif: str):
             pending.save(update_fields=['statut', 'message'])
         except:
             pass
-
         return {'success': False, 'message': str(e)}
 
-# ─── NETTOYAGE DES DOUBLONS (à utiliser une seule fois) ─────────────────────
-def nettoyer_doublons_stock():
-    """
-    Met à jour toutes les sorties stock qui causent des erreurs 409 
-    pour qu'elles ne soient plus réessayées.
-    À appeler une seule fois manuellement.
-    """
-    from stock.models import SortieStock
 
+# ─── NETTOYAGE DES DOUBLONS (inchangé) ─────────────────────────────────────
+def nettoyer_doublons_stock():
+    from stock.models import SortieStock
     updated = SortieStock.objects.filter(
         statut_obr='ECHEC',
         message_obr__icontains='409'

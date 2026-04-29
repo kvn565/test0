@@ -5,60 +5,78 @@
 
 {% block content %}
 
-<div class="page-header">
+<!-- Page Header -->
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">📦 Entrée stock #{{ entree.pk }}</div>
-        <div class="page-subtitle">{{ entree.get_type_entree_display }} — {{ entree.date_entree|date:"d/m/Y" }}</div>
+        <h1 class="page-title mb-1">
+            <i class="bi bi-box-arrow-in-down me-2"></i>Entrée stock #{{ entree.pk }}
+        </h1>
+        <p class="text-muted mb-0">
+            {{ entree.get_type_entree_display }} — {{ entree.date_entree|date:"d/m/Y" }}
+        </p>
     </div>
-    <div style="display:flex; gap:8px;">
-        <a href="{% url 'stock:entree_modifier' entree.pk %}" class="btn-outline-custom"><i class="bi bi-pencil"></i> Modifier</a>
-        <a href="{% url 'stock:entrees' %}" class="btn-outline-custom"><i class="bi bi-arrow-left"></i> Retour</a>
+    
+    <div class="d-flex gap-2">
+        <a href="{% url 'stock:entrees' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
     </div>
 </div>
 
-<div class="row g-3">
-    <div class="col-12 col-md-7">
-        <div class="card">
-            <div style="padding:20px;">
-                <div style="font-size:13px; font-weight:700; margin-bottom:16px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Informations</div>
-                <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted); width:40%;">Type d'entrée</td>
-                        <td style="padding:10px 0; font-weight:600;"><span class="badge-essai">{{ entree.get_type_entree_display }}</span></td>
+<div class="row g-4">
+    <!-- Colonne gauche - Informations -->
+    <div class="col-12 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>Informations générales
+                </h5>
+                
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted py-3" style="width: 40%;">Type d'entrée</td>
+                        <td class="fw-medium py-3">
+                            <span class="badge bg-info-subtle text-info">{{ entree.get_type_entree_display }}</span>
+                        </td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Produit</td>
-                        <td style="padding:10px 0; font-weight:600;">{{ entree.produit.designation }}</td>
+                    <tr>
+                        <td class="text-muted py-3">Produit</td>
+                        <td class="fw-medium py-3">{{ entree.produit.designation }}</td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Code produit</td>
-                        <td style="padding:10px 0;">{{ entree.produit.code }}</td>
+                    <tr>
+                        <td class="text-muted py-3">Code produit</td>
+                        <td class="py-3"><code>{{ entree.produit.code }}</code></td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Fournisseur</td>
-                        <td style="padding:10px 0;">{{ entree.fournisseur.nom|default:"—" }}</td>
+                    <tr>
+                        <td class="text-muted py-3">Fournisseur</td>
+                        <td class="py-3">{{ entree.fournisseur.nom|default:"—" }}</td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">N° Réquisition</td>
-                        <td style="padding:10px 0;">{{ entree.numero_ref|default:"—" }}</td>
+                    <tr>
+                        <td class="text-muted py-3">N° Réquisition</td>
+                        <td class="py-3">{{ entree.numero_ref|default:"—" }}</td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Date d'entrée</td>
-                        <td style="padding:10px 0;">{{ entree.date_entree|date:"d/m/Y" }}</td>
+                    <tr>
+                        <td class="text-muted py-3">Date d'entrée</td>
+                        <td class="py-3">{{ entree.date_entree|date:"d/m/Y" }}</td>
                     </tr>
-                    <tr style="border-bottom:1px solid var(--border-color);">
-                        <td style="padding:10px 0; color:var(--text-muted);">Statut OBR</td>
-                        <td style="padding:10px 0;">
-                            {% if entree.statut_obr == 'ENVOYE' %}<span class="badge-active">Envoyé</span>
-                            {% elif entree.statut_obr == 'ECHEC' %}<span class="badge-inactive">Échec</span>
-                            {% elif entree.statut_obr == 'EN_ATTENTE' %}<span class="badge-pending">En attente</span>
-                            {% else %}<span class="badge-revoked">Non concerné</span>{% endif %}
+                    <tr>
+                        <td class="text-muted py-3">Statut OBR</td>
+                        <td class="py-3">
+                            {% if entree.statut_obr == 'ENVOYE' %}
+                                <span class="badge bg-success">Envoyé</span>
+                            {% elif entree.statut_obr == 'ECHEC' %}
+                                <span class="badge bg-danger">Échec</span>
+                            {% elif entree.statut_obr == 'EN_ATTENTE' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Non concerné</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% if entree.message_obr %}
                     <tr>
-                        <td style="padding:10px 0; color:var(--text-muted);">Message OBR</td>
-                        <td style="padding:10px 0; font-size:12px;">{{ entree.message_obr }}</td>
+                        <td class="text-muted py-3">Message OBR</td>
+                        <td class="py-3 text-muted small">{{ entree.message_obr }}</td>
                     </tr>
                     {% endif %}
                 </table>
@@ -66,46 +84,62 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-5">
-        <div class="card mb-3">
-            <div style="padding:20px;">
-                <div style="font-size:13px; font-weight:700; margin-bottom:16px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Quantités & Prix</div>
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <div style="background:#f0faf5; border-radius:8px; padding:14px; text-align:center;">
-                        <div style="font-size:24px; font-weight:800; color:var(--primary);">{{ entree.quantite }} {{ entree.produit.unite }}</div>
-                        <div style="font-size:12px; color:var(--text-muted);">Quantité entrée</div>
+    <!-- Colonne droite - Quantités & Prix -->
+    <div class="col-12 col-lg-5">
+        <!-- Quantités & Prix -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-currency-exchange me-2 text-primary"></i>Quantités & Prix
+                </h5>
+                
+                <div class="d-flex flex-column gap-3">
+                    <div class="bg-light rounded-3 p-4 text-center">
+                        <div class="fs-2 fw-bold text-primary">{{ entree.quantite }}</div>
+                        <div class="text-muted small">{{ entree.produit.unite }}</div>
+                        <div class="mt-1 text-muted">Quantité entrée</div>
                     </div>
-                    <div style="background:#f9fafb; border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:13px; color:var(--text-muted);">Prix de revient</span>
-                        <span style="font-weight:700;">{{ entree.prix_revient|floatformat:0 }} BIF</span>
+
+                    <div class="d-flex justify-content-between align-items-center bg-white border rounded-3 p-3">
+                        <span class="text-muted">Prix de revient</span>
+                        <span class="fw-semibold">{{ entree.prix_revient|floatformat:0 }} BIF</span>
                     </div>
-                    <div style="background:#f9fafb; border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:13px; color:var(--text-muted);">Prix de vente actuel</span>
-                        <span style="font-weight:700; color:#10b981;">{{ entree.prix_vente_actuel|floatformat:0 }} BIF</span>
+
+                    <div class="d-flex justify-content-between align-items-center bg-white border rounded-3 p-3">
+                        <span class="text-muted">Prix de vente actuel</span>
+                        <span class="fw-semibold text-success">{{ entree.prix_vente_actuel|floatformat:0 }} BIF</span>
                     </div>
-                    <div style="background:#fff8e1; border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid #fbbf24;">
-                        <span style="font-size:13px; color:#92400e;">Montant total</span>
-                        <span style="font-weight:800; color:#92400e;">{{ entree.montant_total|floatformat:0 }} BIF</span>
+
+                    <div class="d-flex justify-content-between align-items-center border border-warning rounded-3 p-3 bg-warning-subtle">
+                        <span class="fw-medium text-warning-emphasis">Montant total</span>
+                        <span class="fw-bold text-warning-emphasis fs-5">
+                            {{ entree.montant_total|floatformat:0 }} BIF
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Stock disponible -->
-        <div class="card">
-            <div style="padding:20px;">
-                <div style="font-size:13px; font-weight:700; margin-bottom:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;">Stock disponible</div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                    <span style="color:var(--text-muted);">Total entré</span>
-                    <span style="font-weight:600;">{{ entree.quantite }}</span>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-lg-5">
+                <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+                    <i class="bi bi-box-seam me-2 text-primary"></i>Stock disponible
+                </h5>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Total entré</span>
+                    <span class="fw-semibold">{{ entree.quantite }} {{ entree.produit.unite }}</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                    <span style="color:var(--text-muted);">Total sorti</span>
-                    <span style="font-weight:600; color:#ef4444;">- {{ entree.quantite_sortie }}</span>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Total sorti</span>
+                    <span class="fw-semibold text-danger">- {{ entree.quantite_sortie }} {{ entree.produit.unite }}</span>
                 </div>
-                <div style="border-top:2px solid var(--border-color); padding-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:15px;">
-                    <span style="font-weight:700;">Disponible</span>
-                    <span style="font-weight:800; color:{% if entree.quantite_disponible > 0 %}#10b981{% else %}#ef4444{% endif %};">
+                
+                <div class="border-top pt-3 mt-2 d-flex justify-content-between align-items-center fs-5">
+                    <span class="fw-bold">Disponible actuellement</span>
+                    <span class="fw-bold {% if entree.quantite_disponible > 0 %}text-success{% else %}text-danger{% endif %}">
                         {{ entree.quantite_disponible }} {{ entree.produit.unite }}
                     </span>
                 </div>
