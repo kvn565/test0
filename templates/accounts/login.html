@@ -21,7 +21,6 @@
             padding:24px;
         }
 
-        /* ── Carte ── */
         .login-wrap {
             display:flex;
             border-radius:18px;
@@ -31,7 +30,6 @@
             max-width:900px;
         }
 
-        /* ── Panneau gauche ── */
         .login-left {
             background:linear-gradient(155deg, var(--bleu) 0%, var(--bleu-clair) 100%);
             width:340px;
@@ -43,22 +41,6 @@
             padding:48px 32px;
             position:relative;
             overflow:hidden;
-        }
-        .login-left::before {
-            content:'';
-            position:absolute;
-            width:280px; height:280px;
-            background:rgba(255,255,255,0.04);
-            border-radius:50%;
-            top:-60px; right:-80px;
-        }
-        .login-left::after {
-            content:'';
-            position:absolute;
-            width:200px; height:200px;
-            background:rgba(255,255,255,0.03);
-            border-radius:50%;
-            bottom:-40px; left:-60px;
         }
         .logo-icon {
             width:72px; height:72px;
@@ -105,7 +87,6 @@
             font-size:0.82rem;
         }
 
-        /* ── Panneau droit ── */
         .login-right {
             flex:1;
             background:#fff;
@@ -126,7 +107,6 @@
             margin:0 0 32px;
         }
 
-        /* ── Form ── */
         .form-label {
             font-size:0.8rem;
             font-weight:600;
@@ -140,7 +120,6 @@
             border-radius:10px;
             padding:12px 16px;
             font-size:0.9rem;
-            transition:border-color 0.2s, box-shadow 0.2s;
         }
         .form-control:focus {
             border-color:var(--or);
@@ -183,6 +162,22 @@
             display:flex; align-items:center; justify-content:center; gap:8px;
         }
         .btn-login:hover { background:var(--bleu-clair); }
+        .btn-login:disabled {
+            background:#6c757d;
+            cursor:not-allowed;
+        }
+
+        /* Spinner de vérification */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .form-check-label { font-size:0.83rem; color:#5a6a7a; }
         .setup-link {
@@ -193,18 +188,12 @@
         }
         .setup-link a { color:var(--or); text-decoration:none; font-weight:500; }
         .setup-link a:hover { text-decoration:underline; }
-
-        @media (max-width: 640px) {
-            .login-left { display:none; }
-            .login-right { padding:36px 28px; }
-        }
     </style>
 </head>
 <body>
 
 <div class="login-wrap">
 
-    {# ── Panneau gauche ── #}
     <div class="login-left">
         <div class="logo-icon"><i class="bi bi-receipt-cutoff"></i></div>
         <h2>WIBABI</h2>
@@ -215,7 +204,6 @@
         </div>
     </div>
 
-    {# ── Panneau droit ── #}
     <div class="login-right">
         <h3>Bienvenue</h3>
         <p class="subtitle">Connectez-vous pour accéder à votre espace de gestion</p>
@@ -236,7 +224,7 @@
         {% endfor %}
         {% endif %}
 
-        <form method="post" action="{% url 'accounts:login' %}">
+        <form method="post" action="{% url 'accounts:login' %}" id="loginForm">
             {% csrf_token %}
 
             <div class="mb-4">
@@ -267,14 +255,25 @@
                 <label class="form-check-label">Se souvenir de moi</label>
             </div>
 
-            <button type="submit" class="btn-login">
-                <i class="bi bi-box-arrow-in-right"></i>
-                Se connecter
+            <!-- Protection Anti-Robot -->
+            <div class="mb-4 border p-3 rounded-3 bg-light" id="robotContainer">
+                <div class="form-check">
+                    {{ form.not_a_robot }}
+                    <label class="form-check-label fw-medium">
+                        ✅ Je ne suis pas un robot
+                    </label>
+                </div>
+                {% if form.not_a_robot.errors %}
+                    <div class="text-danger small mt-2">{{ form.not_a_robot.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn-login" id="submitBtn" disabled>
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">Se connecter</span>
             </button>
         </form>
 
-        {# ✅ CORRECTION : 'superadmin:inscription_chef' → 'inscription_chef' (sans namespace) #}
-        {# /setup/ est enregistré dans facturation/urls.py sans namespace → nom global #}
         <p class="setup-link">
             Première connexion ?
             <a href="{% url 'inscription_chef' %}">Créer votre compte entreprise</a>
@@ -295,7 +294,43 @@ function togglePassword() {
         icon.className = 'bi bi-eye toggle-password';
     }
 }
+
+// Anti-Robot avec cercle de chargement de 2 secondes
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.querySelector('input[name="not_a_robot"]');
+    const container = document.getElementById('robotContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            // Afficher le cercle pendant 2 secondes
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'Vérification...';
+
+            setTimeout(() => {
+                container.style.display = 'none';   // Le champ disparaît
+                spinner.style.display = 'none';
+                btnText.textContent = 'Se connecter';
+                submitBtn.disabled = false;         // Bouton débloqué
+            }, 2000);
+        }
+    });
+});
+
+// Spinner lors de la soumission du formulaire
+document.getElementById('loginForm').addEventListener('submit', function() {
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    const submitBtn = document.getElementById('submitBtn');
+
+    submitBtn.disabled = true;
+    spinner.style.display = 'inline-block';
+    btnText.textContent = 'Connexion en cours...';
+});
 </script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

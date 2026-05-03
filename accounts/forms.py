@@ -35,6 +35,19 @@ class ConnexionForm(forms.Form):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
     )
 
+    # ==================== PROTECTION ANTI-ROBOT ====================
+    not_a_robot = forms.BooleanField(
+        label="Je ne suis pas un robot",
+        required=True,
+        error_messages={
+            'required': "Vous devez confirmer que vous n'êtes pas un robot pour vous connecter."
+        },
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    # ============================================================
+
 
 # ─────────────────────────────────────────────────────────────────
 #  PROFIL — Modification des infos personnelles
@@ -121,19 +134,3 @@ class MotDePasseForm(forms.Form):
         self.user.set_password(self.cleaned_data['nouveau_password1'])
         self.user.save(update_fields=['password'])
         return self.user
-
-
-# ─────────────────────────────────────────────────────────────────
-#  SUPPRIMÉ : SetupActivationForm
-# ─────────────────────────────────────────────────────────────────
-#
-#  L'ancien SetupActivationForm (clé + NIF + création compte)
-#  est remplacé par le NOUVEAU FLOW :
-#
-#  1. Superadmin crée la société (nom + NIF) → clé d'essai 14j auto
-#  2. Chef va sur /setup/ → InscriptionChefForm (superadmin/forms.py)
-#     - Vérifie le NIF (société doit exister dans la base)
-#     - Chef renseigne infos société + compte personnel
-#     - Nom officiel fourni par le chef ÉCRASE le nom du superadmin
-#  3. Middleware LicenceMiddleware vérifie la licence à chaque requête
-#  4. Modal dans base.html permet d'activer une nouvelle clé (AJAX)
