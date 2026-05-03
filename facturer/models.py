@@ -108,6 +108,18 @@ class Facture(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True, editable=False)
     date_annulation = models.DateTimeField(null=True, blank=True)
 
+    # ==================== CHAMPS AJOUTÉS POUR LA GESTION DES ABANDONS ====================
+    date_expiration = models.DateTimeField(
+        null=True, 
+        blank=True,
+        verbose_name="Date d'expiration (nettoyage auto)"
+    )
+
+    est_abandonnee = models.BooleanField(
+        default=False,
+        verbose_name="Facture abandonnée"
+    )
+
     class Meta:
         verbose_name = "Facture"
         verbose_name_plural = "Factures"
@@ -115,6 +127,8 @@ class Facture(models.Model):
         unique_together = [('societe', 'numero')]
         indexes = [
             models.Index(fields=['societe', 'type_facture', 'date_facture']),
+            models.Index(fields=['societe', 'statut_obr', 'date_creation']),
+            models.Index(fields=['societe', 'est_abandonnee', 'date_expiration']),
         ]
 
     def __str__(self):
@@ -127,19 +141,16 @@ class Facture(models.Model):
 
     @property
     def numero_obr(self):
-        """Numéro complet envoyé à l'OBR → FN/2/2026"""
         if self.numero:
             return self.numero.strip()
         return f"{self.type_facture}/0/{timezone.now().year}"
 
     def get_starting_sequence(self) -> int:
-        """Utilise le champ numero_depart existant dans Societe (valeur par défaut = 1 si 0)"""
         if hasattr(self.societe, 'numero_depart') and self.societe.numero_depart > 0:
             return self.societe.numero_depart
-        return 1   # Valeur par défaut si le champ est à 0 ou non défini
+        return 1
 
     def get_last_sequence(self) -> int:
-        """Retourne la dernière séquence utilisée cette année pour ce type de facture"""
         year = self.date_facture.year if self.date_facture else timezone.now().year
 
         last = Facture.objects.filter(
@@ -158,7 +169,6 @@ class Facture(models.Model):
             return self.get_starting_sequence() - 1
 
     def generate_numero(self):
-        """Génère le numéro au format demandé : FN/2/2026"""
         if self.numero:
             return
 
@@ -169,7 +179,6 @@ class Facture(models.Model):
         self.numero = f"{self.type_facture}/{new_seq}/{year}"
 
     def generate_invoice_identifier(self):
-        """Génère l'identifiant complet exigé par l'OBR"""
         if not self.societe:
             raise ValueError("Société requise pour générer l'identifiant OBR")
 
@@ -208,17 +217,27 @@ class Facture(models.Model):
         if not self.societe_id:
             raise ValueError("La société doit être définie avant sauvegarde.")
 
-        if not self.numero:
+        # === MODIFICATIONS MINIMALES AJOUTÉES ===
+        if self.statut_obr == 'EN_ATTENTE' and not self.date_expiration:
+            self.date_expiration = timezone.now() + timezone.timedelta(hours=2)
+
+        # Ne générer le numéro et l'identifiant OBR que lorsqu'on valide la facture
+        if not self.numero and self.statut_obr != 'EN_ATTENTE':
             self.generate_numero()
 
-        if not self.invoice_identifier:
-            self.generate_invoice_identifier()
+        if not self.invoice_identifier and self.statut_obr != 'EN_ATTENTE':
+            try:
+                self.generate_invoice_identifier()
+            except Exception:
+                pass
 
         super().save(*args, **kwargs)
-        self.recalculer_totaux()
+
+        # Recalcul des totaux seulement si la facture a des lignes
+        if self.pk and self.lignes.exists():
+            self.recalculer_totaux()
 
     def recalculer_totaux(self):
-        """Recalcule et sauvegarde les totaux de manière fiable"""
         lignes = self.lignes.all()
 
         total_ht = Decimal('0')
@@ -230,14 +249,12 @@ class Facture(models.Model):
             total_tva += ligne.montant_tva
             total_ttc += ligne.montant_ttc
 
-        # Mise à jour explicite et directe
         Facture.objects.filter(pk=self.pk).update(
             total_ht=total_ht.quantize(Decimal('0.01')),
             total_tva=total_tva.quantize(Decimal('0.01')),
             total_ttc=total_ttc.quantize(Decimal('0.01')),
         )
 
-        # Refresh pour que l'objet courant soit à jour
         self.refresh_from_db(fields=['total_ht', 'total_tva', 'total_ttc'])
 
     @property
@@ -256,7 +273,33 @@ class Facture(models.Model):
 
     @property
     def peut_etre_supprimee(self):
-        return self.statut_obr == 'EN_ATTENTE' and not self.lignes.exists()
+        return self.statut_obr == 'EN_ATTENTE' and not self.est_abandonnee
+
+    # Dans facturer/models.py → classe Facture
+    def nettoyer_mouvements_stock(self):
+        """Nettoie les mouvements de stock EN_ATTENTE selon le type de facture"""
+        from stock.models import SortieStock, EntreeStock
+        from django.db import transaction
+
+        with transaction.atomic():
+            if self.type_facture == 'FN':
+                deleted = SortieStock.objects.filter(
+                    facture=self,
+                    statut_obr='EN_ATTENTE'
+                ).delete()[0]
+                action = f"{deleted} sortie(s) supprimée(s)"
+
+            elif self.type_facture == 'FA':
+                deleted = EntreeStock.objects.filter(
+                    facture=self,
+                    statut_obr='EN_ATTENTE'
+                ).delete()[0]
+                action = f"{deleted} entrée retour supprimée(s)"
+
+            else:
+                action = "Aucun mouvement stock concerné"
+
+            return action
 
 
 # ==================== Modèles inchangés ====================

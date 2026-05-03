@@ -343,6 +343,7 @@ def ajax_creer_facture(request):
 @login_required
 @require_POST
 def ajax_envoyer_obr(request, pk):
+    """Envoie la facture à l'OBR et ajuste le stock UNIQUEMENT en cas de succès"""
     societe, err = _check_droit(request)
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
@@ -359,20 +360,41 @@ def ajax_envoyer_obr(request, pk):
         result = envoyer_facture_obr(facture)
 
         if result.get('success'):
-            # Nettoyage du blocage après envoi réussi
-            if request.session.get('facture_en_cours') == pk:
-                del request.session['facture_en_cours']
-                request.session.modified = True
+            with transaction.atomic():
+                # Mise à jour du statut OBR
+                facture.statut_obr = 'ENVOYE'
+                facture.date_envoi_obr = timezone.now()
+                facture.message_obr = result.get('message', 'Envoyé avec succès à l\'OBR')
+                facture.save()
 
+                # ====================== MOUVEMENT DE STOCK ICI ======================
+                for ligne in facture.lignes.select_related('produit').all():
+                    if ligne.produit:
+                        # On appelle ajuster_stock seulement après envoi réussi
+                        ligne.produit.ajuster_stock(
+                            quantite=ligne.quantite,
+                            type_facture=facture.type_facture,
+                            facture=facture
+                        )
+
+                # Nettoyage de la session
+                if request.session.get('facture_en_cours') == pk:
+                    del request.session['facture_en_cours']
+                    request.session.modified = True
+
+            logger.info(f"Facture {pk} envoyée à OBR avec succès - Stock mis à jour")
             return JsonResponse({
                 'ok': True,
-                'message': 'Facture envoyée avec succès à l\'OBR',
+                'message': 'Facture envoyée avec succès à l\'OBR et stock mis à jour.'
             })
+
         else:
-            return JsonResponse({'ok': False, 'error': result.get('message', 'Échec de l\'envoi')}, status=400)
+            error_msg = result.get('message', 'Échec de l\'envoi à l\'OBR')
+            logger.warning(f"Échec envoi OBR facture {pk} : {error_msg}")
+            return JsonResponse({'ok': False, 'error': error_msg}, status=400)
 
     except Exception as e:
-        logger.exception(f"Exception envoi OBR facture {pk}")
+        logger.exception(f"Exception lors de l'envoi OBR de la facture {pk}")
         return JsonResponse({'ok': False, 'error': 'Erreur interne serveur'}, status=500)
 
 # ──────────────────────────────────────────────
@@ -741,7 +763,64 @@ def _prepare_facture_context(facture, societe, for_pos=False):
         'now': timezone.now(),
     }
 
+# ──────────────────────────────────────────────
+#  SUPPRESSION AUTOMATIQUE via JavaScript (sendBeacon)
+# ──────────────────────────────────────────────
+@login_required
+@require_POST
+def ajax_supprimer_facture_en_attente(request):
+    """Supprime la facture EN_ATTENTE (FN ou FA) + nettoie le stock"""
+    societe, err = _check_droit(request)
+    if err:
+        return JsonResponse({'ok': False, 'error': err}, status=403)
 
+    facture_id = request.POST.get('facture_id')
+    if not facture_id:
+        return JsonResponse({'ok': True})  # On accepte silencieusement
+
+    try:
+        with transaction.atomic():
+            # On utilise get() + try/except au lieu de get_object_or_404
+            facture = Facture.objects.filter(
+                pk=facture_id,
+                societe=societe,
+                statut_obr='EN_ATTENTE'
+            ).first()
+
+            if not facture:
+                return JsonResponse({'ok': True})  # Déjà supprimée = OK
+
+            # Nettoyage session
+            if request.session.get('facture_en_cours') == int(facture_id):
+                del request.session['facture_en_cours']
+                request.session.modified = True
+
+            # ====================== NETTOYAGE STOCK ======================
+            from stock.models import SortieStock, EntreeStock
+
+            if facture.type_facture == 'FN':
+                SortieStock.objects.filter(
+                    facture=facture,
+                    statut_obr='EN_ATTENTE'
+                ).delete()
+
+            elif facture.type_facture == 'FA':
+                EntreeStock.objects.filter(
+                    facture=facture,
+                    statut_obr='EN_ATTENTE'
+                ).delete()
+
+            # Suppression finale
+            facture.lignes.all().delete()
+            facture.delete()
+
+        logger.info(f"Facture {facture_id} ({facture.type_facture}) supprimée automatiquement + stock restitué")
+        return JsonResponse({'ok': True})
+
+    except Exception as e:
+        logger.exception(f"Erreur suppression auto facture {facture_id}")
+        # On retourne quand même 'ok': True pour ne pas polluer le frontend
+        return JsonResponse({'ok': True})
 # ──────────────────────────────────────────────
 #  PDF A4 — facture.pdf 
 # ──────────────────────────────────────────────

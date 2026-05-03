@@ -170,6 +170,13 @@
         <a href="{% url 'facturer:liste' %}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Retour à la liste
         </a>
+
+        {% if facture.statut_obr == 'EN_ATTENTE' %}
+        <small class="text-muted align-self-center">
+            <i class="bi bi-exclamation-triangle-fill text-warning"></i> 
+            Quitter cette page sans valider supprimera automatiquement la facture.
+        </small>
+        {% endif %}
     </div>
 
 </div>
@@ -302,49 +309,94 @@
 
 {% block extra_js %}
 <script>
-// Variables globales
-const FACTURE_ID     = {{ facture.pk }};
-const FACTURE_TYPE   = '{{ facture.type_facture }}';
+// ==================== VARIABLES GLOBALES ====================
+const FACTURE_ID           = {{ facture.pk }};
+const FACTURE_STATUT       = '{{ facture.statut_obr }}';
+const CSRF_TOKEN           = '{{ csrf_token|escapejs }}';
+const FACTURE_DEVISE       = '{{ facture.devise|escapejs }}';
 const FACTURE_ORIGINALE_ID = {{ facture.facture_originale.pk|default:'null' }};
-
-const CSRF_TOKEN     = '{{ csrf_token|escapejs }}';
-const FACTURE_DEVISE = '{{ facture.devise|escapejs }}';
 
 const BASE_URLS = {
     produit: "{% url 'facturer:ajax-info-produit' 0 %}".replace('/0/', '/'),
     service: "{% url 'facturer:ajax-info-service' 0 %}".replace('/0/', '/'),
     ajouter: "{% url 'facturer:ajax-ajouter-ligne' %}",
-    supprimer: "{% url 'facturer:ajax-supprimer-ligne' %}",   // ← Important
+    supprimer: "{% url 'facturer:ajax-supprimer-ligne' %}",
     produits_originale: "{% url 'facturer:ajax_get_produits_facture_originale' 0 %}".replace('/0/', '/'),
-    annuler: "{% url 'facturer:annuler' facture.pk %}"
+    annuler: "{% url 'facturer:annuler' facture.pk %}",
+    envoyer_obr: "{% url 'facturer:ajax-envoyer-obr' facture.pk %}",
+    supprimer_en_attente: "{% url 'facturer:ajax_supprimer_facture_en_attente' %}"
 };
 
+let factureValidee = false;
 let modalLigne = null;
 let modalAnnuler = null;
 
+// ==================== PROTECTION ANTI-ABANDON ====================
+function supprimerFactureEnAttente() {
+    if (factureValidee || FACTURE_STATUT !== 'EN_ATTENTE') return;
+
+    const formData = new FormData();
+    formData.append('facture_id', FACTURE_ID);
+    formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+    navigator.sendBeacon(BASE_URLS.supprimer_en_attente, formData);
+}
+
+// Quand l'utilisateur tente de quitter, recharger ou fermer l'onglet
+window.addEventListener('beforeunload', function(e) {
+    if (!factureValidee && FACTURE_STATUT === 'EN_ATTENTE') {
+        supprimerFactureEnAttente();
+        e.preventDefault();
+        e.returnValue = "Attention : La facture en cours sera supprimée si vous quittez cette page.";
+    }
+});
+
+// Quand il change d'onglet ou minimise la fenêtre
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden && !factureValidee && FACTURE_STATUT === 'EN_ATTENTE') {
+        supprimerFactureEnAttente();
+    }
+});
+
+// ==================== INITIALISATION ====================
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Initialisation des modals
     const modalLigneEl = document.getElementById('modalLigne');
     if (modalLigneEl) modalLigne = new bootstrap.Modal(modalLigneEl);
 
     const modalAnnulerEl = document.getElementById('modalAnnulerFacture');
     if (modalAnnulerEl) modalAnnuler = new bootstrap.Modal(modalAnnulerEl);
 
-    document.getElementById('btn-envoyer-obr')?.addEventListener('click', envoyerOBR);
+    // Bouton Envoyer à OBR
+    const btnEnvoyer = document.getElementById('btn-envoyer-obr');
+    if (btnEnvoyer) {
+        btnEnvoyer.addEventListener('click', envoyerOBR);
+        btnEnvoyer.addEventListener('click', () => { factureValidee = true; });
+    }
 
-    // Gestion modal annulation
+    // Si l'utilisateur ouvre le modal d'annulation → désactiver la suppression automatique
+    const btnAnnulerTrigger = document.querySelector('[data-bs-target="#modalAnnulerFacture"]');
+    if (btnAnnulerTrigger) {
+        btnAnnulerTrigger.addEventListener('click', () => {
+            factureValidee = true;
+        });
+    }
+
+    // Gestion du modal d'annulation
     const modalAnnulerTrigger = document.getElementById('modalAnnulerFacture');
     if (modalAnnulerTrigger) {
         modalAnnulerTrigger.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const numero = button.getAttribute('data-facture-numero');
-            let statut   = (button.getAttribute('data-facture-statut') || '').toUpperCase();
+            let statut = (button.getAttribute('data-facture-statut') || '').toUpperCase();
 
             document.getElementById('texteAnnulation').innerHTML = `Vous allez traiter la facture <strong>${numero}</strong>`;
 
             const motifGroup = document.getElementById('motifGroup');
             const motifField = document.getElementById('motifAnnulation');
-            const infoBox    = document.getElementById('info-annulation');
-            const required   = document.getElementById('motifRequired');
+            const infoBox = document.getElementById('info-annulation');
+            const required = document.getElementById('motifRequired');
 
             if (statut === 'ENVOYE') {
                 motifGroup.style.display = 'block';
@@ -365,7 +417,41 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnConfirmerAnnulation').addEventListener('click', confirmerAnnulation);
 });
 
-// Fonctions d'annulation (conservées)
+// ==================== FONCTIONS ====================
+
+// Envoi à l'OBR
+async function envoyerOBR() {
+    if (!confirm("Confirmez-vous l'envoi de cette facture à l'OBR ?")) return;
+
+    const btn = document.getElementById('btn-envoyer-obr');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+
+    try {
+        const r = await fetch(BASE_URLS.envoyer_obr, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF_TOKEN }
+        });
+
+        const data = await r.json();
+
+        if (data.ok) {
+            factureValidee = true;
+            alert('✅ Facture envoyée avec succès à l\'OBR');
+            location.reload();
+        } else {
+            alert('❌ ' + (data.error || 'Erreur lors de l\'envoi'));
+        }
+    } catch (e) {
+        alert('Erreur réseau lors de l\'envoi à l\'OBR');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+// Confirmation d'annulation
 async function confirmerAnnulation() {
     const motif = document.getElementById('motifAnnulation').value.trim();
     const statut = document.querySelector('[data-bs-target="#modalAnnulerFacture"]').getAttribute('data-facture-statut') || '';
@@ -405,33 +491,10 @@ async function confirmerAnnulation() {
     }
 }
 
-// ====================== FONCTIONS AJOUT / SUPPRESSION LIGNE (comme avant) ======================
+// ====================== FONCTIONS DE GESTION DES LIGNES ======================
 function ouvrirModalLigne() {
     if (modalLigne) modalLigne.show();
     reinitModalLigne();
-}
-
-async function chargerProduitsFactureOriginale() {
-    const selectProduit = document.getElementById('sel-produit');
-    selectProduit.innerHTML = '<option value="">-- Chargement...</option>';
-
-    try {
-        const r = await fetch(BASE_URLS.produits_originale + FACTURE_ORIGINALE_ID);
-        const data = await r.json();
-
-        selectProduit.innerHTML = '<option value="">-- Choisir un produit --</option>';
-
-        if (data.ok && data.produits) {
-            data.produits.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = `${p.designation} (Qté vendue : ${p.quantite_vendue})`;
-                selectProduit.appendChild(opt);
-            });
-        }
-    } catch (e) {
-        selectProduit.innerHTML = '<option value="">Erreur de chargement</option>';
-    }
 }
 
 function reinitModalLigne() {
@@ -534,13 +597,9 @@ async function ajouterLigne() {
         const data = await r.json();
 
         if (data.ok) {
-            // Mise à jour du tableau des lignes
             ajouterLigneDom(data);
-
-            // Mise à jour des totaux généraux (HT, TVA, TTC)
             mettreAJourTotaux(data);
 
-            // Mise à jour du stock dans le tableau
             if (data.produit_id && data.stock_apres !== undefined) {
                 document.querySelectorAll(`td[data-stock-id="${data.produit_id}"]`).forEach(cell => {
                     cell.textContent = Number(data.stock_apres).toFixed(0);
@@ -549,7 +608,6 @@ async function ajouterLigne() {
 
             modalLigne?.hide();
             reinitModalLigne();
-
         } else {
             showError(data.error || 'Erreur lors de l\'ajout');
         }
@@ -575,8 +633,8 @@ function ajouterLigneDom(data) {
         <td class="text-center small">${data.taux_tva}%</td>
         <td class="text-end small">${Number(data.prix_ttc || 0).toFixed(0)}</td>
         <td class="text-end fw-medium">${Number(data.quantite || 0).toFixed(2)}</td>
-        <td class="text-end small">${Number(data.total_ht || 0).toFixed(0)}</td>   <!-- Correction ici -->
-        <td class="text-end small">${Number(data.total_tva || 0).toFixed(0)}</td>  <!-- Correction ici -->
+        <td class="text-end small">${Number(data.total_ht || 0).toFixed(0)}</td>
+        <td class="text-end small">${Number(data.total_tva || 0).toFixed(0)}</td>
         <td class="text-end fw-bold text-primary">${Number(data.total_ttc || 0).toFixed(0)}</td>
         <td class="text-end">
             <button class="btn btn-sm btn-outline-danger" onclick="supprimerLigne(${data.ligne_id}, this)">
@@ -589,22 +647,18 @@ function ajouterLigneDom(data) {
 }
 
 function mettreAJourTotaux(data) {
-    // Mise à jour de l'en-tête
     document.getElementById('total-ttc').textContent = 
         `${Number(data.total_ttc || 0).toFixed(0)} ${FACTURE_DEVISE}`;
 
     document.getElementById('total-ht').textContent = 
         `HT : ${Number(data.total_ht || 0).toFixed(0)} | TVA : ${Number(data.total_tva || 0).toFixed(0)}`;
 
-    // Mise à jour du footer du tableau
     document.getElementById('ft-ht').textContent  = Number(data.total_ht || 0).toFixed(0);
     document.getElementById('ft-tva').textContent = Number(data.total_tva || 0).toFixed(0);
     document.getElementById('ft-ttc').textContent = Number(data.total_ttc || 0).toFixed(0);
 }
 
 async function postData(url, payload = {}) {
-    console.log(`→ Envoi vers ${url}`, payload);
-
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -615,23 +669,19 @@ async function postData(url, payload = {}) {
             body: JSON.stringify(payload)
         });
 
-        console.log(`← Statut : ${response.status}`);
-
         if (!response.ok) {
             const text = await response.text();
-            console.error('Erreur serveur:', text);
             throw new Error(`HTTP ${response.status}`);
         }
 
         return await response.json();
     } catch (error) {
         console.error('Erreur réseau:', error);
-        alert('Erreur réseau : Impossible de contacter le serveur.\nVérifie la console (F12).');
+        alert('Erreur réseau : Impossible de contacter le serveur.');
         throw error;
     }
 }
 
-// ====================== FONCTION SUPPRESSION CORRIGÉE ======================
 async function supprimerLigne(ligneId, btn) {
     if (!confirm('Supprimer cette ligne ? Cette action est irréversible.')) return;
 
@@ -644,46 +694,16 @@ async function supprimerLigne(ligneId, btn) {
         if (data.ok) {
             document.getElementById(`ligne-${ligneId}`).remove();
             mettreAJourTotaux(data);
-            console.log('✓ Ligne supprimée avec succès');
         } else {
             alert(data.error || 'Erreur lors de la suppression de la ligne');
         }
     } catch (e) {
-        // Message déjà affiché par postData
+        // Message déjà géré
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-trash"></i>';
     }
 }
 
-async function envoyerOBR() {
-    if (!confirm("Confirmez-vous l'envoi de cette facture à l'OBR ?")) return;
-
-    const btn = document.getElementById('btn-envoyer-obr');
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
-
-    try {
-        const r = await fetch('{% url "facturer:ajax-envoyer-obr" facture.pk %}', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF_TOKEN }
-        });
-
-        const data = await r.json();
-
-        if (data.ok) {
-            alert('✅ ' + (data.message || 'Facture envoyée avec succès à l\'OBR'));
-            location.reload();
-        } else {
-            alert('❌ ' + (data.error || 'Erreur lors de l\'envoi'));
-        }
-    } catch (e) {
-        alert('Erreur réseau lors de l\'envoi à l\'OBR');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-    }
-}
 </script>
 {% endblock %}
