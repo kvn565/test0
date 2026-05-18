@@ -1161,7 +1161,7 @@ def societe_gestion_modifier(request, pk):
 
     if request.method == 'POST':
         print("=== POST brut ===")
-        print("obr_password reÃ§u:", repr(request.POST.get('obr_password')))
+        print("obr_password reçu:", repr(request.POST.get('obr_password')))
 
         form     = SocieteGeranceForm(request.POST, instance=societe)
         obr_form = SocieteAdminConfigForm(request.POST, instance=societe)
@@ -1190,11 +1190,11 @@ def societe_gestion_modifier(request, pk):
 
                 societe.save()
 
-                print("=== APRÃˆS SAVE ===")
+                print("=== APRÈS SAVE ===")
                 societe.refresh_from_db()
                 print("obr_password en base:", repr(societe.obr_password))
 
-            messages.success(request, f"âœ… ParamÃ¨tres de Â« {societe.nom} Â» mis Ã  jour.")
+            messages.success(request, f"✅ Paramètres de « {societe.nom} » mis à jour.")
             return redirect('superadmin:societe_gestion_liste')
         else:
             messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
@@ -1202,6 +1202,7 @@ def societe_gestion_modifier(request, pk):
     else:
         form     = SocieteGeranceForm(instance=societe)
         obr_form = SocieteAdminConfigForm(instance=societe)
+
     return render(request, 'superadmin/societe_gestion_form.html', {
         'form': form,
         'obr_form': obr_form,

@@ -361,21 +361,6 @@ class ChangerMotDePasseForm(forms.Form):
 # ═══════════════════════════════════════════════════════════════
 #  GESTION GÉRANCE
 # ═══════════════════════════════════════════════════════════════
-class SocieteGeranceForm(forms.ModelForm):
-    class Meta:
-        model = Societe
-        fields = ['nom_complet_gerant', 'email_societe', 'numero_depart']
-        widgets = {
-            'nom_complet_gerant': forms.TextInput(attrs={'class': 'form-control'}),
-            'email_societe': forms.EmailInput(attrs={'class': 'form-control'}),
-            'numero_depart': forms.NumberInput(attrs={'class': 'form-control'}),
-        }
-        labels = {
-            'nom_complet_gerant': "Nom complet du gérant",
-            'email_societe': "Email officiel de la société",
-            'numero_depart': "Numéro de départ des factures",
-        }
-
 class SocieteAdminConfigForm(forms.ModelForm):
     class Meta:
         model = Societe
@@ -384,8 +369,8 @@ class SocieteAdminConfigForm(forms.ModelForm):
             'obr_username',
             'obr_password',
             'obr_system_id',
-            'obr_mode_production',   # ← Nouveau champ
-            # 'obr_base_url',        # ← On le retire du formulaire (géré automatiquement)
+            'obr_mode_production',      # Nouveau champ ajouté
+            'obr_base_url',
         ]
         widgets = {
             'obr_actif': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -396,6 +381,10 @@ class SocieteAdminConfigForm(forms.ModelForm):
                 'autocomplete': 'off',
             }),
             'obr_system_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'obr_base_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://ebms.obr.gov.bi:8443/ebms_api',
+            }),
             'obr_mode_production': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
@@ -406,6 +395,7 @@ class SocieteAdminConfigForm(forms.ModelForm):
             'obr_password': "Mot de passe OBR",
             'obr_system_id': "System ID OBR",
             'obr_mode_production': "Mode PRODUCTION (LIVE)",
+            'obr_base_url': "URL Base API OBR",
         }
         help_texts = {
             'obr_mode_production': (
@@ -415,12 +405,9 @@ class SocieteAdminConfigForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # Rendre le champ URL non modifiable dans le formulaire
-        self.fields['obr_base_url'] = forms.URLField(
-            required=False,
-            widget=forms.HiddenInput(),  # caché
-        )
+        # Rendre le champ URL non modifiable par l'utilisateur (géré automatiquement)
+        if 'obr_base_url' in self.fields:
+            self.fields['obr_base_url'].widget.attrs['readonly'] = True
 
     def save(self, commit=True):
         instance = super().save(commit=False)
