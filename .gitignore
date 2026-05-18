@@ -56,4 +56,4 @@ coverage.xml
 # Django specific
 *.sqlite3
 local_settings.py
-EOF
+EOFrestart.txt
