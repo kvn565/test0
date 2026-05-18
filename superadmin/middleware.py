@@ -142,12 +142,7 @@ class LicenceMiddleware(MiddlewareMixin):
 
             # 4. Vérifier la licence active
             today = timezone.now()
-            cle_active = societe.cles_activation.filter(
-                statut='ACTIVE',
-                date_debut__lte=today,
-                date_fin__gte=today,
-            ).first()
-
+            cle_active = societe.cle_active
             if cle_active is None:
                 # ── Diagnostic précis : distinguer "aucune clé" vs "clé expirée" ──
                 from superadmin.models import CleActivation
@@ -351,7 +346,7 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
             "img-src 'self' data: blob:",
-            "connect-src 'self'",
+            "connect-src 'self' https://cdnjs.cloudflare.com",
             "frame-ancestors 'none'",
             "form-action 'self'",
             "base-uri 'self'",

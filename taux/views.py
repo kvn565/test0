@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Taux
+from .models import TauxTVA          # ← Corrigé
 from .forms import TauxForm
 
 
@@ -23,7 +23,7 @@ def taux_liste(request):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    liste = Taux.objects.filter(societe=societe)
+    liste = TauxTVA.objects.filter(societe=societe)   # ← Corrigé
     return render(request, 'taux/liste.html', {
         'taux':  liste,
         'total': liste.count(),
@@ -60,7 +60,7 @@ def taux_modifier(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    taux = get_object_or_404(Taux, pk=pk, societe=societe)
+    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe)   # ← Corrigé
 
     if request.method == 'POST':
         form = TauxForm(request.POST, instance=taux, societe=societe)
@@ -86,12 +86,13 @@ def taux_supprimer(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    taux = get_object_or_404(Taux, pk=pk, societe=societe)
+    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe)   # ← Corrigé
 
     if request.method == 'POST':
         # Protection : vérifier si des produits ou services utilisent ce taux
         nb_produits = getattr(taux, 'produits', None)
         nb_services = getattr(taux, 'services', None)
+        
         if (nb_produits and nb_produits.exists()) or (nb_services and nb_services.exists()):
             messages.error(request, f"Impossible de supprimer « {taux.nom} » : des produits ou services lui sont associés.")
             return redirect('taux:liste')

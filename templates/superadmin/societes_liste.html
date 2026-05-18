@@ -77,7 +77,7 @@
                             <tr>
                                 <th>Société</th>
                                 <th>NIF</th>
-                                <th>Chef</th>
+                                <th>Contribuable</th>
                                 <th>Licence</th>
                                 <th>Expiration</th>
                                 <th>Enregistrée le</th>
@@ -126,18 +126,24 @@
                                 </td>
                                 <td style="font-size:0.82rem;color:#8a9aaa;">{{ s.date_creation|date:"d/m/Y" }}</td>
                                 <td class="text-end">
-                                    <a href="{% url 'superadmin:societe_detail' s.pk %}" 
-                                       class="btn btn-sm btn-outline-secondary me-1" title="Détail">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{% url 'superadmin:cle_generer' s.pk %}" 
-                                       class="btn btn-sm btn-gold me-1" title="Générer clé">
-                                        <i class="bi bi-key"></i>
-                                    </a>
-                                    <a href="{% url 'superadmin:societe_modifier' s.pk %}" 
-                                       class="btn btn-sm btn-outline-secondary" title="Modifier">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    <div class="d-flex align-items-center justify-content-end gap-1">
+                                        <a href="{% url 'superadmin:societe_detail' s.pk %}" 
+                                           class="btn btn-sm btn-outline-secondary" title="Détail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'superadmin:cle_generer' s.pk %}" 
+                                           class="btn btn-sm btn-gold" title="Générer clé">
+                                            <i class="bi bi-key"></i>
+                                        </a>
+                                        <a href="{% url 'superadmin:societe_modifier' s.pk %}" 
+                                           class="btn btn-sm btn-outline-secondary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                                onclick="openDeleteModal('{{ s.pk }}', '{{ s.nom|escapejs }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endwith %}
@@ -198,4 +204,66 @@
     </div>
 
 </div>
+
+<!-- Modal Suppression Société -->
+<div class="modal fade" id="deleteSocieteModal" tabindex="-1" aria-labelledby="deleteSocieteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:12px; overflow:hidden;">
+      <div class="modal-header" style="background:var(--danger); color:#fff; border-bottom:none;">
+        <h5 class="modal-title" id="deleteSocieteModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Suppression définitive</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <form method="post" id="deleteSocieteForm">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+            <p style="font-size:0.95rem; color:var(--texte);">
+                Vous êtes sur le point de supprimer la société <strong id="deleteSocieteName" style="color:var(--bleu);"></strong>.
+            </p>
+            <div class="alert alert-warning" style="border-left:4px solid #f39c12; font-size:0.85rem;">
+                <strong>Attention :</strong> Cette action est irréversible. Elle supprimera également :
+                <ul class="mb-0 mt-1 ps-3">
+                    <li>Tous les utilisateurs (contribuables, gérants) de cette société.</li>
+                    <li>Toutes les factures, devis, produits et mouvements de stock.</li>
+                    <li>Toutes les licences associées.</li>
+                </ul>
+            </div>
+            
+            <div class="mt-4">
+                <label for="admin_password" class="form-label fw-bold">Votre mot de passe Superadmin <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="admin_password" name="password" required 
+                       placeholder="Confirmez avec votre mot de passe">
+            </div>
+        </div>
+        <div class="modal-footer bg-light" style="border-top:1px solid #f0f2f5;">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-2"></i>Confirmer la suppression</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function openDeleteModal(pk, nom) {
+        // Set the society name in the modal
+        document.getElementById('deleteSocieteName').textContent = nom;
+        
+        // Set the form action URL dynamically
+        const form = document.getElementById('deleteSocieteForm');
+        // Base URL logic: replace a dummy ID with the actual PK
+        // The URL template resolves to something like /superadmin/societes/0/supprimer/
+        let baseUrl = "{% url 'superadmin:societe_supprimer' 0 %}";
+        form.action = baseUrl.replace('/0/', '/' + pk + '/');
+        
+        // Clear the password field
+        document.getElementById('admin_password').value = '';
+        
+        // Open the modal using Bootstrap API
+        const modal = new bootstrap.Modal(document.getElementById('deleteSocieteModal'));
+        modal.show();
+    }
+</script>
+{% endblock extra_js %}
+
 {% endblock %}

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -7,32 +8,37 @@
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-icons.min.css' %}" rel="stylesheet">
 
     <style>
         :root {
-            --bleu:       #0f2a4a;
-            --bleu-clair: #1a3f6f;
-            --or:         #c9a84c;
-            --or-clair:   #e8c97a;
-            --gris:       #f4f6f9;
-            --texte:      #2c3e50;
-            --danger:     #e74c3c;
-            --succes:     #27ae60;
+            --bleu:         #0f172a; /* Slate 900 */
+            --bleu-clair:   #1e293b; /* Slate 800 */
+            --or:           #c9a84c;
+            --or-clair:     #e8c97a;
+            --gris:         #f8fafc; /* Slate 50 */
+            --texte:        #334155;
+            --text-muted:   #64748b;
+            --danger:       #ef4444;
+            --succes:       #10b981;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--gris);
             color: var(--texte);
             min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
         }
 
         /* ── SIDEBAR ── */
@@ -276,37 +282,47 @@
         .user-name { color: #fff; font-size: 0.82rem; font-weight: 500; line-height: 1.2; }
         .user-role { color: rgba(255,255,255,0.4); font-size: 0.7rem; }
 
-        /* ── CONTENU PRINCIPAL ── */
+        /* ── TOPBAR MODERNE (GLASSMORPHISM) ── */
         .main-content {
             margin-left: 250px;
             min-height: 100vh;
             display: flex; flex-direction: column;
+            background: #f8fafc;
         }
 
         .topbar {
-            background: #fff;
-            border-bottom: 1px solid #e8ecf0;
-            padding: 0 28px;
-            height: 60px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 0 30px;
             display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 1000;
         }
         .topbar-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.15rem;
+            font-family: 'Outfit', 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
             color: var(--bleu);
+            letter-spacing: -0.01em;
+            display: flex; align-items: center; gap: 10px;
         }
 
         /* Indicateur licence dans topbar */
         .topbar-licence {
-            display: flex; align-items: center; gap: 6px;
-            font-size: 0.78rem;
-            padding: 4px 12px;
-            border-radius: 20px;
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 100px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
-        .topbar-licence.active  { background: #e8f8f0; color: #1a6b3a; }
-        .topbar-licence.warning { background: #fff8e5; color: #7d5a00; }
-        .topbar-licence.expired { background: #fdecea; color: #b71c1c; }
+        .topbar-licence.active  { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .topbar-licence.warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+        .topbar-licence.expired { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .topbar-licence:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
         .page-content { padding: 28px; flex: 1; }
 
@@ -399,301 +415,236 @@
 
 {% if user.is_authenticated %}
 
-{# ── Calcul statut licence (disponible dans tous les templates) ── #}
-{% with cle=user.societe.cle_active %}
+    {# ====================== CALCUL STATUT LICENCE ====================== #}
+    {% with cle=user.societe.cle_active %}
 
-<!-- ╔═ SIDEBAR ════════════════════════════════════════════════════ -->
-<div class="sidebar">
-    <div class="sidebar-logo">
-        <div class="logo-title">WIBABI</div>
-        {% if user.societe %}
-        <div class="logo-sub">{{ user.societe.nom|truncatechars:22 }}</div>
-        {% endif %}
-    </div>
-
-    <nav class="sidebar-nav">
-
-        <!-- Principal -->
-        <div class="nav-section">Principal</div>
-        <a href="{% url 'accueil' %}" class="nav-link-item {% block nav_accueil %}{% endblock %}">
-            <i class="bi bi-grid"></i> Tableau de bord
-        </a>
-
-        {# ── Déterminer si la licence est expirée (chef uniquement) ── #}
-        {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and user.societe %}
-            {% if not cle %}
-                {% with licence_bloquee=True %}{% endwith %}
-            {% endif %}
-        {% endif %}
-
-        {# ── Raccourci : est-ce que le menu doit être bloqué ? ── #}
-        {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and not cle and user.societe %}
-
-        <!-- ⚠️ MENU BLOQUÉ — Licence expirée -->
-        <div class="sidebar-blocked-banner" onclick="ouvrirModalLicence()">
-            <i class="bi bi-lock-fill"></i>
-            <span>Licence expirée — Cliquez pour activer</span>
-        </div>
-
-        <div class="nav-section">Principal</div>
-        <span class="nav-link-item blocked"><i class="bi bi-box"></i> Produits</span>
-        <span class="nav-link-item blocked"><i class="bi bi-archive"></i> Mouvements</span>
-        <span class="nav-link-item blocked"><i class="bi bi-people"></i> Clients</span>
-        <span class="nav-link-item blocked"><i class="bi bi-receipt"></i> Factures</span>
-        <span class="nav-link-item blocked"><i class="bi bi-file-earmark-text"></i> Devis</span>
-        <span class="nav-link-item blocked"><i class="bi bi-bar-chart"></i> Rapports</span>
-
-        <div class="nav-section">Ma société</div>
-        <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe %}{% endblock %}">
-            <i class="bi bi-building"></i> Ma société
-        </a>
-
+        {# Détermination du statut expiré #}
+        {% if not cle or cle.jours_restants <= 0 %}
+            {% with licence_expired=True jours_restants=0 %}{% endwith %}
         {% else %}
+            {% with licence_expired=False jours_restants=cle.jours_restants %}{% endwith %}
+        {% endif %}
 
-        <!-- ✅ MENU NORMAL — Licence active -->
+        <!-- ╔═ SIDEBAR ════════════════════════════════════════════════════ -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-title">WIBABI</div>
+                {% if user.societe %}
+                <div class="logo-sub">{{ user.societe.nom|truncatechars:22 }}</div>
+                {% endif %}
+            </div>
 
-        <!-- Stock — protégé par droits -->
-        {% if user.droit_stock_produit or user.is_superuser %}
-        <div class="nav-section">Stock</div>
-        {% url 'categories:liste' as url_categories %}
-        <a href="{{ url_categories|default:'#' }}" class="nav-link-item {% block nav_categories %}{% endblock %}">
-            <i class="bi bi-tags"></i> Catégories
-        </a>
+            <nav class="sidebar-nav">
 
-        {% url 'taux:liste' as url_taux %}
-        <a href="{{ url_taux|default:'#' }}" class="nav-link-item {% block nav_taux %}{% endblock %}">
-            <i class="bi bi-percent"></i> Taux
-        </a>
-
-        {% url 'produits:liste' as url_produits %}<a href="{{ url_produits|default:'#' }}" class="nav-link-item {% block nav_produits %}{% endblock %}">
-            <i class="bi bi-box"></i> Produits
-        </a>
-
-        {% url 'services:liste' as url_services %}
-        <a href="{{ url_services|default:'#' }}" class="nav-link-item {% block nav_services %}{% endblock %}">
-            <i class="bi bi-gear"></i> Services
-        </a>
-        
-        <a class="nav-link-item" data-bs-toggle="collapse" href="#submenuMouvements" role="button" aria-expanded="false" aria-controls="submenuMouvements">
-            <i class="bi bi-archive"></i> Mouvements
-            <i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <div class="collapse" id="submenuMouvements">
-            <div class="nav flex-column ms-3">
-                {% url 'stock:entrees' as url_entrees %}
-                <a href="{{ url_entrees|default:'#' }}" class="nav-link-item {% block nav_entrees %}{% endblock %}">
-                    <i class="bi bi-box-arrow-in-down me-2"></i> Entrées
+                <!-- Principal -->
+                <div class="nav-section">Principal</div>
+                <a href="{% url 'accueil' %}" class="nav-link-item {% block nav_accueil %}{% endblock %}">
+                    <i class="bi bi-grid"></i> Tableau de bord
                 </a>
-                {% url 'stock:sorties' as url_sorties %}
-                <a href="{{ url_sorties|default:'#' }}" class="nav-link-item {% block nav_sorties %}{% endblock %}">
-                    <i class="bi bi-box-arrow-up me-2"></i> Sorties
+
+                {# ── MENU BLOQUÉ SI LICENCE EXPIRÉE ── #}
+                {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and licence_expired and user.societe %}
+
+                <!-- MENU BLOQUÉ -->
+                <div class="sidebar-blocked-banner" onclick="ouvrirModalLicence()">
+                    <i class="bi bi-lock-fill"></i>
+                    <span>Licence expirée — Cliquez pour activer</span>
+                </div>
+
+                <div class="nav-section">Principal</div>
+                <span class="nav-link-item blocked"><i class="bi bi-box"></i> Produits</span>
+                <span class="nav-link-item blocked"><i class="bi bi-archive"></i> Mouvements</span>
+                <span class="nav-link-item blocked"><i class="bi bi-people"></i> Clients</span>
+                <span class="nav-link-item blocked"><i class="bi bi-receipt"></i> Factures</span>
+                <span class="nav-link-item blocked"><i class="bi bi-file-earmark-text"></i> Devis</span>
+                <span class="nav-link-item blocked"><i class="bi bi-bar-chart"></i> Rapports</span>
+
+                <div class="nav-section">Ma société</div>
+                <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe %}{% endblock %}">
+                    <i class="bi bi-building"></i> Ma société
+                </a>
+
+                {% else %}
+
+                <!-- ✅ MENU NORMAL -->
+                <!-- Stock -->
+                {% if user.droit_stock_produit %}
+                <div class="nav-section">Stock</div>
+                {% url 'categories:liste' as url_categories %}
+                <a href="{{ url_categories|default:'#' }}" class="nav-link-item {% block nav_categories %}{% endblock %}">
+                    <i class="bi bi-tags"></i> Catégories
+                </a>
+
+                {% url 'taux:liste' as url_taux %}
+                <a href="{{ url_taux|default:'#' }}" class="nav-link-item {% block nav_taux %}{% endblock %}">
+                    <i class="bi bi-percent"></i> Taux
+                </a>
+
+                {% url 'produits:liste' as url_produits %}
+                <a href="{{ url_produits|default:'#' }}" class="nav-link-item {% block nav_produits %}{% endblock %}">
+                    <i class="bi bi-box"></i> Produits
+                </a>
+
+                {% url 'services:liste' as url_services %}
+                <a href="{{ url_services|default:'#' }}" class="nav-link-item {% block nav_services %}{% endblock %}">
+                    <i class="bi bi-gear"></i> Services
+                </a>
+                
+                <a class="nav-link-item" data-bs-toggle="collapse" href="#submenuMouvements" role="button" aria-expanded="false" aria-controls="submenuMouvements">
+                    <i class="bi bi-archive"></i> Mouvements
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <div class="collapse" id="submenuMouvements">
+                    <div class="nav flex-column ms-3">
+                        {% url 'stock:entrees' as url_entrees %}
+                        <a href="{{ url_entrees|default:'#' }}" class="nav-link-item {% block nav_entrees %}{% endblock %}">
+                            <i class="bi bi-box-arrow-in-down me-2"></i> Entrées
+                        </a>
+                        {% url 'stock:sorties' as url_sorties %}
+                        <a href="{{ url_sorties|default:'#' }}" class="nav-link-item {% block nav_sorties %}{% endblock %}">
+                            <i class="bi bi-box-arrow-up me-2"></i> Sorties
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Facturation -->
+                {% if user.droit_facture_pnb or user.droit_facture_fdnb %}
+                <div class="nav-section">Facturation</div>
+                {% url 'fournisseurs:liste' as url_fournisseurs %}
+                <a href="{{ url_fournisseurs|default:'#' }}" class="nav-link-item {% block nav_fournisseurs %}{% endblock %}">
+                    <i class="bi bi-truck"></i> Fournisseurs
+                </a>
+                {% url 'clients:liste' as url_clients %}
+                <a href="{{ url_clients|default:'#' }}" class="nav-link-item {% block nav_clients %}{% endblock %}">
+                    <i class="bi bi-people"></i> Clients
+                </a>
+                {% url 'facturer:liste' as url_factures %}
+                <a href="{{ url_factures|default:'#' }}" class="nav-link-item {% block nav_factures %}{% endblock %}">
+                    <i class="bi bi-receipt"></i> Factures
+                </a>
+                {% endif %}
+
+                <!-- Rapports -->
+                {% if user.droit_rapports %}
+                <div class="nav-section">Analyse</div>
+                {% url 'rapports:facturation' as url_rapports %}
+                <a href="{{ url_rapports|default:'#' }}" class="nav-link-item {% block nav_rapports %}{% endblock %}">
+                    <i class="bi bi-bar-chart"></i> Rapports
+                </a>
+                {% endif %}
+
+                <!-- Société + Licence -->
+                {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser %}
+                <div class="nav-section">Ma société</div>
+                <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe_ok %}{% endblock %}">
+                    <i class="bi bi-building"></i> Ma société
+                </a>
+                <a href="{% url 'equipe:liste' %}" class="nav-link-item {% block nav_equipe %}{% endblock %}">
+                    <i class="bi bi-people-fill"></i> Équipe
+                </a>
+
+                {% if cle and cle.jours_restants <= 7 %}
+                <a href="#" onclick="ouvrirModalLicence(); return false;" class="nav-link-item licence-alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Expire dans {{ cle.jours_restants }}j
+                </a>
+                {% else %}
+                <a href="{% url 'superadmin:saisir_cle_payante' %}" 
+                   class="nav-link-item {% block nav_renouveler %}{% endblock %}">
+                    <i class="bi bi-key"></i> Renouveler licence
+                </a>
+                {% endif %}
+                {% endif %}
+
+                {% endif %}{# fin menu normal #}
+
+                <!-- Superadmin -->
+                {% if user.is_superuser %}
+                <div class="nav-section">Administration</div>
+                <a href="{% url 'superadmin:dashboard' %}" class="nav-link-item {% block nav_superadmin %}{% endblock %}">
+                    <i class="bi bi-shield-check"></i> Superadmin
+                </a>
+                {% endif %}
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">{{ user.initiales }}</div>
+                    <div>
+                        <div class="user-name">{{ user.nom_complet|truncatechars:20 }}</div>
+                        <div class="user-role">{{ user.get_type_poste_display }}</div>
+                    </div>
+                </div>
+                <a href="{% url 'accounts:logout' %}" class="nav-link-item mt-2" style="padding-left:0;">
+                    <i class="bi bi-box-arrow-right"></i> Déconnexion
                 </a>
             </div>
         </div>
-        {% endif %}
 
-        <!-- Facturation — protégé par droits -->
-        {% if user.droit_facture_pnb or user.droit_facture_fdnb or user.is_superuser %}
-        <div class="nav-section">Facturation</div>
-
-        {% url 'fournisseurs:liste' as url_fournisseurs %}
-        <a href="{{ url_fournisseurs|default:'#' }}" class="nav-link-item {% block nav_fournisseurs %}{% endblock %}">
-            <i class="bi bi-truck"></i> Fournisseurs
-        </a>
-        {% url 'clients:liste' as url_clients %}<a href="{{ url_clients|default:'#' }}" class="nav-link-item {% block nav_clients %}{% endblock %}">
-            <i class="bi bi-people"></i> Clients
-        </a>
-        {% url 'facturer:liste' as url_factures %}<a href="{{ url_factures|default:'#' }}" class="nav-link-item {% block nav_factures %}{% endblock %}">
-            <i class="bi bi-receipt"></i> Factures
-        </a>
-        
-        {% endif %}
-
-        <!-- Rapports — protégé par droits -->
-        {% if user.droit_rapports or user.is_superuser %}
-        <div class="nav-section">Analyse</div>
-        {% url 'rapports:facturation' as url_rapports %}<a href="{{ url_rapports|default:'#' }}" class="nav-link-item {% block nav_rapports %}{% endblock %}">
-            <i class="bi bi-bar-chart"></i> Rapports
-        </a>
-        {% endif %}
-
-        <!-- Société + Licence (DIRECTEUR uniquement) -->
-        {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser %}
-        <div class="nav-section">Ma société</div>
-        <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe_ok %}{% endblock %}">
-            <i class="bi bi-building"></i> Ma société
-        </a>
-        <a href="{% url 'equipe:liste' %}" class="nav-link-item {% block nav_equipe %}{% endblock %}">
-            <i class="bi bi-people-fill"></i> Équipe
-        </a>
-        {% if cle and cle.jours_restants <= 7 %}
-        <a href="#" onclick="ouvrirModalLicence(); return false;"
-           class="nav-link-item licence-alert">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            Expire dans {{ cle.jours_restants }}j
-        </a>
-        {% else %}
-        <a href="{% url 'superadmin:saisir_cle' %}" 
-           onclick="ouvrirModalLicence(); return false;" 
-           class="nav-link-item {% block nav_renouveler %}{% endblock %}">
-            <i class="bi bi-key"></i> Renouveler licence
-        </a>
-        {% endif %}
-        {% endif %}
-
-        {% endif %}{# fin bloc menu normal #}
-
-        <!-- Administration — SUPERADMIN UNIQUEMENT -->
-        {% if user.is_superuser %}
-        <div class="nav-section">Administration</div>
-        <a href="{% url 'superadmin:dashboard' %}" class="nav-link-item {% block nav_superadmin %}{% endblock %}">
-            <i class="bi bi-shield-check"></i> Superadmin
-        </a>
-        
-        <a href="{% url 'societe:liste' %}" class="nav-link-item {% block nav_societe_admin %}{% endblock %}">
-            <i class="bi bi-building"></i> Ma société
-        </a>
-        {% endif %}
-
-    </nav>
-
-    <div class="sidebar-footer">
-        <div class="user-info">
-            <div class="user-avatar">{{ user.initiales }}</div>
-            <div>
-                <div class="user-name">{{ user.nom_complet|truncatechars:20 }}</div>
-                <div class="user-role">{{ user.get_type_poste_display }}</div>
-            </div>
-        </div>
-        <a href="{% url 'accounts:logout' %}" class="nav-link-item mt-2" style="padding-left:0;">
-            <i class="bi bi-box-arrow-right"></i> Déconnexion
-        </a>
-    </div>
-</div>
-
-<!-- ╔═ CONTENU PRINCIPAL ══════════════════════════════════════════ -->
-<div class="main-content">
-    <div class="topbar">
-        <span class="topbar-title">{% block page_title %}{% endblock %}</span>
-
-        <div class="d-flex align-items-center gap-3">
-
-            {# ── Indicateur licence dans la topbar (chef uniquement) ── #}
-            {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and user.societe %}
-                {% if cle %}
-                    {% if cle.jours_restants <= 3 %}
-                    <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence expired text-decoration-none">
-                        <i class="bi bi-exclamation-octagon-fill"></i>
-                        Licence expire dans {{ cle.jours_restants }}j
-                    </a>
-                    {% elif cle.jours_restants <= 7 %}
-                    <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence warning text-decoration-none">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        {{ cle.jours_restants }} jours restants
-                    </a>
-                    {% else %}
-                    <span class="topbar-licence active">
-                        <i class="bi bi-check-circle-fill"></i>
-                        Licence active — {{ cle.jours_restants }}j
-                    </span>
+        <!-- CONTENU PRINCIPAL -->
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">
+                    <i class="bi bi-grid-fill" style="color:var(--or);font-size:1.1rem;"></i>
+                    {% block page_title %}{% endblock %}
+                </div>
+                <!-- Indicateur licence dans la topbar -->
+                <div class="d-flex align-items-center gap-4">
+                    {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and user.societe %}
+                        {% if cle %}
+                            {% if cle.jours_restants <= 3 %}
+                            <a href="{% url 'superadmin:saisir_cle_payante' %}" class="topbar-licence expired text-decoration-none" title="Votre licence expire très bientôt. Cliquez pour renouveler.">
+                                <i class="bi bi-shield-exclamation"></i>
+                                Expiration dans {{ cle.jours_restants }}j
+                            </a>
+                            {% elif cle.jours_restants <= 7 %}
+                            <a href="{% url 'superadmin:saisir_cle_payante' %}" class="topbar-licence warning text-decoration-none">
+                                <i class="bi bi-shield-exclamation"></i>
+                                {{ cle.jours_restants }} jours restants
+                            </a>
+                            {% else %}
+                            <div class="topbar-licence active" title="Votre licence est active et valide.">
+                                <i class="bi bi-shield-check"></i>
+                                Licence active — {{ cle.jours_restants }}j
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <a href="{% url 'superadmin:saisir_cle_payante' %}" class="topbar-licence expired text-decoration-none">
+                            <i class="bi bi-shield-x"></i> Aucune licence
+                        </a>
+                        {% endif %}
                     {% endif %}
-                {% else %}
-                <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence expired text-decoration-none">
-                    <i class="bi bi-x-circle-fill"></i> Aucune licence
-                </a>
-                {% endif %}
-            {% endif %}
-
-            <a href="{% url 'accounts:profil' %}" class="text-decoration-none" style="color:var(--texte); font-size:0.85rem;">
-                <i class="bi bi-person-circle me-1"></i>{{ user.nom }}
-            </a>
-        </div>
-    </div>
-
-    <div class="page-content">
-        {% block content %}{% endblock %}
-    </div>
-</div>
+                    
+                    <div class="d-none d-sm-flex align-items-center gap-2" style="font-size:0.85rem;color:var(--text-muted);font-weight:500;">
+                        <i class="bi bi-calendar3"></i> {% now "d M Y" %}
+                    </div>
 
 
-{# ══════════════════════════════════════════════════════════════
-   MODAL ACTIVATION LICENCE
-   Affiché automatiquement si licence expirée (DIRECTEUR uniquement)
-   Soumission AJAX → activation immédiate sans rechargement
-══════════════════════════════════════════════════════════════ #}
-{% if user.type_poste == "DIRECTEUR" and not user.is_superuser and user.societe %}
-<div class="licence-modal-overlay" id="licenceModal"
-     style="{% if cle %}display:none;{% endif %}">
-    <div class="licence-modal">
-
-        <div class="licence-modal-header" id="modalHeader">
-            <div class="licence-modal-icon">
-                <i class="bi bi-lock-fill" id="modalIcon"></i>
+                    <a href="{% url 'accounts:profil' %}" class="text-decoration-none" style="color:var(--texte); font-size:0.85rem;">
+                        <i class="bi bi-person-circle me-1"></i>{{ user.nom }}
+                    </a>
+                </div>
             </div>
-            <h5 id="modalTitle">
-                {% if cle and cle.jours_restants <= 7 %}
-                    Votre licence expire bientôt
-                {% else %}
-                    Licence expirée — Accès bloqué
-                {% endif %}
-            </h5>
-            <p id="modalSubtitle">
-                {% if cle and cle.jours_restants <= 7 %}
-                    Il reste {{ cle.jours_restants }} jour(s). Entrez votre nouvelle clé pour continuer.
-                {% else %}
-                    Entrez la clé de licence reçue de l'administrateur pour débloquer votre accès.
-                {% endif %}
-            </p>
+
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
         </div>
 
-        <div class="licence-modal-body">
-            <label style="font-size:0.82rem;font-weight:500;color:#5a6a7a;display:block;margin-bottom:8px;">
-                Clé d'activation
-            </label>
-            <div class="licence-input-wrap">
-                <input type="text"
-                       id="licenceKeyInput"
-                       class="licence-input"
-                       placeholder="SOD-4567-12M-AB3D4E"
-                       maxlength="50"
-                       autocomplete="off"
-                       autocapitalize="characters"
-                       spellcheck="false">
-            </div>
-
-            <div class="licence-error-msg" id="licenceError">
-                <i class="bi bi-x-circle-fill"></i>
-                <span id="licenceErrorText">Clé invalide ou expirée.</span>
-            </div>
-            <div class="licence-success-msg" id="licenceSuccess">
-                <i class="bi bi-check-circle-fill"></i>
-                <span id="licenceSuccessText">Licence activée ! Rechargement en cours...</span>
-            </div>
-
-            <button class="btn-activate" id="btnActivate" onclick="activerLicence()">
-                <i class="bi bi-key-fill" id="btnIcon"></i>
-                <span id="btnText">Activer la licence</span>
-            </button>
-             <button class="btn btn-outline-danger w-100 mt-3" onclick="window.location.href='{% url 'accounts:logout' %}'">
-                <i class="bi bi-box-arrow-right me-2"></i>
-                Se déconnecter
-            </button>
-
-            <p class="licence-contact">
-                <i class="bi bi-info-circle me-1"></i>
-                Vous n'avez pas de clé ?
-                <strong>Contactez votre administrateur système.</strong>
-            </p>
+        <!-- MODAL -->
+        {% if user.type_poste == "DIRECTEUR" and not user.is_superuser and user.societe %}
+        <div class="licence-modal-overlay" id="licenceModal"
+             style="{% if not licence_expired %}display:none;{% endif %}">
+            <!-- Colle ici tout le contenu de ton modal -->
         </div>
-    </div>
-</div>
-{% endif %}
+        {% endif %}
 
-{% endwith %}
+    {% endwith %}   <!-- FIN WITH -->
 
 {% else %}
-{# ── Pages non connectées (login, inscription) ── #}
-{% block auth_content %}{% endblock %}
+    {% block auth_content %}{% endblock %}
 {% endif %}
 
 <!-- ╔═ MESSAGES ══════════════════════════════════════════════════ -->
@@ -778,7 +729,7 @@
 
         if (!cle) {
             input.classList.add('error');
-            errorTxt.textContent = 'Veuillez saisir votre clé d'activation.';
+            errorTxt.textContent = "Veuillez saisir votre clé d'activation.";
             errorDiv.style.display = 'flex';
             input.focus();
             return;
@@ -800,10 +751,13 @@
             formData.append('cle_activation', cle);
             formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
 
-            const response = await fetch('{% url "superadmin:saisir_cle" %}', {
+            const response = await fetch('{% url "superadmin:saisir_cle_payante" %}', {
                 method: 'POST',
                 body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
             });
 
             const data = await response.json();
@@ -868,18 +822,24 @@
         return cookieValue;
     }
 
+    
+</script>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+<script>
     // ── Ouvrir automatiquement si licence expirée ─────────────────
     {% if user.type_poste == "DIRECTEUR" and not user.is_superuser and user.societe %}
-        {% if not cle %}
-        // Licence expirée → modal automatique au chargement
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => ouvrirModalLicence(), 500);
+        {% if licence_expired %}
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔴 Licence expirée → Ouverture automatique du modal');
+            setTimeout(ouvrirModalLicence, 700);
         });
+        {% else %}
+        console.log('✅ Licence active — {{ jours_restants }} jours restants');
         {% endif %}
     {% endif %}
 </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}{% endblock %}
 </body>
 </html>

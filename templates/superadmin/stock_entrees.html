@@ -1,0 +1,248 @@
+{% extends 'superadmin/base_superadmin.html' %}
+{% block title %}Entrées Stock — Administration{% endblock %}
+{% block breadcrumb %}<span class="sep">/</span> <span>Stock</span> <span class="sep">/</span> <span>Entrées</span>{% endblock %}
+{% block nav_entrees_admin %}active{% endblock %}
+{% block page_title %}Suivi Global des Entrées Stock{% endblock %}
+
+{% block extra_css %}
+<style>
+    .societe-collapse-btn {
+        width: 100%;
+        text-align: left;
+        padding: 1rem 1.5rem;
+        background: #fff;
+        border: 1px solid #edf2f7;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .societe-collapse-btn:hover {
+        background: #f8fafc;
+        border-color: #cbd5e0;
+    }
+    .societe-collapse-btn[aria-expanded="true"] {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom-color: transparent;
+        margin-bottom: 0;
+        background: #f1f5f9;
+    }
+    .collapse-content {
+        border: 1px solid #edf2f7;
+        border-top: none;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+    .triangle-icon {
+        transition: transform 0.2s;
+    }
+    [aria-expanded="true"] .triangle-icon {
+        transform: rotate(180deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Cartes statistiques -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-primary">{{ stats.total }}</div>
+                <div class="text-muted small">Total entrées</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-warning">{{ stats.en_attente }}</div>
+                <div class="text-muted small">En attente OBR</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-success">{{ stats.envoyes }}</div>
+                <div class="text-muted small">Envoyés OBR</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
+            <div class="flex-grow-1 position-relative" style="min-width: 200px;">
+                <label class="form-label small text-muted">Recherche</label>
+                <div class="position-relative">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" name="q" value="{{ q }}" 
+                           class="form-control ps-5" 
+                           placeholder="Produit, référence...">
+                </div>
+            </div>
+
+            <div style="min-width: 180px;">
+                <label class="form-label small text-muted">Société</label>
+                <select name="societe" class="form-select">
+                    <option value="">Toutes les sociétés</option>
+                    {% for s in societes %}
+                        <option value="{{ s.id }}" {% if societe_id == s.id|stringformat:"s" %}selected{% endif %}>{{ s.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="min-width: 150px;">
+                <label class="form-label small text-muted">Type</label>
+                <select name="type" class="form-select">
+                    <option value="">Tous les types</option>
+                    {% for val, label in types %}
+                        <option value="{{ val }}" {% if type_mvt == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="min-width: 150px;">
+                <label class="form-label small text-muted">Statut OBR</label>
+                <select name="statut" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    {% for val, label in statuts %}
+                        <option value="{{ val }}" {% if statut == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel"></i>
+                </button>
+                {% if q or statut or type_mvt or societe_id %}
+                    <a href="{% url 'superadmin:stock_entrees' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Liste Groupée par Société -->
+<div class="stock-grouped-list">
+    {% if grouped_data %}
+        {% for group in grouped_data %}
+            <div class="societe-group">
+                <button class="societe-collapse-btn" type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#collapseSociete{{ group.societe.id }}" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-sm bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold fs-5 text-dark">{{ group.societe.nom }}</div>
+                            <small class="text-muted">{{ group.entrees.count }} entrée{{ group.entrees.count|pluralize }}</small>
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-down triangle-icon fs-5 text-muted"></i>
+                </button>
+                
+                <div class="collapse collapse-content" id="collapseSociete{{ group.societe.id }}">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Produit</th>
+                                    <th class="text-end">Quantité</th>
+                                    <th>Date</th>
+                                    <th>Statut OBR</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in group.entrees %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-info-subtle text-info">{{ e.get_type_entree_display|default:e.type_entree }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">{{ e.produit.designation }}</div>
+                                        <small class="text-muted">{{ e.produit.code }}</small>
+                                    </td>
+                                    <td class="text-end fw-medium">
+                                        {{ e.quantite }} {{ e.produit.unite }}
+                                    </td>
+                                    <td class="text-muted small">{{ e.date_entree|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if e.statut_obr == 'ENVOYE' %}
+                                            <span class="badge bg-success">Envoyé</span>
+                                        {% elif e.statut_obr == 'ECHEC' %}
+                                            <span class="badge bg-danger">Échec</span>
+                                        {% elif e.statut_obr == 'EN_ATTENTE' %}
+                                            <span class="badge bg-warning text-dark">En attente</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'stock:entree_detail' e.pk %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Pagination (des Sociétés) -->
+        {% if page_obj.has_other_pages %}
+        <div class="py-4">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}{% if societe_id %}&societe={{ societe_id }}{% endif %}">«</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}{% if societe_id %}&societe={{ societe_id }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}{% if statut %}&statut={{ statut }}{% endif %}{% if type_mvt %}&type={{ type_mvt }}{% endif %}{% if societe_id %}&societe={{ societe_id }}{% endif %}">»</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="card border-0 shadow-sm text-center py-5">
+            <i class="bi bi-inboxes display-1 text-muted opacity-25"></i>
+            <p class="text-muted mt-3">Aucune société trouvée avec ces critères.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -5,264 +5,418 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Administration — WIBABI{% endblock %}</title>
 
+    <!-- Google Fonts: Inter & Outfit pour un look moderne -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
     <style>
         :root {
-            --bleu:       #0f2a4a;
-            --bleu-clair: #1a3f6f;
-            --or:         #c9a84c;
-            --or-clair:   #e8c97a;
-            --gris:       #f4f6f9;
-            --texte:      #2c3e50;
-            --danger:     #e74c3c;
-            --succes:     #27ae60;
+            --primary:      #0f172a; /* Slate 900 */
+            --primary-light:#1e293b; /* Slate 800 */
+            --accent:       #c9a84c; /* Gold */
+            --accent-light: #e8c97a;
+            --success:      #10b981;
+            --danger:       #ef4444;
+            --warning:      #f59e0b;
+            --info:         #3b82f6;
+            --bg-body:      #f8fafc;
+            --bg-card:      #ffffff;
+            --text-main:    #334155;
+            --text-muted:   #64748b;
+            --sidebar-width: 260px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--gris);
-            color: var(--texte);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* SIDEBAR SUPERADMIN */
+        h1, h2, h3, .logo-title {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ── SIDEBAR MODERNE ── */
         .sidebar {
             position: fixed; top: 0; left: 0;
-            width: 260px; height: 100vh;
-            background: var(--bleu);
+            width: var(--sidebar-width); height: 100vh;
+            background: var(--primary);
             display: flex; flex-direction: column;
-            z-index: 1000;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.25);
+            z-index: 1050;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar-logo {
-            padding: 24px 24px 18px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 30px 24px;
+            text-align: center;
         }
-        .sidebar-logo .logo-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(201,168,76,0.15);
-            border: 1px solid rgba(201,168,76,0.3);
-            border-radius: 6px;
-            padding: 3px 10px;
-            margin-bottom: 10px;
+        .logo-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(201,168,76,0.1);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 100px;
+            padding: 4px 12px;
+            margin-bottom: 15px;
         }
-        .sidebar-logo .logo-badge span {
-            color: var(--or);
+        .logo-badge span {
+            color: var(--accent);
             font-size: 0.65rem;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
         }
-        .sidebar-logo .logo-title {
-            font-family: 'Playfair Display', serif;
+        .logo-title {
             color: #fff;
-            font-size: 1.25rem;
-            line-height: 1.2;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
-        .sidebar-logo .logo-sub {
-            color: rgba(255,255,255,0.45);
-            font-size: 0.72rem;
+        .logo-sub {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 400;
         }
 
-        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .sidebar-nav { 
+            flex: 1; 
+            padding: 10px 16px; 
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
 
         .nav-section {
-            padding: 14px 20px 4px;
-            color: rgba(255,255,255,0.35);
+            padding: 20px 12px 8px;
+            color: rgba(255,255,255,0.3);
             font-size: 0.65rem;
-            letter-spacing: 0.12em;
+            font-weight: 700;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
         }
 
         .nav-link-item {
             display: flex; align-items: center; gap: 12px;
-            padding: 11px 20px;
-            color: rgba(255,255,255,0.68);
+            padding: 12px 16px;
+            color: rgba(255,255,255,0.6);
             text-decoration: none;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 10px;
+            margin-bottom: 4px;
             transition: all 0.2s;
-            border-left: 3px solid transparent;
         }
-        .nav-link-item:hover,
+        .nav-link-item:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
         .nav-link-item.active {
             color: #fff;
-            background: rgba(255,255,255,0.08);
-            border-left-color: var(--or);
+            background: var(--accent);
+            box-shadow: 0 4px 12px rgba(201,168,76,0.25);
         }
-        .nav-link-item i { font-size: 1.05rem; width: 22px; flex-shrink: 0; }
+        .nav-link-item i { font-size: 1.1rem; }
 
         .sidebar-footer {
-            padding: 16px 20px;
-            border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 20px;
+            background: rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
-        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
         .user-avatar {
-            width: 38px; height: 38px; border-radius: 50%;
-            background: var(--or);
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--accent);
+            color: var(--primary);
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 0.9rem;
-            color: var(--bleu);
         }
-        .user-name { color: #fff; font-size: 0.85rem; font-weight: 500; }
-        .user-role { color: var(--or); font-size: 0.7rem; }
+        .user-name { color: #fff; font-size: 0.85rem; font-weight: 600; line-height: 1.2; }
+        .user-role { color: var(--accent); font-size: 0.7rem; font-weight: 500; }
 
-        /* CONTENU PRINCIPAL */
+        /* ── TOPBAR GLASSMORPHISM ── */
         .main-content {
-            margin-left: 260px;
+            margin-left: var(--sidebar-width);
             min-height: 100vh;
-            display: flex; flex-direction: column;
+            transition: all 0.3s;
         }
 
         .topbar {
-            background: #fff;
-            border-bottom: 1px solid #e8ecf0;
-            padding: 0 28px;
-            height: 64px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 0 30px;
             display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 1000;
         }
 
-        .page-content { padding: 28px; flex: 1; }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
-            .sidebar.sidebar-open { transform: translateX(0); }
-            .main-content { margin-left: 0 !important; }
+        .topbar-badge {
+            background: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex; align-items: center; gap: 6px;
         }
+        .topbar-badge i { color: var(--accent); }
+
+        .breadcrumb-item { font-size: 0.85rem; color: var(--text-muted); }
+        .breadcrumb-item a { color: var(--text-muted); text-decoration: none; }
+        .breadcrumb-item.active { color: var(--primary); font-weight: 600; }
+
+        /* ── PAGE CONTENT ── */
+        .page-content { padding: 30px; }
+
+        .page-header {
+            margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .page-title {
+            font-size: 1.75rem; font-weight: 700; color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .page-subtitle { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* ── CARDS MODERNES ── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-header {
+            padding: 20px 24px;
+            background: transparent;
+            border-bottom: 1px solid #f1f5f9;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* ── STAT CARDS ── */
+        .stat-card {
+            padding: 24px;
+            display: flex; align-items: center; gap: 20px;
+        }
+        .stat-icon {
+            width: 56px; height: 56px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .stat-icon.primary { background: #eff6ff; color: #2563eb; }
+        .stat-icon.success { background: #ecfdf5; color: #059669; }
+        .stat-icon.warning { background: #fffbeb; color: #d97706; }
+        .stat-icon.danger  { background: #fef2f2; color: #dc2626; }
+        .stat-icon.accent  { background: rgba(201,168,76,0.1); color: var(--accent); }
+
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+        /* ── TABLES ── */
+        .table thead th {
+            background: #f8fafc;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .table td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); border: none; }
+        .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+        .btn-accent { background: var(--accent); color: var(--primary); border: none; }
+        .btn-accent:hover { background: var(--accent-light); transform: translateY(-1px); }
+
+        /* ── MESSAGES ── */
+        .toast-container { position: fixed; top: 85px; right: 20px; z-index: 2000; }
+        .modern-toast {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex; align-items: center; gap: 15px;
+            border-left: 5px solid var(--accent);
+            min-width: 300px;
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-<!-- SIDEBAR SUPERADMIN -->
-<div class="sidebar" id="sidebar">
+<!-- ╔═ SIDEBAR ═══════════════════════════════════════ -->
+<div class="sidebar">
     <div class="sidebar-logo">
         <div class="logo-badge">
-            <i class="bi bi-shield-check" style="color:var(--or);"></i>
-            <span>Superadmin</span>
+            <i class="bi bi-shield-check"></i>
+            <span>Administration</span>
         </div>
         <div class="logo-title">WIBABI</div>
-        <div class="logo-sub">Panneau d'administration</div>
+        <div class="logo-sub">Tableau de bord global</div>
     </div>
 
     <nav class="sidebar-nav">
-
-        <div class="nav-section">Vue générale</div>
+        <div class="nav-section">Vue d'ensemble</div>
         <a href="{% url 'superadmin:dashboard' %}" class="nav-link-item {% block nav_dashboard %}{% endblock %}">
-            <i class="bi bi-speedometer2"></i> Tableau de bord
+            <i class="bi bi-grid-1x2-fill"></i> Tableau de bord
         </a>
 
-        <div class="nav-section">Sociétés</div>
+        <div class="nav-section">Entreprises</div>
         <a href="{% url 'superadmin:societes_liste' %}" class="nav-link-item {% block nav_societes %}{% endblock %}">
-            <i class="bi bi-building"></i> Toutes les sociétés
+            <i class="bi bi-building"></i> Liste des sociétés
         </a>
         <a href="{% url 'superadmin:societe_gestion_liste' %}" class="nav-link-item {% block nav_societe_gestion %}{% endblock %}">
-            <i class="bi bi-gear-wide-connected"></i> Gestion des Sociétés
+            <i class="bi bi-sliders2"></i> Configuration
         </a>
         <a href="{% url 'superadmin:societe_creer' %}" class="nav-link-item {% block nav_societe_creer %}{% endblock %}">
-            <i class="bi bi-plus-circle"></i> Nouvelle société
+            <i class="bi bi-plus-square-fill"></i> Ajouter une société
         </a>
 
-        <div class="nav-section">Licences</div>
+        <div class="nav-section">Licences & Clés</div>
         <a href="{% url 'superadmin:liste_cles' %}" class="nav-link-item {% block nav_cles %}{% endblock %}">
-            <i class="bi bi-key"></i> Toutes les clés
+            <i class="bi bi-key-fill"></i> Gestion des clés
         </a>
         <a href="{% url 'superadmin:creer_cle' %}" class="nav-link-item {% block nav_cle_creer %}{% endblock %}">
-            <i class="bi bi-plus-circle"></i> Nouvelle clé
+            <i class="bi bi-plus-circle-dotted"></i> Générer une clé
         </a>
 
         <div class="nav-section">Utilisateurs</div>
         <a href="{% url 'superadmin:utilisateurs' %}" class="nav-link-item {% block nav_utilisateurs %}{% endblock %}">
-            <i class="bi bi-people"></i> Tous les utilisateurs
+            <i class="bi bi-people-fill"></i> Comptes utilisateurs
         </a>
 
-        <div class="nav-section">Système</div>
+        <div class="nav-section">Monitoring Stocks</div>
+        <a href="{% url 'superadmin:stock_entrees' %}" class="nav-link-item {% block nav_entrees_admin %}{% endblock %}">
+            <i class="bi bi-box-arrow-in-down"></i> Suivi des Entrées
+        </a>
+        <a href="{% url 'superadmin:stock_sorties' %}" class="nav-link-item {% block nav_sorties_admin %}{% endblock %}">
+            <i class="bi bi-box-arrow-up"></i> Suivi des Sorties
+        </a>
+
+        <div class="nav-section">Maintenance</div>
         <a href="{% url 'superadmin:backup' %}" class="nav-link-item {% block nav_backup %}{% endblock %}">
-            <i class="bi bi-cloud-arrow-down"></i> Sauvegardes
+            <i class="bi bi-cloud-arrow-down-fill"></i> Sauvegardes
         </a>
-        <a href="{% url 'superadmin:reinitialisation' %}" class="nav-link-item {% block nav_reinit %}{% endblock %}" style="color:#e74c3c;">
-            <i class="bi bi-arrow-counterclockwise"></i> Réinitialisation
+        <a href="{% url 'superadmin:reinitialisation' %}" class="nav-link-item {% block nav_reinit %}{% endblock %}" style="color:rgba(239, 68, 68, 0.8);">
+            <i class="bi bi-exclamation-octagon-fill"></i> Réinitialisation
         </a>
-
     </nav>
-
-    <div class="sidebar-back">
-        <a href="{% url 'accueil' %}" class="nav-link-item">
-            <i class="bi bi-arrow-left-circle"></i> Retour à l'application
-        </a>
-    </div>
 
     <div class="sidebar-footer">
         <div class="user-info">
             <div class="user-avatar">{{ user.initiales }}</div>
             <div>
-                <div class="user-name">{{ user.nom_complet|truncatechars:22 }}</div>
-                <div class="user-role">Superadministrateur</div>
+                <div class="user-name text-truncate" style="max-width: 150px;">{{ user.nom_complet }}</div>
+                <div class="user-role">Super Administrateur</div>
             </div>
         </div>
-        <a href="{% url 'accounts:logout' %}" class="nav-link-item mt-2" style="padding-left:0;">
-            <i class="bi bi-box-arrow-right"></i> Déconnexion
+        <a href="{% url 'accounts:logout' %}" class="nav-link-item mt-3 p-0" style="font-size: 0.8rem; color: #ef4444;">
+            <i class="bi bi-power me-2"></i> Déconnexion
         </a>
     </div>
 </div>
 
-<!-- CONTENU PRINCIPAL -->
+<!-- ╔═ MAIN CONTENT ═══════════════════════════════════════ -->
 <div class="main-content">
-    <div class="topbar">
+    <header class="topbar">
         <div class="topbar-left">
-            <button class="btn-hamburger" onclick="toggleSidebar()">
-                <i class="bi bi-list"></i>
-            </button>
             <div class="topbar-badge">
-                <i class="bi bi-shield-check"></i> Administration
+                <i class="bi bi-patch-check-fill"></i>
+                Session Sécurisée
+            </div>
+            <nav aria-label="breadcrumb" class="ms-4 d-none d-md-block">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'superadmin:dashboard' %}">Accueil</a></li>
+                    {% block breadcrumb %}{% endblock %}
+                </ol>
+            </nav>
+        </div>
+
+        <div class="d-flex align-items-center gap-4">
+            <div class="text-end d-none d-sm-block">
+                <div style="font-size: 0.85rem; font-weight: 600;">{% now "l d F Y" %}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{% now "H:i" %}</div>
+            </div>
+            <a href="{% url 'accueil' %}" class="btn btn-sm btn-outline-secondary d-none d-md-flex align-items-center gap-2">
+                <i class="bi bi-arrow-left"></i> App principale
+            </a>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+                <p class="page-subtitle">{% block page_subtitle %}Gestion administrative du système WIBABI{% endblock %}</p>
+            </div>
+            <div class="page-actions">
+                {% block page_actions %}{% endblock %}
             </div>
         </div>
 
-        <div class="d-flex align-items-center gap-3">
-            <span style="font-size:0.8rem;color:#8a9aaa;">
-                <i class="bi bi-clock me-1"></i>{% now "d/m/Y H:i" %}
-            </span>
-            <a href="{% url 'accounts:profil' %}" style="color:var(--texte);">
-                <i class="bi bi-person-circle me-1"></i>{{ user.nom }}
-            </a>
-        </div>
-    </div>
-
-    <div class="page-content">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 </div>
 
-<!-- Overlay pour mobile -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<!-- ╔═ NOTIFICATIONS ═════════════════════════════════════════════════ -->
+{% if messages %}
+<div class="toast-container">
+    {% for message in messages %}
+    <div class="modern-toast" style="border-left-color: {% if message.tags == 'success' %}var(--success){% elif message.tags == 'error' %}var(--danger){% else %}var(--accent){% endif %};">
+        <div class="stat-icon p-0" style="width:30px; height:30px; font-size:1.2rem; color: {% if message.tags == 'success' %}var(--success){% elif message.tags == 'error' %}var(--danger){% else %}var(--accent){% endif %};">
+            <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-x-circle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+        </div>
+        <div>
+            <div style="font-weight: 700; font-size: 0.9rem;">Notification</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">{{ message }}</div>
+        </div>
+        <button onclick="this.parentElement.remove()" style="border:none;background:none;margin-left:auto;color:#cbd5e1;">✕</button>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.modern-toast').forEach(el => {
+            el.style.transition = 'all 0.4s';
+            el.style.transform = 'translateX(120%)';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 400);
+        });
+    }, 5000);
+</script>
+{% endif %}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('sidebar-open');
-        overlay.classList.toggle('sidebar-open');
-    }
-
-    // Fermer le menu mobile en cliquant sur un lien
-    document.querySelectorAll('.sidebar .nav-link-item').forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth <= 992) toggleSidebar();
-        });
-    });
-</script>
-
 {% block extra_js %}{% endblock %}
 </body>
 </html>

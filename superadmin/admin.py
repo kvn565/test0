@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from .models import Utilisateur, HistoriqueConnexion, Backup, CleActivation, AuditCle
 from societe.models import Societe
 from django.urls import reverse_lazy
+from django.utils.safestring import mark_safe
 
 
 admin.site.site_url = reverse_lazy('superadmin:dashboard') 
@@ -19,38 +20,18 @@ class UtilisateurAdmin(UserAdmin):
     readonly_fields = ('date_creation',)
 
     fieldsets = (
-        ("Informations personnelles", {
-            'fields': ('username', 'password', 'nom', 'postnom', 'prenom', 'email', 'photo')
-        }),
-        ("Société & Poste", {
-            'fields': ('societe', 'type_poste', 'actif')
-        }),
-        ("Droits Stock", {
-            'fields': ('droit_stock_categorie', 'droit_stock_produit', 'droit_stock_fournisseur', 'droit_stock_entree', 'droit_stock_sortie')
-        }),
-        ("Droits Facturation", {
-            'fields': ('droit_facture_pnb', 'droit_facture_fdnb', 'droit_facture_particulier')
-        }),
-        ("Autres droits", {
-            'fields': ('droit_devis', 'droit_rapports')
-        }),
-        ("Permissions système", {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
-        }),
-        ("Dates", {
-            'fields': ('last_login', 'date_creation')
-        }),
+        ("Informations personnelles", {'fields': ('username', 'password', 'nom', 'postnom', 'prenom', 'email', 'photo')}),
+        ("Société & Poste", {'fields': ('societe', 'type_poste', 'actif')}),
+        ("Droits Stock", {'fields': ('droit_stock_categorie', 'droit_stock_produit', 'droit_stock_fournisseur', 'droit_stock_entree', 'droit_stock_sortie')}),
+        ("Droits Facturation", {'fields': ('droit_facture_pnb', 'droit_facture_fdnb', 'droit_facture_particulier')}),
+        ("Autres droits", {'fields': ('droit_devis', 'droit_rapports')}),
+        ("Permissions système", {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ("Dates", {'fields': ('last_login', 'date_creation')}),
     )
 
     add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'nom', 'postnom', 'prenom', 'email'),
-        }),
-        ("Société & Poste", {
-            'classes': ('wide',),
-            'fields': ('societe', 'type_poste', 'actif'),
-        }),
+        (None, {'classes': ('wide',), 'fields': ('username', 'password1', 'password2', 'nom', 'postnom', 'prenom', 'email')}),
+        ("Société & Poste", {'classes': ('wide',), 'fields': ('societe', 'type_poste', 'actif')}),
     )
 
 
@@ -162,8 +143,10 @@ class CleActivationAdmin(admin.ModelAdmin):
         )
     plan_badge.short_description = "Plan"
 
+    @admin.display(description="Jours restants")
     def jours_restants_display(self, obj):
         jours = obj.jours_restants
+        
         if obj.statut in ('DISPONIBLE', 'ACTIVE') and jours > 0:
             if jours > 30:
                 color = "green"
@@ -177,8 +160,14 @@ class CleActivationAdmin(admin.ModelAdmin):
             )
         elif obj.statut == 'EXPIREE':
             return format_html('<span style="color: red;">Expirée</span>')
-        return format_html('<span style="color: gray;">—</span>')
-    jours_restants_display.short_description = "Jours restants"
+        
+        # Version propre pour le tiret
+        return mark_safe('<span style="color: gray;">—</span>')
+
+    @property
+    def statut_calcule(self):
+        """Statut dynamique à utiliser dans les templates"""
+        return self._calculer_statut()
 
     def statut_complet(self, obj):
         return format_html('<strong>{}</strong>', obj.get_statut_display())
@@ -257,7 +246,6 @@ class CleActivationInline(admin.TabularInline):
     ordering = ('-date_creation',)
     show_change_link = True
 
-
 @admin.register(Societe)
 class SocieteAdmin(admin.ModelAdmin):
 
@@ -270,53 +258,52 @@ class SocieteAdmin(admin.ModelAdmin):
         'province',
         'centre_fiscale',
         'assujeti_tva',
-        'obr_statut_badge',   # ✅ NOUVEAU
+        'obr_statut_badge',
         'licence_affichage',
         'date_creation',
     )
 
-    list_filter  = ('centre_fiscale', 'assujeti_tva', 'assujeti_tc', 'province', 'obr_actif')
+    list_filter  = ('centre_fiscale', 'assujeti_tva', 'assujeti_tc', 'province', 'obr_actif', 'obr_mode_production')
     search_fields = ('nom', 'nif', 'registre', 'telephone', 'commune', 'quartier')
     ordering = ('-date_creation',)
+
     readonly_fields = (
-        'date_creation', 'date_modification',
-        'adresse_complete', 'licence_affichage',
-        'obr_statut_badge',   # ✅ NOUVEAU
+        'date_creation', 
+        'date_modification',
+        'adresse_complete', 
+        'licence_affichage',
+        'obr_statut_badge',
     )
+
     inlines = [CleActivationInline]
 
     fieldsets = (
         ('Identification légale', {
-            'fields': ('nom', 'nif','forme','secteur', 'registre', 'boite_postal', 'telephone')
+            'fields': ('nom', 'nif', 'forme', 'secteur', 'registre', 'boite_postal', 'telephone')
         }),
         ('Adresse', {
             'fields': ('province', 'commune', 'quartier', 'avenue', 'numero', 'adresse_complete')
         }),
         ('Fiscalité', {
-            'fields': ('centre_fiscale', 'assujeti_tva', 'assujeti_tc')
+            'fields': ('centre_fiscale', 'assujeti_tva', 'assujeti_tc', 'assujeti_pfl')
         }),
-        # ══════════════════════════════════════════════════════════
-        #  SECTION OBR — Ajoutée pour l'intégration eBMS
-        #  Identifiants fournis par l'OBR lors de l'enregistrement
-        #  Contact OBR : 22282525 / innocent.kanyanzira@obr.gov.bi
-        # ══════════════════════════════════════════════════════════
-        
-        ('🔐 Configuration OBR (eBMS)', {
+
+        # ==================== SECTION OBR ====================
+        ('🔐 Configuration API OBR (eBMS)', {
             'fields': (
-                'obr_actif', 
-                'obr_username', 
-                'obr_password', 
-                'obr_system_id', 
-                'obr_base_url',           # ← AJOUTÉ ICI
+                'obr_actif',
+                'obr_mode_production',      # ← Nouveau toggle
+                'obr_username',
+                'obr_password',
+                'obr_system_id',
+                'obr_base_url',             # Gardé en lecture seule
                 'obr_statut_badge',
             ),
-            'description': (
-                '<strong>Ces informations sont fournies par l\'OBR</strong> lors de l\'enregistrement '
-                'du système de facturation électronique.<br>'
-                'Laissez <strong>obr_base_url</strong> vide pour utiliser l\'URL par défaut : '
-                '<code>https://ebms.obr.gov.bi:9443/ebms_api</code><br>'
-                '📞 Tél : 22282525 ou 22282832 &nbsp;|&nbsp; '
-                '✉️ innocent.kanyanzira@obr.gov.bi'
+            'description': mark_safe(
+                '<strong>Mode de connexion OBR :</strong><br>'
+                '• <strong>TEST</strong> (défaut) → Port 9443<br>'
+                '• <strong>PRODUCTION</strong> → Port 8443<br><br>'
+                'Le champ <code>obr_base_url</code> est mis à jour automatiquement selon le mode.'
             ),
             'classes': ('collapse',),
         }),
@@ -325,32 +312,29 @@ class SocieteAdmin(admin.ModelAdmin):
             'fields': ('licence_affichage',),
             'description': "Ajoutez une clé d'activation dans le tableau ci-dessous."
         }),
+        ('Gérant & Paramétrage', {
+            'fields': ('nom_complet_gerant', 'numero_depart', 'email_societe'),
+            'classes': ('collapse',),
+        }),
         ('Traçabilité', {
             'fields': ('date_creation', 'date_modification'),
             'classes': ('collapse',)
         }),
-
-        ('💼 Gérant & Paramétrage facturation', {
-            'fields': (
-                'nom_complet_gerant',
-                'numero_depart',
-                'email_societe',           # ← ajouté ici
-            ),
-            'description': (
-                'Ces informations sont réservées au superadmin uniquement.<br>'
-                'Utilisées pour la facturation, la conformité et les communications officielles.'
-            ),
-            'classes': ('collapse',),
-        }),
     )
 
     def save_model(self, request, obj, form, change):
-        """
-        Quand une nouvelle société est créée via l'admin Django,
-        on génère automatiquement une clé d'essai 14 jours (comme la vue web).
-        """
-        is_new = not obj.pk  # True si c'est une création (pas une modification)
+        """Mise à jour automatique de l'URL OBR selon le mode"""
+        is_new = not obj.pk
+
+        # Mise à jour automatique de l'URL
+        if hasattr(obj, 'obr_mode_production'):
+            if obj.obr_mode_production:
+                obj.obr_base_url = "https://ebms.obr.gov.bi:8443/ebms_api"
+            else:
+                obj.obr_base_url = "https://ebms.obr.gov.bi:9443/ebms_api"
+
         super().save_model(request, obj, form, change)
+
         if is_new:
             from .models import CleActivation, AuditCle
             cle = CleActivation.creer_essai(obj, cree_par=request.user.username)
@@ -358,75 +342,51 @@ class SocieteAdmin(admin.ModelAdmin):
                 societe=obj,
                 cle=cle,
                 action='CREEE',
-                message=(
-                    f"Société '{obj.nom}' (NIF: {obj.nif}) créée via l'admin Django "
-                    f"par {request.user.username}. "
-                    f"Clé d'essai 14 jours activée automatiquement : {cle.cle_visible} "
-                    f"(expire le {cle.date_fin.strftime('%d/%m/%Y')})."
-                ),
+                message=f"Société '{obj.nom}' créée via admin par {request.user.username}. Clé d'essai générée.",
             )
-            self.message_user(
-                request,
-                f"✅ Clé d'essai 14 jours générée automatiquement : {cle.cle_visible} "
-                f"(expire le {cle.date_fin.strftime('%d/%m/%Y')})."
-            )
+            self.message_user(request, f"✅ Clé d'essai 14 jours générée pour {obj.nom}")
 
 
-
-    actions = [
-        'generer_cle_essai', 'generer_cle_starter',
-        'generer_cle_business', 'generer_cle_enterprise',
-    ]
-
-    # ── Affichage statut OBR ──────────────────────────────────────
-       
-        # ── Affichage statut OBR ──────────────────────────────────────
-        # ── Affichage statut OBR ──────────────────────────────────────
+    # ==================== AFFICHAGES ====================
     def obr_statut_badge(self, obj):
-        """Badge pour le statut de configuration OBR"""
-        if not getattr(obj, 'obr_actif', False):
+        if not obj.obr_actif:
             return '<span class="badge bg-secondary">⭕ Inactif</span>'
-        elif getattr(obj, 'obr_configure', False):
-            return '<span class="badge bg-success">✅ Configuré</span>'
+        
+        mode = "🟢 PRODUCTION" if getattr(obj, 'obr_mode_production', False) else "🔵 TEST"
+        if obj.obr_configure:
+            return format_html('<span class="badge bg-success">✅ Configuré ({})</span>', mode)
         else:
-            return '<span class="badge bg-danger">⚠️ Incomplet</span>'
+            return '<span class="badge bg-warning">⚠️ Identifiants manquants</span>'
 
     obr_statut_badge.short_description = "Statut OBR"
     obr_statut_badge.allow_tags = True
 
 
-    # ── Affichage licence ─────────────────────────────────────────
     def licence_affichage(self, obj):
-        """Affichage de la licence actuelle"""
         cle = obj.cle_active
         if cle:
-            couleurs = {
-                'ESSAI':      '#f59e0b',
-                'STARTER':    '#10b981',
-                'BUSINESS':   '#3b82f6',
-                'ENTERPRISE': '#8b5cf6',
-            }
+            couleurs = {'ESSAI': '#f59e0b', 'STARTER': '#10b981', 'BUSINESS': '#3b82f6', 'ENTERPRISE': '#8b5cf6'}
             color = couleurs.get(cle.type_plan, '#aaa')
             return format_html(
-                '<span style="background: {}; color: white; padding: 2px 8px; '
-                'border-radius: 10px; font-size: 11px; font-weight: bold;">'
+                '<span style="background: {}; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">'
                 '{} — expire le {}</span>',
-                color,
-                cle.label_plan,
-                cle.date_fin.strftime('%d/%m/%Y') if cle.date_fin else '?',
+                color, cle.get_type_plan_display() or cle.type_plan,
+                cle.date_fin.strftime('%d/%m/%Y') if cle.date_fin else '?'
             )
-        
         return '<span style="color: gray;">Aucune licence active</span>'
 
     licence_affichage.short_description = "Licence"
 
-    # ── Actions ───────────────────────────────────────────────────
+
+    # ==================== ACTIONS ====================
+    actions = ['generer_cle_essai', 'generer_cle_starter', 'generer_cle_business', 'generer_cle_enterprise']
+
     def generer_cle_essai(self, request, queryset):
         count = 0
         for societe in queryset:
             CleActivation.creer_essai(societe, cree_par=request.user.username)
             count += 1
-        self.message_user(request, f"✅ {count} clé(s) d'essai générée(s) et activée(s).")
+        self.message_user(request, f"✅ {count} clé(s) d'essai générée(s).")
     generer_cle_essai.short_description = "🟡 Générer clé Essai 14j"
 
     def generer_cle_starter(self, request, queryset):

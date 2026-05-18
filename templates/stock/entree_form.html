@@ -19,7 +19,7 @@
         </p>
     </div>
     <a href="{% url 'stock:entrees' %}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Retour
+        <i class="bi bi-arrow-left"></i> Retour à la liste
     </a>
 </div>
 
@@ -29,7 +29,6 @@
         <div class="card shadow-sm border-0">
             <div class="card-body p-4 p-lg-5">
 
-                <!-- En-tête avec icône -->
                 <div class="d-flex align-items-center gap-3 mb-4 pb-4 border-bottom">
                     <div class="bg-light rounded-3 p-3">
                         <i class="bi bi-box-arrow-in-down text-primary fs-3"></i>
@@ -43,9 +42,7 @@
                 </div>
 
                 {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
-                    </div>
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
                 {% endif %}
 
                 <form method="post" novalidate>
@@ -53,62 +50,64 @@
 
                     <div class="row g-4">
 
-                        <!-- Type d'entrée -->
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Type d'entrée <span class="text-danger">*</span></label>
                             {{ form.type_entree }}
                             {{ form.type_entree.errors }}
                         </div>
 
-                        <!-- N° Réquisition -->
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">N° Réquisition / Réf.</label>
+                            <label class="form-label fw-medium">N° Référence</label>
                             {{ form.numero_ref }}
                             {{ form.numero_ref.errors }}
                         </div>
 
-                        <!-- Date d'entrée -->
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Date d'entrée <span class="text-danger">*</span></label>
-                            {{ form.date_entree }}
+                            <label class="form-label fw-medium">
+                                Date d'entrée <span class="text-danger">*</span>
+                            </label>
+                            {# Affichage lecture seule — la vraie valeur est forcée dans clean_date_entree() #}
+                            <input type="date"
+                                   class="form-control"
+                                   value="{{ form.date_entree.value|date:'Y-m-d' }}"
+                                   readonly
+                                   tabindex="-1"
+                                   style="background-color:#e9ecef; cursor:not-allowed; pointer-events:none;">
+                            {# Champ caché qui sera réellement soumis #}
+                            <input type="hidden" name="date_entree" value="{{ form.date_entree.value|date:'Y-m-d' }}">
                             {{ form.date_entree.errors }}
                         </div>
 
-                        <!-- Fournisseur -->
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Fournisseur</label>
                             {{ form.fournisseur }}
                             {{ form.fournisseur.errors }}
                         </div>
 
-                        <!-- Produit -->
                         <div class="col-12">
                             <label class="form-label fw-medium">Produit <span class="text-danger">*</span></label>
                             {{ form.produit }}
                             {{ form.produit.errors }}
                         </div>
 
-                        <!-- Quantité -->
                         <div class="col-md-4">
                             <label class="form-label fw-medium">Quantité <span class="text-danger">*</span></label>
                             {{ form.quantite }}
                             {{ form.quantite.errors }}
                         </div>
 
-                        <!-- Prix de revient -->
                         <div class="col-md-4">
                             <label class="form-label fw-medium">Prix de revient <span class="text-danger">*</span></label>
                             {{ form.prix_revient }}
                             {{ form.prix_revient.errors }}
                         </div>
 
-                        <!-- Prix de vente actuel -->
                         <div class="col-md-4">
-                            <label class="form-label fw-medium">Prix de vente actuel <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">Prix de vente actuel (TVAC) <span class="text-danger">*</span></label>
                             {{ form.prix_vente_actuel }}
                             {{ form.prix_vente_actuel.errors }}
-                            <div class="form-text">
-                                Mettra à jour le prix de vente du produit
+                            <div class="form-text text-info">
+                                <i class="bi bi-info-circle"></i> Prix TVAC du produit (synchronisé automatiquement)
                             </div>
                         </div>
 
@@ -123,10 +122,8 @@
                     </div>
                     {% endif %}
 
-                    <!-- Boutons alignés à droite -->
                     <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
-                        <a href="{% url 'stock:entrees' %}" 
-                           class="btn btn-outline-secondary px-4">
+                        <a href="{% url 'stock:entrees' %}" class="btn btn-outline-secondary px-4">
                             <i class="bi bi-x-lg"></i> Annuler
                         </a>
                         <button type="submit" class="btn btn-primary px-4">
@@ -137,10 +134,44 @@
 
             </div>
         </div>
-
-        <!-- Lien supprimer supprimé comme demandé -->
-
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const selectProduit = document.getElementById('id_produit');
+    const champPrix     = document.getElementById('id_prix_vente_actuel');
+
+    // ✅ Injecté depuis Python via json.dumps — virgules et apostrophes gérés
+    const prixMap = {{ prix_json|safe }};
+
+    window.chargerPrixDepuisProduit = function(produitId) {
+        if (!champPrix) return;
+        const val = prixMap[String(produitId)];
+        champPrix.value = (val !== undefined) ? val : '';
+    };
+
+    if (selectProduit && champPrix) {
+        selectProduit.addEventListener('change', function () {
+            window.chargerPrixDepuisProduit(this.value);
+        });
+
+        if (selectProduit.value && !champPrix.value) {
+            window.chargerPrixDepuisProduit(selectProduit.value);
+        }
+    }
+
+    const dateVisible = document.querySelector('input[type="date"][readonly]');
+    if (dateVisible) {
+        ['keydown', 'paste', 'cut', 'drop'].forEach(evt =>
+            dateVisible.addEventListener(evt, e => e.preventDefault())
+        );
+    }
+
+});
+</script>
 {% endblock %}

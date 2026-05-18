@@ -41,52 +41,52 @@
     {% include 'rapports/_filtres.html' %}
 {% endwith %}
 
-<!-- Totaux Nets -->
+<!-- Totaux Nets - Sur la même ligne que les filtres (compact) -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-2">
+    <div class="col-6 col-sm-4 col-md-2">
         <div class="card shadow-sm border-0 h-100 text-center">
-            <div class="card-body">
-                <div class="fs-3 fw-bold text-primary">{{ totaux.nb|default:0 }}</div>
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold text-primary">{{ totaux.nb|default:0 }}</div>
                 <div class="text-muted small">Factures FN</div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-2">
+    <div class="col-6 col-sm-4 col-md-2">
         <div class="card shadow-sm border-0 h-100 text-center">
-            <div class="card-body">
-                <div class="fs-3 fw-bold text-warning">{{ totaux.nb_avoirs|default:0 }}</div>
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold text-warning">{{ totaux.nb_avoirs|default:0 }}</div>
                 <div class="text-muted small">Avoirs FA</div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-2">
+    <div class="col-6 col-sm-4 col-md-2">
         <div class="card shadow-sm border-0 h-100 text-center">
-            <div class="card-body">
-                <div class="fs-3 fw-bold">{{ totaux.nb_clients|default:0 }}</div>
-                <div class="text-muted small">Clients distincts</div>
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold">{{ totaux.nb_clients|default:0 }}</div>
+                <div class="text-muted small">Clients</div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-sm-4 col-md-2">
         <div class="card shadow-sm border-0 h-100 text-center">
-            <div class="card-body">
-                <div class="fs-3 fw-bold">{{ totaux.total_ht|default:0|floatformat:0 }} BIF</div>
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold">{{ totaux.total_ht|default:0|floatformat:0 }} BIF</div>
                 <div class="text-muted small">Total HT Net</div>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-sm-4 col-md-2">
         <div class="card shadow-sm border-0 h-100 text-center">
-            <div class="card-body">
-                <div class="fs-3 fw-bold text-warning">{{ totaux.total_tva|default:0|floatformat:0 }} BIF</div>
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold text-warning">{{ totaux.total_tva|default:0|floatformat:0 }} BIF</div>
                 <div class="text-muted small">TVA Net</div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
+    <div class="col-6 col-sm-4 col-md-2">
         <div class="card shadow-sm border-0 h-100 text-center">
-            <div class="card-body">
-                <div class="fs-3 fw-bold" style="color:{{ rapport_clr }}">
+            <div class="card-body py-2">
+                <div class="fs-4 fw-bold" style="color:{{ rapport_clr }}">
                     {{ totaux.total_ttc|default:0|floatformat:0 }} BIF
                 </div>
                 <div class="text-muted small">Total TTC Net</div>

@@ -70,58 +70,80 @@
 {% if stats.importes_incomplets > 0 %}
 <div class="alert alert-warning mb-4">
     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-    {{ stats.importes_incomplets }} produit{{ stats.importes_incomplets|pluralize:"s" }} importé{{ stats.importes_incomplets|pluralize:"s" }} 
-    {{ stats.importes_incomplets|pluralize:"a/ont" }} des informations OBR incomplètes.
+    {{ stats.importes_incomplets }} produit{{ stats.importes_incomplets|pluralize:"s" }} importé{{ stats.importes_incomplets|pluralize:"s" }}
+    {{ stats.importes_incomplets|pluralize:"a,ont" }} des informations OBR incomplètes.
     <a href="?origine=IMPORTE" class="alert-link">Voir la liste</a>
 </div>
 {% endif %}
 
-<!-- Filtres -->
+<!-- ====================== FILTRES SUR UNE SEULE LIGNE ====================== -->
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body">
-        <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
-            <div class="flex-grow-1 position-relative" style="min-width: 240px;">
-                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                <input type="text" name="q" value="{{ q }}" class="form-control ps-5" placeholder="Code, désignation...">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-center flex-nowrap overflow-auto">
+
+            <!-- Recherche -->
+            <div class="col" style="min-width: 200px; max-width: 280px;">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text"
+                           name="q"
+                           value="{{ q }}"
+                           class="form-control form-control-sm border-start-0 ps-0"
+                           placeholder="Code, désignation...">
+                </div>
             </div>
 
-            <select name="categorie" class="form-select" style="min-width: 180px;">
-                <option value="">Toutes catégories</option>
-                {% for cat in categories %}
-                    <option value="{{ cat.pk }}" {% if categorie_id == cat.pk|stringformat:"s" %}selected{% endif %}>
-                        {{ cat.nom }}
-                    </option>
-                {% endfor %}
-            </select>
+            <!-- Catégorie -->
+            <div class="col" style="min-width: 160px; max-width: 200px;">
+                <select name="categorie" class="form-select form-select-sm">
+                    <option value="">Toutes catégories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.pk }}"
+                            {% if categorie_id == cat.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.nom }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <select name="origine" class="form-select" style="min-width: 140px;">
-                <option value="">Toutes origines</option>
-                <option value="LOCAL"  {% if origine == "LOCAL"  %}selected{% endif %}>Local</option>
-                <option value="IMPORTE"{% if origine == "IMPORTE" %}selected{% endif %}>Importé</option>
-            </select>
+            <!-- Origine -->
+            <div class="col" style="min-width: 130px; max-width: 160px;">
+                <select name="origine" class="form-select form-select-sm">
+                    <option value="">Toutes origines</option>
+                    <option value="LOCAL"   {% if origine == "LOCAL"   %}selected{% endif %}>Local</option>
+                    <option value="IMPORTE" {% if origine == "IMPORTE" %}selected{% endif %}>Importé</option>
+                </select>
+            </div>
 
-            <select name="statut" class="form-select" style="min-width: 140px;">
-                <option value="">Tous statuts</option>
-                <option value="ACTIF"     {% if statut == "ACTIF"     %}selected{% endif %}>Actif</option>
-                <option value="INACTIF"   {% if statut == "INACTIF"   %}selected{% endif %}>Inactif</option>
-                <option value="BROUILLON" {% if statut == "BROUILLON" %}selected{% endif %}>Brouillon</option>
-            </select>
+            <!-- Statut -->
+            <div class="col" style="min-width: 130px; max-width: 160px;">
+                <select name="statut" class="form-select form-select-sm">
+                    <option value="">Tous statuts</option>
+                    <option value="ACTIF"     {% if statut == "ACTIF"     %}selected{% endif %}>Actif</option>
+                    <option value="INACTIF"   {% if statut == "INACTIF"   %}selected{% endif %}>Inactif</option>
+                    <option value="BROUILLON" {% if statut == "BROUILLON" %}selected{% endif %}>Brouillon</option>
+                </select>
+            </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-funnel"></i> Filtrer
+            <!-- Boutons -->
+            <div class="col-auto d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm px-3">
+                    <i class="bi bi-funnel-fill"></i> Filtrer
                 </button>
                 {% if q or categorie_id or origine or statut %}
-                    <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg"></i> Effacer
+                    <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary btn-sm px-2" title="Effacer les filtres">
+                        <i class="bi bi-x-lg"></i>
                     </a>
                 {% endif %}
             </div>
+
         </form>
     </div>
 </div>
 
-<!-- Tableau -->
+<!-- ====================== TABLEAU ====================== -->
 <div class="card shadow-sm border-0">
     {% if produits %}
         <div class="table-responsive">
@@ -167,12 +189,18 @@
                             {% endif %}
                         </td>
                         <td class="text-end">
-                            <!-- Icône Voir le produit -->
-                            <a href="{% url 'produits:detail' p.pk %}" 
-                               class="btn btn-sm btn-outline-info" 
-                               title="Voir le détail du produit">
-                                <i class="bi bi-eye"></i>
-                            </a>
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a href="{% url 'produits:detail' p.pk %}"
+                                   class="btn btn-sm btn-outline-info"
+                                   title="Voir le détail">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'produits:modifier' p.pk %}"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -183,9 +211,9 @@
         <!-- ====================== PAGINATION ====================== -->
         {% include "stock/pagination.html" %}
 
-        <div class="card-footer bg-white text-muted small text-end py-3">
-            Page {{ page_obj.number }} sur {{ paginator.num_pages }} 
-            • {{ produits|length }} produit{{ produits|length|pluralize:"s" }} affichés
+        <div class="card-footer bg-white text-muted small text-end py-2">
+            Page {{ page_obj.number }} sur {{ paginator.num_pages }}
+            &bull; {{ produits|length }} produit{{ produits|length|pluralize:"s" }} affichés
         </div>
 
     {% else %}
@@ -205,7 +233,6 @@
                     Commencez par créer votre premier produit.
                 {% endif %}
             </p>
-
             <div class="d-flex justify-content-center gap-3">
                 {% if q or categorie_id or origine or statut %}
                     <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary">

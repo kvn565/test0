@@ -34,7 +34,7 @@
                     {% csrf_token %}
 
                     {% for field in form %}
-                    <div class="mb-4">
+                    <div class="mb-4" id="wrapper_{{ field.name }}">
                         <label class="form-label" for="{{ field.id_for_label }}">
                             {{ field.label }}
                             {% if field.field.required %}<span style="color:#e74c3c;">*</span>{% endif %}
@@ -107,9 +107,43 @@
                         <div style="font-size:0.78rem;color:#8a9aaa;">24 mois (730 jours)</div>
                     </div>
                 </div>
+                <div class="d-flex align-items-center" style="padding:14px 20px; border-top:1px solid #f5f6f8;">
+                    <div style="width:36px;height:36px;background:#fdecea;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-right:14px;">
+                        <i class="bi bi-calendar-range" style="color:#b71c1c;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.88rem;">Personnalisé (Autre)</div>
+                        <div style="font-size:0.78rem;color:#8a9aaa;">Vous définissez la date de début et de fin.</div>
+                    </div>
+                </div>
             </div>
         </div>
 
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const planSelect = document.getElementById('id_type_plan');
+    const wrapDebut = document.getElementById('wrapper_date_debut');
+    const wrapFin = document.getElementById('wrapper_date_fin');
+
+    function toggleDateFields() {
+        if (planSelect.value === 'AUTRE') {
+            wrapDebut.style.display = 'block';
+            wrapFin.style.display = 'block';
+        } else {
+            wrapDebut.style.display = 'none';
+            wrapFin.style.display = 'none';
+        }
+    }
+
+    if(planSelect) {
+        toggleDateFields();
+        planSelect.addEventListener('change', toggleDateFields);
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}

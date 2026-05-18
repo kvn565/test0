@@ -1,14 +1,11 @@
-# societe/views.py — VERSION CORRIGÉE ET AMÉLIORÉE
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied
 
-
 from .models import Societe
-from .forms import SocieteInscriptionChefForm, SocieteUpdateForm  # ← Nous utilisons ce formulaire dédié au chef
+from .forms import SocieteInscriptionChefForm, SocieteUpdateForm
 
 
 @login_required
@@ -25,8 +22,8 @@ def societe_liste(request):
             'error': "Vous n'êtes associé à aucune société."
         })
 
-    # Formulaire pour modification (seulement les champs autorisés pour le chef)
-    form = SocieteInscriptionChefForm(instance=societe)
+    # === FORMULAIRE CORRIGÉ : On utilise SocieteUpdateForm pour avoir tous les champs ===
+    form = SocieteUpdateForm(instance=societe)
 
     # Données pour affichage clair
     identity_rows = [
@@ -59,9 +56,9 @@ def societe_liste(request):
 
     return render(request, 'societe/liste.html', {
         'societe':       societe,
-        'form':          form,
+        'form':          form,                    # ← Important : maintenant SocieteUpdateForm
         'identity_rows': identity_rows,
-        'fiscal_rows':   fiscal_rows,      # ← Nouveau : fiscalité séparée
+        'fiscal_rows':   fiscal_rows,
         'address_rows':  address_rows,
         'has_societe':   True,
     })
@@ -78,11 +75,11 @@ def ajax_modifier(request):
     if not societe:
         return JsonResponse({'ok': False, 'error': 'Aucune société associée à votre compte.'}, status=400)
 
-    # Sécurité : seul le directeur ou superuser peut modifier
-    if not (request.user.is_superuser or request.user.type_poste == 'DIRECTEUR'):
+    # Sécurité
+    if not (request.user.is_superuser or getattr(request.user, 'type_poste', None) == 'DIRECTEUR'):
         return JsonResponse({'ok': False, 'error': 'Vous n\'avez pas les droits pour modifier ces informations.'}, status=403)
 
-    #form = SocieteInscriptionChefForm(request.POST, request.FILES, instance=societe)
+    # Utilisation du bon formulaire qui contient tous les champs
     form = SocieteUpdateForm(request.POST, request.FILES, instance=societe)
 
     if form.is_valid():

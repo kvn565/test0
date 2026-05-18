@@ -43,6 +43,26 @@ def ctx_commun(f, societe):
     }
 
 
+def format_titre_avec_dates(titre_base, date_debut, date_fin):
+    """Ajoute la période au titre si les dates sont renseignées."""
+    if not date_debut and not date_fin:
+        return titre_base
+    
+    parts = []
+    if date_debut:
+        try:
+            d = date_debut.split('-')
+            parts.append(f"du {d[2]}/{d[1]}/{d[0]}")
+        except: parts.append(f"du {date_debut}")
+    if date_fin:
+        try:
+            d = date_fin.split('-')
+            parts.append(f"au {d[2]}/{d[1]}/{d[0]}")
+        except: parts.append(f"au {date_fin}")
+    
+    return f"{titre_base} ({' '.join(parts)})"
+
+
 # ══════════════════════════════════════════════
 #  RAPPORTS PRINCIPAUX
 # ══════════════════════════════════════════════
@@ -73,7 +93,7 @@ def rapport_entrees(request):
         **ctx_commun(f, societe),
         'lignes': qs,
         'totaux': totaux,
-        'titre': 'Entrées / Achats',
+        'titre': format_titre_avec_dates('Entrées / Achats', f['date_debut'], f['date_fin']),
         'rapport': 'entrees',
         'rapport_icone': 'bi-box-arrow-in-down',
         'rapport_clr': '#0284c7',
@@ -111,7 +131,7 @@ def rapport_cout_stock(request):
         'total_ht': sum(l.montant_ht for l in ll),
         'total_tva': sum(l.montant_tva for l in ll),
         'total_ttc': sum(l.montant_ttc for l in ll),
-        'titre': 'Coût du Stock Vendu',
+        'titre': format_titre_avec_dates('Coût du Stock Vendu', f['date_debut'], f['date_fin']),
         'rapport': 'cout_stock',
         'rapport_icone': 'bi-calculator',
         'rapport_clr': '#b45309',
@@ -145,7 +165,7 @@ def rapport_sorties(request):
         **ctx_commun(f, societe),
         'lignes': qs,
         'totaux': totaux,
-        'titre': 'Sorties',
+        'titre': format_titre_avec_dates('Sorties', f['date_debut'], f['date_fin']),
         'rapport': 'sorties',
         'rapport_icone': 'bi-box-arrow-up',
         'rapport_clr': '#9333ea',
@@ -263,7 +283,7 @@ def rapport_facturation(request):
         **ctx_commun(f, societe),
         'factures': qs,
         'totaux': totaux,
-        'titre': 'Ventes / Facturation',
+        'titre': format_titre_avec_dates('Ventes / Facturation', f['date_debut'], f['date_fin']),
         'rapport': 'facturation',
         'rapport_icone': 'bi-receipt',
         'rapport_clr': 'var(--primary)',
@@ -324,7 +344,8 @@ def export_stock_excel(request):
             l['valeur_stock'],
         ])
 
-    chemin = generer_excel("Stock Actuel", colonnes, data_export, "stock_actuel")
+    titre = format_titre_avec_dates("Stock Actuel", f['date_debut'], f['date_fin'])
+    chemin = generer_excel(titre, colonnes, data_export, "stock_actuel")
 
     return redirect(f"/media/{chemin}")
 
@@ -384,8 +405,9 @@ def export_stock_pdf(request):
         ])
 
     # Important : orientation paysage
+    titre = format_titre_avec_dates("Rapport Stock Actuel", f['date_debut'], f['date_fin'])
     chemin = generer_pdf(
-        titre="Rapport Stock Actuel", 
+        titre=titre, 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="stock_actuel",
@@ -432,7 +454,8 @@ def export_entrees_excel(request):
             e.statut_obr or '—',
         ])
 
-    chemin = generer_excel("Entrées Stock", colonnes, data, "entrees")
+    titre = format_titre_avec_dates("Entrées Stock", f['date_debut'], f['date_fin'])
+    chemin = generer_excel(titre, colonnes, data, "entrees")
     return redirect(f"/media/{chemin}")
 
 
@@ -473,8 +496,9 @@ def export_entrees_pdf(request):
         ])
 
     # Correction : passage en mode paysage + titre clair
+    titre = format_titre_avec_dates("Rapport Entrées Stock", f['date_debut'], f['date_fin'])
     chemin = generer_pdf(
-        titre="Rapport Entrées Stock", 
+        titre=titre, 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="entrees",
@@ -521,7 +545,8 @@ def export_sorties_excel(request):
             s.statut_obr or '—',
         ])
 
-    chemin = generer_excel("Sorties Stock", colonnes, data, "sorties")
+    titre = format_titre_avec_dates("Sorties Stock", f['date_debut'], f['date_fin'])
+    chemin = generer_excel(titre, colonnes, data, "sorties")
     return redirect(f"/media/{chemin}")
 
 
@@ -562,8 +587,9 @@ def export_sorties_pdf(request):
         ])
 
     # ✅ CORRECTION ICI
+    titre = format_titre_avec_dates("Rapport Sorties Stock", f['date_debut'], f['date_fin'])
     chemin = generer_pdf(
-        titre="Rapport Sorties Stock",
+        titre=titre,
         colonnes=colonnes,
         lignes=data,
         type_rapport="sorties",
@@ -616,7 +642,8 @@ def export_facturation_excel(request):
             getattr(facture, 'statut_obr', '—') or '—',
         ])
 
-    chemin = generer_excel("Facturation", colonnes, data, "facturation")
+    titre = format_titre_avec_dates("Facturation", f['date_debut'], f['date_fin'])
+    chemin = generer_excel(titre, colonnes, data, "facturation")
     return redirect(f"/media/{chemin}")
 
 
@@ -656,8 +683,9 @@ def export_facturation_pdf(request):
         ])
 
     # Important : on passe orientation="landscape"
+    titre = format_titre_avec_dates("Rapport Facturation", f['date_debut'], f['date_fin'])
     chemin = generer_pdf(
-        titre="Rapport Facturation", 
+        titre=titre, 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="facturation",
@@ -722,7 +750,8 @@ def export_cout_stock_excel(request):
             float(getattr(l, 'montant_ttc', 0) or 0),
         ])
 
-    chemin = generer_excel("Coût du Stock Vendu", colonnes, data, "cout_stock")
+    titre = format_titre_avec_dates("Coût du Stock Vendu", f['date_debut'], f['date_fin'])
+    chemin = generer_excel(titre, colonnes, data, "cout_stock")
     return redirect(f"/media/{chemin}")
 
 
@@ -769,8 +798,9 @@ def export_cout_stock_pdf(request):
             float(getattr(l, 'montant_ttc', 0) or 0),
         ])
 
+    titre = format_titre_avec_dates("Rapport Coût du Stock Vendu", f['date_debut'], f['date_fin'])
     chemin = generer_pdf(
-        titre="Rapport Coût du Stock Vendu", 
+        titre=titre, 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="cout_stock",

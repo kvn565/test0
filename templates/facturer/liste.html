@@ -70,11 +70,11 @@
         </div>
     </div>
 
-    {# Filtres #}
+        {# Filtres #}
     <div class="col-12">
         <form method="get" class="card shadow-sm border-0">
             <div class="card-body">
-                <div class="d-flex flex-wrap gap-3 align-items-end">
+                <div class="d-flex flex-nowrap gap-3 align-items-end overflow-auto pb-2">
                     <div class="flex-grow-1 position-relative" style="min-width: 240px;">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" name="q" value="{{ q }}" class="form-control ps-5" placeholder="N°, client, bon de commande...">
@@ -94,7 +94,7 @@
                         {% endfor %}
                     </select>
 
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-shrink-0">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search me-1"></i>Filtrer
                         </button>

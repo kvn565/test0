@@ -9,6 +9,11 @@ from .forms import EntreeStockForm, SortieStockForm
 from .obr_service import envoyer_entree_stock, envoyer_sortie_stock
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from produits.models import Produit
+from stock.services.stock_service import nettoyer_avant_nouvelle_entree
+import json
+
+
 
 
 def _check_droit(request):
@@ -82,6 +87,8 @@ def entree_liste(request):
     })
 
 
+
+
 @login_required
 def entree_creer(request):
     societe, erreur = _check_droit(request)
@@ -92,32 +99,35 @@ def entree_creer(request):
     if request.method == 'POST':
         form = EntreeStockForm(request.POST, societe=societe)
         if form.is_valid():
-            entree  = form.save()
+            entree = form.save()
             produit = entree.produit
-            produit.prix_vente = entree.prix_vente_actuel
-            produit.save()
+            if entree.prix_vente_actuel:
+                produit.prix_vente = entree.prix_vente_actuel
+                produit.save()
             messages.success(request, f"Entrée stock enregistrée pour « {produit.designation} ».")
-
-            # ── Envoi OBR en temps réel (le token est géré dans la fonction) ──
             success, msg_obr = envoyer_entree_stock(entree)
-
             if success:
                 messages.success(request, f"✅ OBR : {msg_obr}")
             else:
-                messages.warning(
-                    request,
-                    f"⚠️ Entrée enregistrée, mais l'envoi OBR a échoué : {msg_obr}. "
-                    "Elle sera marquée en attente pour réenvoi."
-                )
-
+                messages.warning(request, f"⚠️ Entrée enregistrée, mais l'envoi OBR a échoué : {msg_obr}")
             return redirect('stock:entrees')
     else:
         form = EntreeStockForm(societe=societe)
 
+    produits = Produit.objects.filter(societe=societe, statut='ACTIF').order_by('designation')
+
+    # ✅ Sérialisation Python — aucun problème de locale ou d'apostrophe
+    prix_json = json.dumps({
+        str(p.pk): str(p.prix_vente)
+        for p in produits
+    })
+
     return render(request, 'stock/entree_form.html', {
-        'form':   form,
-        'titre':  'Nouvelle entrée stock',
-        'action': 'Enregistrer',
+        'form':      form,
+        'titre':     'Nouvelle entrée stock',
+        'action':    'Enregistrer',
+        'produits':  produits,
+        'prix_json': prix_json,   # ✅ ajouté
     })
 
 
@@ -134,16 +144,25 @@ def entree_modifier(request, pk):
         form = EntreeStockForm(request.POST, instance=entree, societe=societe)
         if form.is_valid():
             form.save()
-            messages.success(request, "Entrée stock modifiée.")
+            messages.success(request, "Entrée stock modifiée avec succès.")
             return redirect('stock:entrees')
     else:
         form = EntreeStockForm(instance=entree, societe=societe)
 
+    produits = Produit.objects.filter(societe=societe, statut='ACTIF').order_by('designation')
+
+    prix_json = json.dumps({
+        str(p.pk): str(p.prix_vente)
+        for p in produits
+    })
+
     return render(request, 'stock/entree_form.html', {
-        'form':   form,
-        'titre':  "Modifier l'entrée",
-        'action': 'Enregistrer',
-        'entree': entree,
+        'form':      form,
+        'titre':     "Modifier l'entrée",
+        'action':    'Enregistrer',
+        'entree':    entree,
+        'produits':  produits,
+        'prix_json': prix_json,   # ✅ ajouté
     })
 
 
@@ -430,3 +449,91 @@ def refresh_obr(request, pk):
         entree.statut_obr = 'ECHEC'
         entree.save()
         return JsonResponse({'ok': False, 'message': f"❌ Réenvoi OBR échoué : {msg_obr}", 'statut': 'ECHEC'})
+
+
+
+# À ajouter dans stock/views.py
+
+def nettoyer_mouvements_facture(facture):
+    """
+    Fonction manuelle pour nettoyer les mouvements en attente d'une facture.
+    Utile si tu veux l'appeler directement dans la vue d'annulation.
+    """
+    from .models import EntreeStock, SortieStock
+
+    entrees = EntreeStock.objects.filter(facture=facture, statut_obr='EN_ATTENTE').delete()[0]
+    sorties = SortieStock.objects.filter(facture=facture, statut_obr='EN_ATTENTE').delete()[0]
+
+    total = entrees + sorties
+    if total > 0:
+        print(f"[MANUAL CLEANUP] Facture {facture} → {entrees} entrées + {sorties} sorties supprimées")
+
+    return total
+
+
+@login_required
+def api_prix_produit(request, produit_id):
+    societe = getattr(request.user, 'societe', None)
+    if not societe:
+        return JsonResponse({'ok': False, 'error': 'Pas de société'}, status=403)
+
+    try:
+        produit = Produit.objects.get(pk=produit_id, societe=societe, statut='ACTIF')
+        return JsonResponse({
+            'ok':          True,
+            'prix_vente':  str(produit.prix_vente),  # ✅ était prix_vente_tvac
+            'devise':      produit.devise,
+            'designation': produit.designation,
+        })
+    except Produit.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Produit introuvable'}, status=404)
+
+@login_required
+@csrf_exempt
+def ajax_creer_entree_stock(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Méthode non autorisée"}, status=405)
+
+    try:
+        societe_id = request.POST.get('societe_id')
+        produit_id = request.POST.get('produit_id')
+        quantite = request.POST.get('quantite')
+        prix_revient = request.POST.get('prix_revient')
+        prix_vente = request.POST.get('prix_vente')
+        commentaire = request.POST.get('commentaire', '')
+
+        if not all([societe_id, produit_id, quantite]):
+            return JsonResponse({"success": False, "error": "Données manquantes"}, status=400)
+
+        societe = get_object_or_404(Societe, id=societe_id)
+        produit = get_object_or_404(Produit, id=produit_id, societe=societe)
+
+        # ====================== NETTOYAGE AUTOMATIQUE ======================
+        nettoyage = nettoyer_avant_nouvelle_entree(
+            societe=societe, 
+            produit=produit
+        )
+
+        # ====================== CRÉATION DE L'ENTRÉE ======================
+        entree = EntreeStock.objects.create(
+            societe=societe,
+            produit=produit,
+            type_entree='EN',
+            numero_ref=request.POST.get('numero_ref', ''),
+            date_entree=timezone.now().date(),
+            quantite=quantite,
+            prix_revient=prix_revient,
+            prix_vente_actuel=prix_vente,
+            commentaire=commentaire,
+            statut_obr='EN_ATTENTE',
+        )
+
+        return JsonResponse({
+            "success": True,
+            "message": f"Entrée stock créée avec succès pour {produit.designation}.",
+            "nettoyage": f"{nettoyage['entrees_supprimees']} anciens mouvements supprimés",
+            "entree_id": entree.id
+        })
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=400)

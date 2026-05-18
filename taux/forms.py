@@ -1,6 +1,8 @@
 # taux/forms.py
 from django import forms
-from .models import Taux
+from decimal import Decimal
+
+from .models import TauxTVA   # ← Correction importante
 
 
 class TauxForm(forms.ModelForm):
@@ -9,9 +11,16 @@ class TauxForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.societe = societe
 
+        # Filtrage du queryset si nécessaire (bonnes pratiques)
+        if societe:
+            self.fields['nom'].widget.attrs.update({
+                'placeholder': 'Ex: TVA 18%, Exonéré...',
+                'autofocus': True,
+            })
+
     class Meta:
-        model  = Taux
-        fields = ['nom', 'valeur']
+        model = TauxTVA                    # ← Changé de Taux à TauxTVA
+        fields = ['nom', 'valeur', 'est_defaut']   # Ajout de est_defaut recommandé
         widgets = {
             'nom': forms.TextInput(attrs={
                 'class':       'form-control',
@@ -25,16 +34,20 @@ class TauxForm(forms.ModelForm):
                 'min':         '0',
                 'max':         '100',
             }),
+            'est_defaut': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
         }
         labels = {
-            'nom':    'Libellé du taux',
-            'valeur': 'Valeur (%)',
+            'nom':        'Libellé du taux',
+            'valeur':     'Valeur (%)',
+            'est_defaut': 'Taux par défaut',
         }
 
     def clean_nom(self):
         nom = self.cleaned_data.get('nom')
         if self.societe:
-            qs = Taux.objects.filter(societe=self.societe, nom__iexact=nom)
+            qs = TauxTVA.objects.filter(societe=self.societe, nom__iexact=nom)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
@@ -49,7 +62,7 @@ class TauxForm(forms.ModelForm):
 
     def save(self, commit=True):
         obj = super().save(commit=False)
-        if self.societe:
+        if self.societe and not obj.societe_id:
             obj.societe = self.societe
         if commit:
             obj.save()

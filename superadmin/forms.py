@@ -82,11 +82,16 @@ class CleActivationForm(forms.ModelForm):
             if not date_debut:
                 date_debut = maintenant
                 cleaned['date_debut'] = date_debut
-            durees_jours = {'ESSAI': 14, 'STARTER': 182, 'BUSINESS': 365, 'ENTERPRISE': 730}
-            if not date_fin:
-                jours = durees_jours.get(type_plan, 182)
-                date_fin = date_debut + timedelta(days=jours)
-                cleaned['date_fin'] = date_fin
+
+            if type_plan == 'AUTRE':
+                if not date_fin:
+                    self.add_error('date_fin', "Veuillez spécifier une date de fin pour le plan personnalisé.")
+            else:
+                durees_jours = {'ESSAI': 14, '1MOIS': 30, 'STARTER': 182, 'BUSINESS': 365, 'ENTERPRISE': 730}
+                if not date_fin:
+                    jours = durees_jours.get(type_plan, 182)
+                    date_fin = date_debut + timedelta(days=jours)
+                    cleaned['date_fin'] = date_fin
 
         if date_debut and date_fin and date_fin <= date_debut:
             raise forms.ValidationError("La date de fin doit être après la date de début.")
@@ -234,19 +239,83 @@ class InscriptionChefForm(forms.Form):
 # ═══════════════════════════════════════════════════════════════
 #  CLÉ PAYANTE
 # ═══════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
+#  CLÉ PAYANTE — Version corrigée et robuste
+# ═══════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
+#  CLÉ PAYANTE — Version corrigée (la plus importante)
+# ═══════════════════════════════════════════════════════════════
 class ClePayanteForm(forms.Form):
     cle_activation = forms.CharField(
-        label="Clé de licence", max_length=50,
+        label="Clé de licence", 
+        max_length=50,
         widget=forms.TextInput(attrs={
             'class': 'form-control form-control-lg',
             'placeholder': 'Ex: SOD-4567-12M-AB3D4E',
             'style': 'font-family: monospace; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;',
-            'autocomplete': 'off', 'autofocus': 'autofocus',
+            'autocomplete': 'off', 
+            'autofocus': 'autofocus',
         }),
     )
 
     def clean_cle_activation(self):
-        return self.cleaned_data.get('cle_activation', '').strip().upper()
+        cle = self.cleaned_data.get('cle_activation', '').strip().upper()
+        if not cle:
+            raise forms.ValidationError("Veuillez entrer une clé de licence.")
+        return cle
+
+    def verifier_pour_societe(self, societe):
+        """
+        Vérifie si la clé est valide pour cette société.
+        Accepte les clés en statut DISPONIBLE.
+        """
+        cle_saisie = self.cleaned_data.get('cle_activation')
+
+        try:
+            # Recherche principale : clé liée à cette société
+            cle = CleActivation.objects.select_related('societe').get(
+                cle_visible=cle_saisie,
+                societe=societe
+            )
+
+            # Vérifications
+            if cle.utilisee:
+                return False, "Cette clé a déjà été utilisée.", None
+
+            if cle.statut == 'REVOQUEE':
+                return False, "Cette clé a été révoquée par l'administrateur.", None
+
+            if cle.statut == 'EXPIREE':
+                return False, "Cette clé est déjà expirée.", None
+
+            # On accepte DISPONIBLE et ACTIVE (au cas où)
+            if cle.statut not in ('DISPONIBLE', 'ACTIVE'):
+                return False, f"Cette clé n'est pas disponible (statut: {cle.statut}).", None
+
+            # Vérification de la date de fin
+            if cle.date_fin and cle.date_fin.date() < date.today():
+                return False, "Cette clé est expirée.", None
+
+            return True, "Clé valide et prête à être activée.", cle
+
+        except CleActivation.DoesNotExist:
+            # Deuxième tentative : chercher la clé sans filtrer la société (sécurité moindre)
+            try:
+                cle = CleActivation.objects.select_related('societe').get(cle_visible=cle_saisie)
+                
+                if cle.societe and cle.societe.pk != societe.pk:
+                    return False, "Cette clé appartient à une autre société.", None
+                
+                if cle.utilisee:
+                    return False, "Cette clé a déjà été utilisée.", None
+                    
+                return True, "Clé valide.", cle
+                
+            except CleActivation.DoesNotExist:
+                return False, "Clé invalide ou inexistante. Vérifiez le code saisi.", None
+
+        except Exception as e:
+            return False, f"Erreur technique : {str(e)}", None
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -307,59 +376,61 @@ class SocieteGeranceForm(forms.ModelForm):
             'numero_depart': "Numéro de départ des factures",
         }
 
-
-# ═══════════════════════════════════════════════════════════════
-#  CONFIGURATION OBR (eBMS) — Avec obr_base_url
-# ═══════════════════════════════════════════════════════════════
 class SocieteAdminConfigForm(forms.ModelForm):
-    obr_password = forms.CharField(
-        label="Mot de passe OBR",
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Entrez le nouveau mot de passe OBR',
-            'autocomplete': 'off'
-        }),
-        help_text="Laissez vide si vous ne souhaitez pas changer le mot de passe actuel."
-    )
-
     class Meta:
         model = Societe
         fields = [
             'obr_actif',
             'obr_username',
+            'obr_password',
             'obr_system_id',
-            'obr_base_url',      # ← Champ ajouté (URL de l'API OBR)
+            'obr_mode_production',   # ← Nouveau champ
+            # 'obr_base_url',        # ← On le retire du formulaire (géré automatiquement)
         ]
         widgets = {
             'obr_actif': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'obr_username': forms.TextInput(attrs={'class': 'form-control'}),
-            'obr_system_id': forms.TextInput(attrs={'class': 'form-control'}),
-            'obr_base_url': forms.URLInput(attrs={
+            'obr_password': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'https://ebms.obr.gov.bi:9443/ebms_api'
+                'placeholder': 'Mot de passe OBR',
+                'autocomplete': 'off',
+            }),
+            'obr_system_id': forms.TextInput(attrs={'class': 'form-control'}),
+            'obr_mode_production': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
             }),
         }
         labels = {
             'obr_actif': "Activer l'intégration OBR (eBMS)",
             'obr_username': "Nom d'utilisateur OBR",
+            'obr_password': "Mot de passe OBR",
             'obr_system_id': "System ID OBR",
-            'obr_base_url': "URL Base API OBR",
+            'obr_mode_production': "Mode PRODUCTION (LIVE)",
         }
         help_texts = {
-            'obr_base_url': (
-                'URL de base de l\'API OBR. Laissez ce champ vide pour utiliser '
-                'l\'URL par défaut : https://ebms.obr.gov.bi:9443/ebms_api'
+            'obr_mode_production': (
+                "OFF = Mode TEST (9443) | ON = Mode PRODUCTION (8443)"
             ),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Rendre le champ URL non modifiable dans le formulaire
+        self.fields['obr_base_url'] = forms.URLField(
+            required=False,
+            widget=forms.HiddenInput(),  # caché
+        )
+
     def save(self, commit=True):
         instance = super().save(commit=False)
-        password = self.cleaned_data.get('obr_password')
-
-        if not password and self.instance.pk:
-            instance.obr_password = Societe.objects.get(pk=self.instance.pk).obr_password
-
+        
+        # Mise à jour automatique de l'URL selon le mode
+        if instance.obr_mode_production:
+            instance.obr_base_url = "https://ebms.obr.gov.bi:8443/ebms_api"
+        else:
+            instance.obr_base_url = "https://ebms.obr.gov.bi:9443/ebms_api"
+        
         if commit:
             instance.save()
         return instance

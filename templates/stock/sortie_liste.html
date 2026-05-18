@@ -67,41 +67,55 @@
     </div>
 </div>
 
-<!-- Filtres -->
+<!-- Filtres sur une même ligne -->
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body">
-        <form method="get" class="d-flex flex-wrap gap-3 align-items-end">
-            <div class="flex-grow-1 position-relative" style="min-width: 260px;">
-                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                <input type="text" name="q" value="{{ q }}" 
-                       class="form-control ps-5" 
-                       placeholder="Produit, code sortie...">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end flex-nowrap overflow-auto">
+
+            <!-- Recherche -->
+            <div class="col" style="min-width: 260px; max-width: 320px;">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ q }}" 
+                           class="form-control form-control-sm border-start-0 ps-0" 
+                           placeholder="Produit, code sortie...">
+                </div>
             </div>
 
-            <select name="type" class="form-select" style="min-width: 160px;">
-                <option value="">Tous les types</option>
-                {% for val, label in types %}
-                    <option value="{{ val }}" {% if type_mvt == val %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
+            <!-- Type de sortie -->
+            <div class="col" style="min-width: 160px; max-width: 190px;">
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">Tous les types</option>
+                    {% for val, label in types %}
+                        <option value="{{ val }}" {% if type_mvt == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <select name="statut" class="form-select" style="min-width: 170px;">
-                <option value="">Tous les statuts OBR</option>
-                {% for val, label in statuts %}
-                    <option value="{{ val }}" {% if statut == val %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
+            <!-- Statut OBR -->
+            <div class="col" style="min-width: 170px; max-width: 200px;">
+                <select name="statut" class="form-select form-select-sm">
+                    <option value="">Tous les statuts OBR</option>
+                    {% for val, label in statuts %}
+                        <option value="{{ val }}" {% if statut == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-funnel me-1"></i> Filtrer
+            <!-- Boutons -->
+            <div class="col-auto d-flex gap-1">
+                <button type="submit" class="btn btn-primary btn-sm px-3">
+                    <i class="bi bi-funnel-fill"></i> Filtrer
                 </button>
                 {% if q or statut or type_mvt %}
-                    <a href="{% url 'stock:sorties' %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg"></i> Effacer
+                    <a href="{% url 'stock:sorties' %}" class="btn btn-outline-secondary btn-sm px-2" title="Effacer les filtres">
+                        <i class="bi bi-x-lg"></i>
                     </a>
                 {% endif %}
             </div>
+
         </form>
     </div>
 </div>
@@ -154,10 +168,9 @@
                         </td>
                         <td class="text-end">
                             <a href="{% url 'stock:sortie_detail' s.pk %}" 
-                               class="btn btn-sm btn-outline-primary me-1" title="Voir le détail">
+                               class="btn btn-sm btn-outline-primary" title="Voir le détail">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <!-- Boutons Modifier et Supprimer supprimés comme demandé -->
                         </td>
                     </tr>
                     {% endfor %}

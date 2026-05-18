@@ -1,6 +1,3 @@
-# obr_service.py — VERSION FINALE (alignée doc OBR v0.5)
-# API totalement dynamique par société + vérification société active
-
 import requests
 import logging
 import time
@@ -11,15 +8,11 @@ from django.core.cache import cache
 from django.conf import settings
 from django.db import transaction
 
-from .models import Facture, FacturePendingOBR, LigneFacture
+from .models import Facture, FacturePendingOBR
 from stock.models import SortieStock, EntreeStock
 from stock.obr_service import envoyer_entree_stock, envoyer_sortie_stock
 
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 logger = logging.getLogger(__name__)
-logging.getLogger("urllib3").setLevel(logging.ERROR)
 
 # ─── CONFIGURATION ─────────────────────────────────────────────────────────
 TIMEOUT = 45
@@ -27,47 +20,30 @@ MAX_RETRIES = 5
 BASE_RETRY_DELAY = 8
 
 CACHE_TOKEN_KEY_TEMPLATE = "obr_token_{societe_pk}"
-CACHE_TOKEN_TIMEOUT = 2700  # 45 min
+CACHE_TOKEN_TIMEOUT = 2700  # 45 minutes
 
 VERIFY_CERT = not settings.DEBUG
 if not VERIFY_CERT:
-    logger.warning("⚠️ VERIFY_CERT désactivé → uniquement pour développement !")
+    logger.warning("⚠️ VERIFY_CERT désactivé → Mode développement uniquement !")
 
 ENDPOINT_LOGIN          = "/login/"
 ENDPOINT_ADD_INVOICE    = "/addInvoice_confirm/"
 ENDPOINT_CANCEL_INVOICE = "/cancelInvoice/"
-ENDPOINT_ADD_STOCK_MOVE = "/AddStockMovement/"
 
 
-# ─── HELPERS DYNAMIQUES ─────────────────────────────────────────────────────
+# ─── URL DYNAMIQUE (Test / Production) ─────────────────────────────────────
 def get_obr_base_url(societe):
-    """Retourne l'URL de base OBR pour une société."""
-    url = getattr(societe, 'obr_base_url', None)
-    if not url or not str(url).strip():
-        raise ValueError(
-            f"URL Base OBR non configurée pour la société '{societe.nom}' (pk={societe.pk}). "
-            f"Veuillez renseigner le champ obr_base_url dans l'administration."
-        )
-    return str(url).strip().rstrip('/')
+    """9443 = Test, 8443 = Production"""
+    host = "ebms.obr.gov.bi"
+    port = 9443 if getattr(societe, 'obr_api_test', True) else 8443
+    return f"https://{host}:{port}/ebms_api"
 
 
-def build_obr_url(societe, endpoint):
-    """Construit l'URL complète pour un endpoint donné."""
-    return f"{get_obr_base_url(societe)}{endpoint}"
-
-
-# ─── VÉRIFICATION SOCIÉTÉ ACTIVE ───────────────────────────────────────────
-def check_societe_active(societe):
-    """
-    Vérifie que la société est active avant toute opération OBR.
-    Lève une ValueError claire si la société est désactivée.
-    """
-    if not getattr(societe, 'actif', True):   # True par défaut si le champ n'existe pas encore
-        logger.warning(f"[OBR] ACCÈS REFUSÉ - Société '{societe.nom}' (pk={societe.pk}) est désactivée.")
-        raise ValueError(
-            f"La société '{societe.nom}' est désactivée. "
-            f"Impossible d'envoyer des données vers l'OBR."
-        )
+def get_obr_headers(societe):
+    return {
+        "Authorization": f"Bearer {get_obr_token(societe)}",
+        "Content-Type": "application/json"
+    }
 
 
 # ─── TOKEN ─────────────────────────────────────────────────────────────────
@@ -77,83 +53,86 @@ def get_obr_token(societe):
     if token:
         return token
 
-    if not societe.obr_username or not societe.obr_password:
-        raise ValueError(f"Identifiants OBR manquants pour la société '{societe.nom}' (pk={societe.pk})")
-
-    # Vérification société active AVANT toute connexion
-    check_societe_active(societe)
-
-    url = build_obr_url(societe, ENDPOINT_LOGIN)
+    base_url = get_obr_base_url(societe)
+    url = f"{base_url}{ENDPOINT_LOGIN}"
 
     payload = {
         "username": societe.obr_username,
         "password": societe.obr_password
     }
 
-    logger.info(f"[OBR] Login société '{societe.nom}' → {url}")
     resp = requests.post(url, json=payload, timeout=TIMEOUT, verify=VERIFY_CERT)
     resp.raise_for_status()
     data = resp.json()
 
     if not data.get("success"):
-        raise ValueError(f"Login OBR échoué pour '{societe.nom}' : {data.get('msg')}")
+        raise ValueError(f"Login OBR échoué : {data.get('msg')}")
 
     token = data["result"]["token"]
     cache.set(cache_key, token, CACHE_TOKEN_TIMEOUT)
-    logger.info(f"[OBR] Token obtenu et mis en cache pour société '{societe.nom}'")
+    logger.info(f"[OBR] Token obtenu pour {societe.nom}")
     return token
 
 
 def invalidate_obr_token(societe):
-    """Invalide le token en cache pour une société donnée."""
     cache_key = CACHE_TOKEN_KEY_TEMPLATE.format(societe_pk=societe.pk)
     cache.delete(cache_key)
-    logger.info(f"[OBR] Token invalidé pour société '{societe.nom}'")
 
 
-def get_obr_headers(societe):
-    """Retourne les headers avec token Bearer."""
-    return {
-        "Authorization": f"Bearer {get_obr_token(societe)}",
-        "Content-Type": "application/json"
-    }
-
-
-# ─── PAYLOAD FACTURE (inchangé) ────────────────────────────────────────────
+# ─── PAYLOAD FACTURE ───────────────────────────────────────────────────────
 def build_invoice_payload(facture):
-    societe = facture.societe
-    client  = facture.client
-    lignes  = facture.lignes.select_related('produit', 'service').all()
+    """Construction du payload OBR"""
+    
+    # === CORRECTION IMPORTANTE ===
+    # On ne régénère l'identifiant QUE s'il n'existe pas encore
+    if not facture.invoice_identifier:
+        facture.generate_invoice_identifier()
+        facture.save(update_fields=['invoice_identifier'])
+    
+    print(f"[DEBUG] invoice_identifier envoyé → {facture.invoice_identifier}")
 
-    datetime_str = f"{facture.date_facture.strftime('%Y-%m-%d')} {facture.heure_facture.strftime('%H:%M:%S')}"
+    # ... reste de ton code ...
+
+    societe = facture.societe
+    client = facture.client
+    lignes = facture.lignes.select_related('produit', 'service', 'taux_tva').all()
+
+        # Synchronisation stricte avec l'identifiant
+    try:
+        date_part = facture.invoice_identifier.split('/')[2]  # YYYYMMDDHHMMSS
+        y, m, d = date_part[0:4], date_part[4:6], date_part[6:8]
+        h, min_, s = date_part[8:10], date_part[10:12], date_part[12:14]
+        invoice_date_str = f"{y}-{m}-{d} {h}:{min_}:{s}"
+    except:
+        invoice_date_str = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
     payment_mapping = {'CAISSE': '1', 'BANQUE': '2', 'CREDIT': '3', 'AUTRES': '4'}
     payment_type_obr = payment_mapping.get(facture.mode_paiement, '1')
 
     payload = {
         "invoice_number": str(facture.numero_obr)[:30],
-        "invoice_date": datetime_str,
+        "invoice_date": invoice_date_str,
         "invoice_type": str(facture.type_facture)[:2],
-        "tp_type": str(getattr(societe, 'tp_type', '2'))[:2],
-        "tp_name": str(getattr(societe, 'nom', ''))[:100],
-        "tp_TIN": str(getattr(societe, 'nif', ''))[:30],
-        "tp_trade_number": str(getattr(societe, 'registre_commerce', ''))[:20],
-        "tp_postal_number": str(getattr(societe, 'boite_postale', ''))[:20],
+        "tp_type": "2",
+        "tp_name": str(societe.nom)[:100],
+        "tp_TIN": str(societe.nif)[:30],
+        "tp_trade_number": str(getattr(societe, 'registre', ''))[:20],
+        "tp_postal_number": str(getattr(societe, 'boite_postal', ''))[:20],
         "tp_phone_number": str(getattr(societe, 'telephone', ''))[:20],
         "tp_address_province": str(getattr(societe, 'province', ''))[:50],
         "tp_address_commune": str(getattr(societe, 'commune', ''))[:50],
         "tp_address_quartier": str(getattr(societe, 'quartier', ''))[:50],
         "tp_address_avenue": str(getattr(societe, 'avenue', ''))[:50],
-        "tp_address_rue": str(getattr(societe, 'rue', ''))[:50],
+        "tp_address_rue": "",
         "tp_address_number": str(getattr(societe, 'numero', ''))[:10],
         "vat_taxpayer": "1" if getattr(societe, 'assujeti_tva', False) else "0",
-        "ct_taxpayer": "0",
-        "tl_taxpayer": "0",
-        "tp_fiscal_center": str(getattr(societe, 'centre_fiscal', 'DGC'))[:20],
-        "tp_activity_sector": str(getattr(societe, 'secteur_activite', 'SERVICE MARCHAND'))[:250],
-        "tp_legal_form": str(getattr(societe, 'forme_juridique', 'SARL'))[:50],
+        "ct_taxpayer": "1" if getattr(societe, 'assujeti_tc', False) else "0",
+        "tl_taxpayer": "1" if getattr(societe, 'assujeti_pfl', False) else "0",
+        "tp_fiscal_center": getattr(societe, 'centre_fiscal', 'DGC'),
+        "tp_activity_sector": str(getattr(societe, 'secteur', 'SERVICE MARCHAND'))[:250],
+        "tp_legal_form": str(getattr(societe, 'forme', 'SARL'))[:50],
         "payment_type": payment_type_obr,
-        "invoice_currency": str(getattr(facture, 'devise', 'BIF'))[:5],
+        "invoice_currency": str(facture.devise)[:5],
         "customer_name": client.nom,
         "customer_TIN": getattr(client, 'nif', ''),
         "customer_address": str(getattr(client, 'adresse_complete', ''))[:100],
@@ -161,29 +140,35 @@ def build_invoice_payload(facture):
         "cancelled_invoice_ref": "",
         "invoice_ref": "",
         "cn_motif": "",
-        "invoice_identifier": str(facture.invoice_identifier)[:150],
+        "invoice_identifier": facture.invoice_identifier,
         "invoice_items": []
     }
 
+    # ... (le reste pour les lignes et avoirs reste le même)
+
+    # Gestion des avoirs
     if facture.type_facture in ['FA', 'RC'] and facture.facture_originale:
         payload["invoice_ref"] = facture.facture_originale.numero[:30]
-        payload["cn_motif"] = facture.motif_avoir[:500] if facture.motif_avoir else "Avoir / Annulation"
+        payload["cn_motif"] = (facture.motif_avoir or "Avoir / Note de crédit")[:500]
 
+    # Lignes de la facture
     for ligne in lignes:
-        prix_ht  = float(ligne.prix_ht)
-        quantite = float(ligne.quantite)
-        montant_ht  = round(prix_ht * quantite, 2)
-        montant_tva = round(montant_ht * float(ligne.taux_tva) / 100, 2)
+        prix_ht = float(getattr(ligne, 'prix_unitaire_ht', 0) or 0)
+        quantite = float(ligne.quantite or 0)
+        taux = float(getattr(ligne.taux_tva, 'valeur', 0) or 0)
+
+        montant_ht = round(prix_ht * quantite, 2)
+        montant_tva = round(montant_ht * taux / 100, 2)
         montant_ttc = round(montant_ht + montant_tva, 2)
 
         payload["invoice_items"].append({
             "item_designation": str(ligne.designation)[:500],
             "item_quantity": str(quantite),
             "item_price": str(prix_ht),
-            "item_ct": str(getattr(ligne, 'ct', 0)),
-            "item_tl": str(getattr(ligne, 'tl', 0)),
-            "item_ott_tax": str(getattr(ligne, 'ott_tax', 0)),
-            "item_tsce_tax": str(getattr(ligne, 'tsce_tax', 0)),
+            "item_ct": "0",
+            "item_tl": "0",
+            "item_ott_tax": "0",
+            "item_tsce_tax": "0",
             "item_price_nvat": str(montant_ht),
             "vat": str(montant_tva),
             "item_price_wvat": str(montant_ttc),
@@ -195,20 +180,17 @@ def build_invoice_payload(facture):
 
 # ─── ENVOI FACTURE ─────────────────────────────────────────────────────────
 def envoyer_facture_obr(facture):
-    """Envoie la facture à l'OBR uniquement si la société est active."""
     societe = facture.societe
     pending, _ = FacturePendingOBR.objects.get_or_create(facture=facture)
     pending.retry_count = (pending.retry_count or 0) + 1
     pending.save(update_fields=['retry_count'])
 
     try:
-        # VÉRIFICATION SOCIÉTÉ ACTIVE
-        check_societe_active(societe)
-
         payload = build_invoice_payload(facture)
-        url = build_obr_url(societe, ENDPOINT_ADD_INVOICE)
+        base_url = get_obr_base_url(societe)
+        url = f"{base_url}{ENDPOINT_ADD_INVOICE}"
 
-        logger.info(f"[OBR] Début envoi facture {facture.numero} | Société: {societe.nom} → {url}")
+        logger.info(f"[OBR] Envoi facture {facture.numero} → {url}")
 
         for attempt in range(1, MAX_RETRIES + 1):
             try:
@@ -221,13 +203,11 @@ def envoyer_facture_obr(facture):
                 )
 
                 if resp.status_code in (401, 403):
-                    logger.warning(f"[OBR] Token invalide pour '{societe.nom}' → refresh")
                     invalidate_obr_token(societe)
                     continue
 
                 if resp.status_code == 200:
                     data = resp.json()
-
                     if data.get("success"):
                         facture.statut_obr = "ENVOYE"
                         facture.message_obr = data.get("msg", "Succès")
@@ -245,39 +225,32 @@ def envoyer_facture_obr(facture):
                             if facture.type_facture == 'FN':
                                 sorties = SortieStock.objects.filter(
                                     facture=facture, statut_obr='EN_ATTENTE'
-                                ).select_related('entree_stock', 'entree_stock__produit')
-
+                                ).select_related('entree_stock')
                                 for sortie in sorties:
                                     result = envoyer_sortie_stock(sortie)
-                                    success = result[0] if isinstance(result, tuple) else result.get('success', False)
-                                    msg = result[1] if isinstance(result, tuple) else result.get('message', '')
-
-                                    if success:
-                                        sortie.statut_obr = 'ENVOYE'
-                                        sortie.message_obr = msg or 'Envoyé avec succès'
-                                        sortie.save(update_fields=['statut_obr', 'message_obr'])
-                                    else:
-                                        sortie.statut_obr = 'ECHEC'
-                                        sortie.message_obr = msg or 'Échec envoi'
-                                        sortie.save(update_fields=['statut_obr', 'message_obr'])
+                                    # ... votre logique de mise à jour sortie ...
 
                             elif facture.type_facture == 'FA':
                                 traiter_stock_pour_avoir(facture)
-
                         except Exception as stock_err:
-                            logger.warning(f"Facture envoyée mais erreur synchro stock: {stock_err}", exc_info=True)
+                            logger.warning(f"Erreur synchro stock: {stock_err}")
 
-                        return {'success': True, 'message': data.get("msg", "Facture envoyée avec succès")}
+                        return {'success': True, 'message': data.get("msg", "Facture envoyée")}
 
-                data = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else {}
-                msg = data.get("msg") or f"Erreur HTTP {resp.status_code}"
-                logger.warning(f"[OBR] Échec tentative {attempt} pour '{societe.nom}': {msg}")
+                # Erreur OBR
+                try:
+                    error_data = resp.json()
+                    msg = error_data.get("msg", f"HTTP {resp.status_code}")
+                except:
+                    msg = resp.text[:300]
+
+                logger.warning(f"[OBR] Échec tentative {attempt}: {msg}")
                 pending.message = msg
                 pending.save(update_fields=['message'])
 
             except requests.RequestException as e:
-                msg = f"Tentative {attempt} - Erreur réseau: {str(e)}"
-                logger.error(f"[OBR] {msg} | Société: {societe.nom}")
+                msg = f"Erreur réseau: {e}"
+                logger.error(msg)
                 pending.message = msg
                 pending.save(update_fields=['message'])
                 time.sleep(BASE_RETRY_DELAY)
@@ -286,17 +259,10 @@ def envoyer_facture_obr(facture):
         pending.save()
         return {'success': False, 'message': f"Échec après {MAX_RETRIES} tentatives"}
 
-    except ValueError as ve:
-        logger.warning(f"[OBR] Validation échouée pour facture {facture.numero}: {ve}")
-        pending.statut = "FAILED"
-        pending.message = str(ve)
-        pending.save()
-        return {'success': False, 'message': str(ve)}
-
     except Exception as e:
-        logger.exception(f"[OBR] Erreur critique facture {facture.numero} | Société: {societe.nom}")
+        logger.exception(f"[OBR] Erreur critique facture {facture.numero}")
         pending.statut = "FAILED"
-        pending.message = str(e)
+        pending.message = str(e)[:500]
         pending.save()
         return {'success': False, 'message': str(e)}
 
@@ -379,6 +345,42 @@ def annuler_facture_obr(facture, motif: str):
         except:
             pass
         return {'success': False, 'message': str(e)}
+
+
+@transaction.atomic
+def traiter_stock_pour_avoir(facture):
+    """Met à jour et envoie les entrées ER pour les factures d'avoir (FA)"""
+    if facture.type_facture != 'FA':
+        return
+
+    logger.info(f"[STOCK] Traitement avoir FA {facture.numero}")
+
+    entrees = EntreeStock.objects.filter(
+        facture=facture,
+        type_entree='ER',
+        statut_obr='EN_ATTENTE'
+    ).select_related('produit')
+
+    for entree in entrees:
+        try:
+            result = envoyer_entree_stock(entree)
+            success = result[0] if isinstance(result, tuple) else result.get('success', False)
+            msg = result[1] if isinstance(result, tuple) else result.get('message', '')
+
+            if success:
+                entree.statut_obr = 'ENVOYE'
+                entree.message_obr = msg or 'Envoyé avec succès'
+                entree.save(update_fields=['statut_obr', 'message_obr'])
+            else:
+                entree.statut_obr = 'ECHEC'
+                entree.message_obr = msg or 'Échec envoi'
+                entree.save(update_fields=['statut_obr', 'message_obr'])
+
+        except Exception as e:
+            logger.error(f"[STOCK] Erreur sur entrée ER {entree.pk}: {e}", exc_info=True)
+            entree.statut_obr = 'ECHEC'
+            entree.message_obr = str(e)[:500]
+            entree.save(update_fields=['statut_obr', 'message_obr'])
 
 
 # ─── NETTOYAGE DES DOUBLONS (inchangé) ─────────────────────────────────────

@@ -5,7 +5,7 @@
 
 {% block content %}
 
-{# ── Résolution sécurisée des URLs ── #}
+{# ── Résolution des URLs ── #}
 {% url 'facturer:liste'        as url_factures     %}
 {% url 'produits:liste'        as url_produits     %}
 {% url 'stock:entrees'         as url_entrees      %}
@@ -21,7 +21,7 @@
 
 <div class="row g-4">
 
-    {# ── Bandeau bienvenue ── #}
+    {# Bandeau de bienvenue #}
     <div class="col-12">
         <div style="background:linear-gradient(135deg,var(--bleu),#1a3f6f);border-radius:16px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
             <div>
@@ -38,12 +38,8 @@
         </div>
     </div>
 
-    {# ══════════════════════════════════════
-       FACTURATION
-    ══════════════════════════════════════ #}
+    {# ==================== FACTURATION ==================== #}
     {% if user.droit_facture_pnb or user.droit_facture_fdnb or user.is_superuser %}
-    <div class="col-12"><div class="section-label"><i class="bi bi-receipt me-1"></i>Facturation</div></div>
-
     {% if url_factures %}
     <div class="col-sm-6 col-lg-3">
         <a href="{{ url_factures }}" class="card-link">
@@ -73,12 +69,8 @@
     {% endif %}
     {% endif %}
 
-    {# ══════════════════════════════════════
-       STOCK
-    ══════════════════════════════════════ #}
+    {# ==================== STOCK ==================== #}
     {% if user.droit_stock_produit or user.is_superuser %}
-    <div class="col-12"><div class="section-label"><i class="bi bi-box-seam me-1"></i>Stock</div></div>
-
     {% if url_produits %}
     <div class="col-sm-6 col-lg-3">
         <a href="{{ url_produits }}" class="card-link">
@@ -136,19 +128,15 @@
     {% endif %}
     {% endif %}
 
-    {# ══════════════════════════════════════
-       ANALYSE
-    ══════════════════════════════════════ #}
+    {# ==================== ANALYSE ==================== #}
     {% if user.droit_rapports or user.is_superuser %}
-    <div class="col-12"><div class="section-label"><i class="bi bi-bar-chart me-1"></i>Analyse</div></div>
-
     {% if url_rapports %}
     <div class="col-sm-6 col-lg-3">
         <a href="{{ url_rapports }}" class="card-link">
             <div class="card dashboard-card">
                 <div class="card-body p-4">
                     <div class="dash-icon" style="background:#fff8e5;"><i class="bi bi-bar-chart-line" style="color:#7d5a00;"></i></div>
-                    <div class="dash-title">Rapports facturation</div>
+                    <div class="dash-title">Rapports</div>
                     <div class="dash-sub">Chiffre d'affaires &amp; taxes</div>
                 </div>
             </div>
@@ -157,12 +145,8 @@
     {% endif %}
     {% endif %}
 
-    {# ══════════════════════════════════════
-       PARAMÈTRES (DIRECTEUR ou SUPERADMIN)
-    ══════════════════════════════════════ #}
+    {# ==================== PARAMÈTRES ==================== #}
     {% if user.type_poste == 'DIRECTEUR' or user.is_superuser %}
-    <div class="col-12"><div class="section-label"><i class="bi bi-gear me-1"></i>Paramètres</div></div>
-
     {% if url_categories %}
     <div class="col-sm-6 col-lg-3">
         <a href="{{ url_categories }}" class="card-link">
@@ -197,8 +181,8 @@
             <div class="card dashboard-card">
                 <div class="card-body p-4">
                     <div class="dash-icon" style="background:#f0f3f8;"><i class="bi bi-percent" style="color:#4a5568;"></i></div>
-                    <div class="dash-title">Taux</div>
-                    <div class="dash-sub">TVA &amp; taxes configurées</div>
+                    <div class="dash-title">Taux TVA</div>
+                    <div class="dash-sub">Taxes configurées</div>
                 </div>
             </div>
         </a>
@@ -220,11 +204,7 @@
     {% endif %}
     {% endif %}
 
-    {# ══════════════════════════════════════
-       MON COMPTE
-    ══════════════════════════════════════ #}
-    <div class="col-12"><div class="section-label"><i class="bi bi-person me-1"></i>Mon compte</div></div>
-
+    {# ==================== MON COMPTE ==================== #}
     <div class="col-sm-6 col-lg-3">
         <a href="{{ url_profil }}" class="card-link">
             <div class="card dashboard-card">
@@ -237,29 +217,24 @@
         </a>
     </div>
 
-    {# ══════════════════════════════════════
-       STATUT LICENCE (DIRECTEUR)
-    ══════════════════════════════════════ #}
+    {# Licence Status #}
     {% if user.societe and user.type_poste == 'DIRECTEUR' %}
-    <div class="col-12">
+    <div class="col-12 mt-4">
         <div class="card">
-            <div class="card-header"><i class="bi bi-key me-2" style="color:var(--or);"></i>Licence de la société</div>
             <div class="card-body p-4">
                 {% if user.societe.licence_valide %}
-                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                    <div style="width:10px;height:10px;border-radius:50%;background:#27ae60;box-shadow:0 0 0 3px rgba(39,174,96,0.2);flex-shrink:0;"></div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#27ae60;box-shadow:0 0 0 3px rgba(39,174,96,0.2);"></div>
                     <div>
-                        <span style="font-weight:600;color:#1a6b3a;">Licence active</span>
-                        <span style="color:#8a9aaa;font-size:0.83rem;margin-left:12px;">
+                        <strong style="color:#1a6b3a;">Licence active</strong>
+                        <span style="color:#8a9aaa; margin-left:12px;">
                             Expire le {{ user.societe.cle_active.date_fin|date:"d/m/Y" }}
-                            ({{ user.societe.cle_active.jours_restants }} jour{{ user.societe.cle_active.jours_restants|pluralize }} restant{{ user.societe.cle_active.jours_restants|pluralize }})
                         </span>
                     </div>
                 </div>
                 {% else %}
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0;"></div>
-                    <span style="font-weight:600;color:#b71c1c;">Licence expirée ou inactive</span>
+                <div style="color:#b71c1c;">
+                    <strong>Licence expirée ou inactive</strong>
                 </div>
                 {% endif %}
             </div>
@@ -267,40 +242,101 @@
     </div>
     {% endif %}
 
+    <!-- ==================== GRAPHIQUE EN COURBE ==================== -->
+    <div class="col-12 mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2 text-primary"></i>
+                    Évolution du Chiffre d'Affaires (30 derniers jours)
+                </h5>
+            </div>
+            <div class="card-body p-3">
+                <canvas id="caChart" height="110"></canvas>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    .section-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #8a9aaa;
-        margin-bottom: 4px;
-    }
     .card-link { text-decoration: none; display: block; height: 100%; }
     .dashboard-card {
-        transition: box-shadow 0.2s, transform 0.15s;
+        transition: all 0.25s ease;
         cursor: pointer;
         height: 100%;
     }
     .dashboard-card:hover {
-        box-shadow: 0 8px 24px rgba(15,42,74,0.13);
-        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(15,42,74,0.15);
+        transform: translateY(-4px);
     }
     .dash-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 14px;
-        font-size: 1.2rem;
+        margin-bottom: 16px;
+        font-size: 1.35rem;
     }
-    .dash-title { font-weight: 600; color: var(--bleu); margin-bottom: 2px; font-size: 0.92rem; }
-    .dash-sub   { font-size: 0.78rem; color: #a0adb8; }
+    .dash-title { 
+        font-weight: 600; 
+        color: var(--bleu); 
+        margin-bottom: 4px; 
+        font-size: 0.97rem; 
+    }
+    .dash-sub { 
+        font-size: 0.8rem; 
+        color: #a0adb8; 
+    }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('caChart');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['1 Mai','5 Mai','10 Mai','15 Mai','20 Mai','25 Mai','30 Mai'],
+            datasets: [{
+                label: 'Chiffre d\'Affaires',
+                data: [1850000, 2420000, 1980000, 3150000, 2780000, 3590000, 4120000],
+                borderColor: '#0d3c8a',
+                backgroundColor: 'rgba(13, 60, 138, 0.08)',
+                borderWidth: 3,
+                tension: 0.35,
+                fill: true,
+                pointBackgroundColor: '#fff',
+                pointBorderWidth: 2.5,
+                pointRadius: 4.5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return (value / 1000000) + 'M';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

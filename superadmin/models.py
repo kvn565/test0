@@ -1,7 +1,4 @@
-# superadmin/models.py — VERSION FINALE
-# ✅ Adapté du projet restaurant (subscriptions/models.py)
-# ✅ Aligné sur PHP WIBABI (type_plan, duree_mois, format code)
-
+# superadmin/models.py — VERSION FINALE CORRIGÉE
 import hashlib
 import hmac
 import secrets
@@ -164,37 +161,26 @@ class Backup(models.Model):
 
 # ═══════════════════════════════════════════════════════════════
 #  CLÉ D'ACTIVATION
-#  ✅ Structure calquée sur le projet restaurant (subscriptions/models.py)
-#  ✅ Champs PHP WIBABI : type_plan, duree_mois, format code
 # ═══════════════════════════════════════════════════════════════
 
 class CleActivation(models.Model):
     """
     Clé d'activation liée à UNE société spécifique (nom + NIF).
-
-    Le superadmin :
-      1. Enregistre la société
-      2. Génère une clé pour cette société (avec durée variable)
-      3. Donne la clé au chef
-    Le chef entre la clé + son NIF pour activer l'accès.
-
-    Format de la clé : {NOM3}-{NIF4}-{PERIODE}-{ALEA6}
-      ex: SOD-4567-12M-AB3D4E  (SODECO, NIF ...4567, Business 12 mois)
-      ex: SOD-4567-14J-AB3D4E  (SODECO, NIF ...4567, Essai 14 jours)
+    Format : {NOM3}-{NIF4}-{PERIODE}-{ALEA6}
+    ex: SOD-4567-12M-AB3D4E
     """
 
     TYPE_PLAN = [
-        ('ESSAI',      'Essai gratuit (14 jours)'),
-        ('STARTER',    'Starter (6 mois)'),
-        ('BUSINESS',   'Business (12 mois)'),
-        ('ENTERPRISE', 'Enterprise (24 mois)'),
+        ('ESSAI',       'Essai gratuit (14 jours)'),
+        ('1MOIS',       '1 Mois'),
+        ('STARTER',     'Starter (6 mois)'),
+        ('BUSINESS',    'Business (12 mois)'),
+        ('ENTERPRISE',  'Enterprise (24 mois)'),
     ]
 
-    # ── Code unique intégrant nom + NIF ─────────────────────────
     cle_visible    = models.CharField(max_length=50, unique=True, editable=False)
     empreinte_hmac = models.CharField(max_length=64, editable=False, blank=True)
 
-    # ── Société : OBLIGATOIRE dès la création ───────────────────
     societe = models.ForeignKey(
         Societe, on_delete=models.CASCADE,
         related_name='cles_activation',
@@ -202,7 +188,6 @@ class CleActivation(models.Model):
         help_text="La clé est créée spécifiquement pour cette société (nom + NIF).",
     )
 
-    # ── Plan & durée ─────────────────────────────────────────────
     type_plan  = models.CharField("Type de plan", max_length=20,
                                    choices=TYPE_PLAN, default='STARTER')
     duree_mois = models.PositiveSmallIntegerField(
@@ -210,7 +195,6 @@ class CleActivation(models.Model):
         help_text="Calculé automatiquement depuis type_plan. 0 = essai 14 jours.",
     )
 
-    # ── Statut ───────────────────────────────────────────────────
     STATUT = [
         ('DISPONIBLE', 'Disponible — prête à être remise au chef'),
         ('ACTIVE',     'Active — le chef a activé son accès'),
@@ -219,29 +203,16 @@ class CleActivation(models.Model):
     ]
     statut = models.CharField(
         "Statut", max_length=20, choices=STATUT, default='DISPONIBLE',
-        help_text="Mis à jour automatiquement. DISPONIBLE → chef reçoit la clé. ACTIVE → chef a activé.",
     )
 
-    # ── Période de validité ──────────────────────────────────────
     date_debut = models.DateTimeField("Valide à partir du", default=timezone.now)
     date_fin   = models.DateTimeField("Valide jusqu'au", null=True, blank=True)
 
-    # ── Contrôle admin ───────────────────────────────────────────
-    active = models.BooleanField(
-        "Activée par l'admin", default=True,
-        help_text="L'admin peut désactiver/réactiver manuellement",
-    )
+    active = models.BooleanField("Activée par l'admin", default=True)
 
-    # ── Utilisation ──────────────────────────────────────────────
-    utilisee = models.BooleanField(
-        "Utilisée par le chef", default=False,
-        help_text="True quand le chef a entré la clé et activé son accès",
-    )
-    date_utilisation = models.DateTimeField(
-        "Date d'activation", null=True, blank=True,
-    )
+    utilisee = models.BooleanField("Utilisée par le chef", default=False)
+    date_utilisation = models.DateTimeField("Date d'activation", null=True, blank=True)
 
-    # ── Audit ────────────────────────────────────────────────────
     cree_par          = models.CharField(max_length=100, default='superadmin')
     date_creation     = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -257,29 +228,19 @@ class CleActivation(models.Model):
         statut = "✅" if self.utilisee else "🔑"
         return f"{statut} {self.cle_visible} — {self.societe.nom} [{self.label_plan}]"
 
-    # =========================
-    # GÉNÉRATION CODE
-    # Format : {NOM3}-{NIF4}-{PERIOD}-{ALEA6}
-    # NOM3  = 3 premières lettres alpha du nom de la société
-    # NIF4  = 4 derniers chiffres du NIF
-    # PERIOD= 14J / 6M / 12M / 24M
-    # ALEA6 = 6 caractères aléatoires (sans ambigüités 0/O, 1/I)
-    # Exemple : SOD-4567-12M-AB3D4E
-    # =========================
+    # ── Génération du code ───────────────────────────────────────
 
     def generer_cle_unique(self):
         alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 
-        # Préfixe NOM : 3 premières lettres alpha (majuscules)
         nom_clean  = ''.join(c for c in self.societe.nom.upper() if c.isalpha())
-        nom_prefix = (nom_clean + 'SOC')[:3]   # fallback 'SOC' si nom trop court
+        nom_prefix = (nom_clean + 'SOC')[:3]
 
-        # Suffixe NIF : 4 derniers chiffres du NIF
         nif_digits = ''.join(c for c in self.societe.nif if c.isdigit())
         nif_suffix = nif_digits[-4:] if len(nif_digits) >= 4 else nif_digits.zfill(4)
 
-        # Période
-        periodes = {'ESSAI': '14J', 'STARTER': '6M', 'BUSINESS': '12M', 'ENTERPRISE': '24M'}
+        periodes = {'ESSAI': '14J', '1MOIS': '1M', 'STARTER': '6M',
+                    'BUSINESS': '12M', 'ENTERPRISE': '24M'}
         periode  = periodes.get(self.type_plan, '6M')
 
         while True:
@@ -288,60 +249,72 @@ class CleActivation(models.Model):
             if not CleActivation.objects.filter(cle_visible=code).exists():
                 return code
 
-    # =========================
-    # SAVE
-    # =========================
+    # ── Save ─────────────────────────────────────────────────────
 
     def save(self, *args, **kwargs):
-        # 1️⃣ Calculer la durée et date_fin si non défini
-        plan_to_mois = {'ESSAI': 0, 'STARTER': 6, 'BUSINESS': 12, 'ENTERPRISE': 24}
-        self.duree_mois = plan_to_mois.get(self.type_plan, 6)
+        plan_to_duree = {
+            'ESSAI':      14,
+            '1MOIS':      30,
+            'STARTER':    182,
+            'BUSINESS':   365,
+            'ENTERPRISE': 730,
+        }
+        duree_jours = plan_to_duree.get(self.type_plan, 182)
 
-        now = timezone.now()
+        if self.type_plan == '1MOIS':
+            self.duree_mois = 1
+        elif self.type_plan == 'ESSAI':
+            self.duree_mois = 0
+        elif self.type_plan == 'AUTRE':
+            if self.date_debut and self.date_fin:
+                delta = self.date_fin - self.date_debut
+                self.duree_mois = max(1, delta.days // 30)
+            else:
+                self.duree_mois = 0
+        else:
+            plan_to_mois = {'STARTER': 6, 'BUSINESS': 12, 'ENTERPRISE': 24}
+            self.duree_mois = plan_to_mois.get(self.type_plan, 6)
 
         if not self.date_debut:
-            self.date_debut = now
+            self.date_debut = timezone.now()
 
-        if not self.date_fin:
-            durees_jours = {'ESSAI': 14, 'STARTER': 182, 'BUSINESS': 365, 'ENTERPRISE': 730}
-            self.date_fin = self.date_debut + timedelta(days=durees_jours.get(self.type_plan, 182))
+        if self.type_plan != 'AUTRE' or not self.date_fin:
+            self.date_fin = self.date_debut + timedelta(days=duree_jours)
 
-        # 2️⃣ Générer la clé si nécessaire
         if not self.cle_visible:
             self.cle_visible = self.generer_cle_unique()
         if not self.empreinte_hmac:
             self.empreinte_hmac = self._hmac(self.cle_visible, self.societe.nif)
 
-        # 3️⃣ Synchroniser le statut
-        if not self.active:
-            self.statut = 'REVOQUEE'
-        elif self.utilisee:
-            self.statut = 'ACTIVE'
-        elif self.date_fin:
-            # ✅ CORRECTION : comparaison robuste date_fin vs now
-            # date_fin peut être un objet date OU datetime (selon la source du formulaire)
-            # On normalise en datetime aware pour éviter les erreurs de type
-            from datetime import datetime as dt
-            fin = self.date_fin
-            if isinstance(fin, dt):
-                # Déjà un datetime — s'assurer qu'il est timezone-aware
-                if timezone.is_naive(fin):
-                    fin = timezone.make_aware(fin)
-            else:
-                # C'est un objet date → convertir en datetime aware à minuit
-                fin = timezone.make_aware(dt.combine(fin, dt.min.time()))
-            self.statut = 'EXPIREE' if fin < now else 'DISPONIBLE'
-        else:
-            self.statut = 'DISPONIBLE'
+        self.statut = self._calculer_statut()
 
         super().save(*args, **kwargs)
 
-    # =========================
-    # VALIDITÉ
-    # =========================
+    # ── Statut ───────────────────────────────────────────────────
+
+    def _calculer_statut(self):
+        """
+        ✅ CORRECTION : on compare date à date (localdate) pour éviter
+        qu'une licence expire avant minuit à cause du décalage horaire UTC.
+        """
+        if not self.active:
+            return 'REVOQUEE'
+
+        if self.utilisee:
+            # Vérifie si la clé active est vraiment encore valide (date locale)
+            if self.date_fin and timezone.localdate() > self.date_fin.date():
+                return 'EXPIREE'
+            return 'ACTIVE'
+
+        if self.date_fin and timezone.localdate() > self.date_fin.date():
+            return 'EXPIREE'
+
+        return 'DISPONIBLE'
+
+    # ── Validité ─────────────────────────────────────────────────
 
     def est_valide(self):
-        """Retourne True si la clé peut être utilisée maintenant (statut DISPONIBLE + dates OK)."""
+        """True si la clé peut être utilisée maintenant."""
         if self.statut != 'DISPONIBLE':
             return False
         if not self.date_debut or not self.date_fin:
@@ -349,107 +322,88 @@ class CleActivation(models.Model):
         now = timezone.now()
         return self.date_debut <= now <= self.date_fin
 
-    # =========================
-    # VÉRIFIER NIF
-    # Le chef entre son NIF → on vérifie qu'il correspond à celui de la société liée
-    # =========================
+    # ── Vérification NIF ─────────────────────────────────────────
 
     def verifier_nif_societe(self, nif_saisi):
-        """
-        Vérifie que le NIF saisi correspond au NIF de la société liée à cette clé.
-        Insensible à la casse et aux espaces.
-        """
         nif_societe = self.societe.nif.strip().lower()
         nif_saisi   = (nif_saisi or '').strip().lower()
         return nif_societe == nif_saisi
 
-    # =========================
-    # ACTIVER — appelé quand le chef utilise sa clé
-    # =========================
+    # ── Activation ───────────────────────────────────────────────
 
     def activer(self):
-        """
-        Marque la clé comme utilisée (le chef a activé son accès).
-        La société est déjà liée depuis la création de la clé.
-        """
         self.utilisee         = True
         self.statut           = 'ACTIVE'
         self.date_utilisation = timezone.now()
         self.save()
 
-    # Alias pour compatibilité avec l'ancien code
     def utiliser(self, societe):
         self.activer()
 
     def lier_societe(self, societe):
         self.activer()
 
-    # =========================
-    # JOURS RESTANTS
-    # =========================
+    # ── Jours restants ───────────────────────────────────────────
 
     @property
     def jours_restants(self):
+        """
+        ✅ CORRECTION PRINCIPALE :
+        On compare date_fin.date() (date pure) à timezone.localdate() (date locale)
+        et on calcule le delta en jours entiers — sans troncature d'heures.
+
+        AVANT (bugué) :
+            delta = self.date_fin - timezone.now()
+            return max(0, delta.days)
+            → timedelta.days tronque les heures : le jour J à 08h00
+              delta.days = 0 alors qu'il reste encore 16h → modal déclenché trop tôt.
+
+        APRÈS (correct) :
+            delta = self.date_fin.date() - timezone.localdate()
+            → date - date = nombre de jours entiers, sans ambiguïté d'heure.
+            → Le modal se déclenche uniquement quand jours_restants == 0,
+              c'est-à-dire le lendemain de date_fin.date().
+        """
         if not self.date_fin:
             return 0
         if self.statut not in ('DISPONIBLE', 'ACTIVE'):
             return 0
-        delta = self.date_fin - timezone.now()
+        delta = self.date_fin.date() - timezone.localdate()
         return max(0, delta.days)
 
-    # =========================
-    # STATUT LISIBLE
-    # =========================
+    # ── Statut lisible ───────────────────────────────────────────
 
     def get_statut_display(self):
         now = timezone.now()
 
-        # 🔒 Aucun chef encore créé
         if not self.societe.utilisateurs.filter(type_poste='DIRECTEUR').exists():
             return "🔒 Clé de licence inactive (chef non créé)"
 
-        # ❌ Révoquée
         if self.statut == 'REVOQUEE':
             return "❌ Révoquée par l'admin"
 
-        # ⏰ Expirée
         if self.date_fin and now > self.date_fin:
             return f"⏰ Expirée le {self.date_fin.strftime('%d/%m/%Y')}"
 
-        # ✅ Active
         if self.statut == 'ACTIVE':
             return f"✅ Activée par '{self.societe.nom}' ({self.label_plan})"
 
-        # 🟢 Disponible
         if self.statut == 'DISPONIBLE':
             return f"🟢 Prête — NIF: {self.societe.nif} ({self.jours_restants} jours restants)"
 
         return "⏳ Statut inconnu"
 
-    # =========================
-    # PROLONGER
-    # =========================
+    # ── Prolonger ────────────────────────────────────────────────
 
     def prolonger(self, jours):
-        """Prolonge la clé de N jours (uniquement si non utilisée)."""
         if not self.utilisee and self.date_fin:
             self.date_fin = self.date_fin + timedelta(days=jours)
             self.save()
 
-    # =========================
-    # VÉRIFICATION SETUP
-    # Appelé quand le chef saisit sa clé + son NIF pour activer l'application
-    # =========================
+    # ── Vérification setup ───────────────────────────────────────
 
     @classmethod
     def verifier_pour_setup(cls, cle_saisie, nif_saisi):
-        """
-        Vérifie une clé lors du setup initial.
-        Le chef saisit :
-          - La clé reçue du superadmin (ex: SOD-4567-12M-AB3D4E)
-          - Le NIF de sa société
-        On vérifie que le NIF correspond à celui de la société liée à la clé.
-        """
         now = timezone.now()
         try:
             obj = cls.objects.select_related('societe').get(
@@ -479,14 +433,10 @@ class CleActivation(models.Model):
 
         return True, f"Clé valide jusqu'au {obj.date_fin.strftime('%d/%m/%Y')}.", obj
 
-    # =========================
-    # FABRIQUE — ESSAI
-    # Génère et lie immédiatement une clé d'essai 14 jours à une société
-    # =========================
+    # ── Fabrique essai ───────────────────────────────────────────
 
     @classmethod
     def creer_essai(cls, societe, cree_par='superadmin'):
-        """Génère et active immédiatement une clé d'essai de 14 jours."""
         now = timezone.now()
         cle = cls(
             societe          = societe,
@@ -503,9 +453,7 @@ class CleActivation(models.Model):
         cle.save()
         return cle
 
-    # =========================
-    # UTILITAIRES
-    # =========================
+    # ── Utilitaires ──────────────────────────────────────────────
 
     @classmethod
     def _hmac(cls, cle_visible, nif):
@@ -518,6 +466,7 @@ class CleActivation(models.Model):
     def label_plan(self):
         labels = {
             'ESSAI':      'Essai 14j',
+            '1MOIS':      '1 Mois',
             'STARTER':    'Starter 6m',
             'BUSINESS':   'Business 12m',
             'ENTERPRISE': 'Enterprise 24m',

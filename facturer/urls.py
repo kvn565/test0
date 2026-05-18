@@ -21,6 +21,7 @@ urlpatterns = [
     # ─── AJAX — Gestion des lignes (avec trailing slash obligatoire) ───────────
     path('ajax/creer/',                   views.ajax_creer_facture,     name='ajax-creer-facture'),
     path('ajax/ajouter-ligne/',           views.ajax_ajouter_ligne,     name='ajax-ajouter-ligne'),
+    path('ajax/modifier-ligne/',          views.ajax_modifier_ligne,    name='ajax-modifier-ligne'),
     path('ajax/supprimer-ligne/',         views.ajax_supprimer_ligne,   name='ajax-supprimer-ligne'),
 
     # ─── AJAX — Informations produit/service ───────────────────────────────────
@@ -39,7 +40,7 @@ urlpatterns = [
     # ─── Intégration OBR ───────────────────────────────────────────────────────
     path('ajax/envoyer-obr/<int:pk>/',    views.ajax_envoyer_obr,       name='ajax-envoyer-obr'),
 
-    path('ajax/supprimer-facture-en-attente/', 
-     views.ajax_supprimer_facture_en_attente, 
-     name='ajax_supprimer_facture_en_attente'),
+     path('ajax/supprimer-facture-en-attente/', 
+         views.ajax_supprimer_facture_en_attente, 
+         name='ajax-supprimer-facture-en-attente'),   # ← Nom avec tirets
 ]

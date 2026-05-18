@@ -1180,3 +1180,406 @@
 [2026-04-29 17:32:27] [ERROR] [500] /stock/sorties/99/ — User: blaise.blansa — IP: 127.0.0.1
 [2026-04-29 17:33:43] [ERROR] [500] /stock/sorties/99/ — User: blaise.blansa — IP: 127.0.0.1
 [2026-04-29 17:59:55] [ERROR] [500] /produits/4/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-04-29 19:17:01] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 19:17:01] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 19:17:13] [INFO] [ACCÈS SENSIBLE] POST /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 19:17:15] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:17:19] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:17:19] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:17:29] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/10/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:17:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:26:08] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:26:10] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:26:18] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 19:26:23] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 19:26:23] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 19:26:23] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 20:20:17] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:20:38] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/11/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:21:51] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:21:56] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:00] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:00] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:08] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/6/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:08] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:21] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:23] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:25] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:25] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:31] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/12/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:31] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:22:37] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/12/password/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:24] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/12/password/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:26] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/12/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:26] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:41] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/12/password/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:43] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/12/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:52] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/utilisateur/12/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:52] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/utilisateur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:52] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:56] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:23:59] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 20:23:59] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 20:23:59] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 20:24:47] [WARNING] [LICENCE] Aucune licence valide (statut=ACTIVE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 20:25:19] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:25:23] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:26:09] [INFO] [ACCÈS SENSIBLE] POST /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:26:09] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:26:19] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:26:21] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:26:45] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:26:47] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:26:59] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/14/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:27:23] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/14/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:27:46] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/14/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:28:28] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 20:29:39] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:29:41] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/14/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:29:50] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:29:53] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:29:58] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:29:58] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:30:00] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:30:33] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:30:59] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:31:07] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:31:07] [ERROR] [500] /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:33:30] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:33:30] [ERROR] [500] /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:35:32] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:35:33] [ERROR] [500] /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:36:01] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:36:01] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:36:21] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:13] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:15] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:30] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:30] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:44] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:44] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:44] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:55] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:57] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:57] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:37:57] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:38:09] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:38:16] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:39:23] [INFO] [ACCÈS SENSIBLE] POST /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:39:23] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:39:57] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:40:08] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:40:08] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:40:15] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/15/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:40:16] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:40:41] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:40:46] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 20:40:46] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 20:41:09] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 20:49:20] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 20:51:35] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 20:52:27] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:52:51] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:53:14] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:53:17] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:53:24] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:53:24] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:59:37] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:59:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:59:48] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:59:52] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 20:59:54] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:18] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:23] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:31] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:33] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:33] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:33] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:00:51] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:01:00] [INFO] [ACCÈS SENSIBLE] POST /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:01:00] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:01:17] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:01:22] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:01:22] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:08:05] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:08:05] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:23] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:23] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:26] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:27] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:37] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:47] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:48] [INFO] [ACCÈS SENSIBLE] POST /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:48] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:48] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:09:55] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:10:12] [INFO] [ACCÈS SENSIBLE] POST /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:10:23] [INFO] [ACCÈS SENSIBLE] POST /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:10:24] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:10:42] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:10:44] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:10:56] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:10:56] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:11:08] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:17:15] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:17:19] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:17:19] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:17:24] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:18:39] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:18:48] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:18:48] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:18:57] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/17/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:18:58] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:19:18] [INFO] [ACCÈS SENSIBLE] POST /admin/logout/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:19:22] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 21:19:22] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 21:20:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 21:20:48] [INFO] [ACCÈS SENSIBLE] GET /admin/login/ — User: anonyme — IP: 127.0.0.1
+[2026-04-29 21:21:23] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:21:43] [INFO] [ACCÈS SENSIBLE] POST /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:21:43] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:22:20] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:25:36] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:29:29] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:31:56] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:34:59] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:43:40] [ERROR] [500] /superadmin/licence-expiree/ — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:45:08] [ERROR] [500] /superadmin/licence-expiree/ — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:45:11] [ERROR] [500] /superadmin/licence-expiree/ — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:48:45] [ERROR] [500] /superadmin/licence-expiree/ — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:48:48] [ERROR] [500] /superadmin/licence-expiree/ — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:51:10] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:53:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-04-29 21:53:50] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-04-29 21:55:27] [WARNING] [LICENCE] Aucune licence valide (statut=DISPONIBLE) — Société: 'WOOD WAVE STUDIO - WOOD WAVE STUDIO' — User: gaspard.wood — IP: 127.0.0.1
+[2026-05-02 20:20:26] [ERROR] [500] /facturer/ajax/supprimer-facture-en-attente/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-02 20:21:39] [ERROR] [500] /facturer/ajax/supprimer-facture-en-attente/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-03 17:05:26] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-05-03 17:08:23] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-05-04 20:30:23] [ERROR] [500] /facturer/ajax/rechercher-par-numero/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-04 20:32:00] [ERROR] [500] /facturer/ajax/rechercher-par-numero/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-04 21:36:25] [ERROR] [500] /facturer/ajax/rechercher-par-numero/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 19:34:45] [ERROR] [500] /services/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 19:38:34] [ERROR] [500] /services/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 19:38:36] [ERROR] [500] /services/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 19:41:22] [ERROR] [500] /produits/creer/local/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 19:41:27] [ERROR] [500] /produits/creer/importe/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 19:41:36] [ERROR] [500] /produits/creer/local/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 20:05:10] [ERROR] [500] /stock/entrees/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 20:19:08] [ERROR] [500] /stock/entrees/nouveau/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-06 22:31:07] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:05:45] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:07:16] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:07:18] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:08:17] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:09:36] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:09:37] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:15:02] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:15:02] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:15:37] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:21:22] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:21:34] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 17:45:23] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 18:23:48] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 18:30:22] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 18:30:24] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 18:32:52] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 18:32:54] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 19:05:02] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 19:34:19] [ERROR] [500] /accueil/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-08 20:11:19] [ERROR] [500] /produits/creer/local/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-09 21:17:35] [ERROR] [500] /societe/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-09 21:20:38] [ERROR] [500] /societe/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 12:48:13] [ERROR] [500] /facturer/237/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 12:51:07] [ERROR] [500] /facturer/237/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 12:52:41] [ERROR] [500] /facturer/237/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 15:27:53] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 18:45:04] [ERROR] [500] /facturer/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 18:56:02] [ERROR] [500] /facturer/238/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 18:56:12] [ERROR] [500] /facturer/238/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 19:41:01] [ERROR] [500] /facturer/ajax/info-produit/7/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 19:41:39] [ERROR] [500] /facturer/ajax/info-produit/7/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 19:45:52] [ERROR] [500] /facturer/ajax/info-produit/7/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 19:50:27] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 19:50:36] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 19:50:46] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 19:57:21] [ERROR] [500] /facturer/244/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:03:04] [ERROR] [500] /facturer/244/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:03:05] [ERROR] [500] /facturer/244/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:08:02] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:10:57] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:11:07] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:13:27] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:13:30] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:13:32] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:15:17] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:15:19] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:15:32] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:16:47] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:27:33] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:27:53] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:37:16] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 20:37:45] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 21:02:07] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 21:02:26] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 21:50:58] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 21:52:12] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 21:55:13] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 21:55:27] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:01:20] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:01:30] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:03:46] [ERROR] [500] /facturer/242/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:04:19] [ERROR] [500] /facturer/242/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:06:19] [ERROR] [500] /facturer/242/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:06:21] [ERROR] [500] /facturer/242/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:08:01] [ERROR] [500] /facturer/242/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:08:02] [ERROR] [500] /facturer/242/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:09:17] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:12:48] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:12:56] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:14:41] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:23:18] [ERROR] [500] /facturer/238/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:38:09] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-10 22:38:30] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-11 14:24:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-11 14:29:57] [ERROR] [500] /stock/entrees/nouveau/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-11 14:36:41] [ERROR] [500] /stock/entrees/nouveau/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-11 15:17:06] [ERROR] [500] /produits/creer/local/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-11 18:45:34] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-11 18:46:59] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-11 18:48:35] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-11 18:51:00] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 11:27:53] [ERROR] [500] /facturer/259/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 11:30:17] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 12:01:30] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 12:03:17] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 12:08:20] [WARNING] [404 POST suspect] /facturer/ajax/envoyer-obr/270/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 12:30:37] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 13:05:28] [ERROR] [500] /facturer/ajax/creer/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 14:10:10] [WARNING] [404 POST suspect] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-13 16:22:52] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:22:53] [ERROR] [500] /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:22:55] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:22:55] [ERROR] [500] /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:24:34] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:24:34] [ERROR] [500] /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:26:48] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:26:51] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:27:00] [INFO] [ACCÈS SENSIBLE] GET /admin/taux/tauxtva/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:27:00] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:28:32] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:28:46] [INFO] [ACCÈS SENSIBLE] GET /admin/fournisseurs/fournisseur/add/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:28:47] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 16:28:51] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 17:14:46] [ERROR] [500] /superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 17:16:16] [ERROR] [500] /superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 17:16:17] [ERROR] [500] /superadmin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 19:24:28] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 19:24:31] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-13 21:20:31] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:20:59] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:21:04] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:21:54] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:21:56] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:22:08] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:22:09] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:29:06] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:29:08] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-13 21:30:41] [ERROR] [500] / — User: anonyme — IP: 127.0.0.1
+[2026-05-15 17:30:09] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-15 17:30:17] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-15 17:30:29] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-15 17:30:47] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-15 17:31:53] [ERROR] [500] /facturer/ajax/ajouter-ligne/ — User: bernard.mabisco — IP: 127.0.0.1
+[2026-05-15 18:47:58] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 18:48:42] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:02:51] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:02:52] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:07:01] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:07:03] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:07:11] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:07:12] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:07:51] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:07:53] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:27:04] [ERROR] [500] /superadmin/transactions/entrees/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:32:49] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:35:31] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:35:33] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:40:01] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:40:02] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:40:09] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:40:09] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:46:38] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:46:39] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:48:15] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 19:48:17] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 20:16:05] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 20:16:24] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 20:32:19] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 20:32:41] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:01:06] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:01:07] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:01:33] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:01:37] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:06:14] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:06:29] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:06:30] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:06:33] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:10:20] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:10:40] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:13:04] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:13:12] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:13:16] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:14:48] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:19:02] [INFO] [ACCÈS SENSIBLE] GET /admin/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:19:10] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:19:10] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:19:31] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/10/change/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:19:32] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:20:40] [INFO] [ACCÈS SENSIBLE] GET /admin/stock/entreestock/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:20:40] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:20:54] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/cleactivation/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:20:54] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:13] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:13] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:25] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:25] [ERROR] [500] /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:33] [INFO] [ACCÈS SENSIBLE] GET /admin/superadmin/historiqueconnexion/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:36] [INFO] [ACCÈS SENSIBLE] GET /admin/fournisseurs/fournisseur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:36] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:38] [INFO] [ACCÈS SENSIBLE] GET /admin/fournisseurs/fournisseur/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:38] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:40] [INFO] [ACCÈS SENSIBLE] GET /admin/auth/group/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:40] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:42] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:42] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:44] [INFO] [ACCÈS SENSIBLE] GET /admin/services/service/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:44] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:50] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:50] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:54] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:21:54] [ERROR] [500] /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:25:43] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:25:43] [ERROR] [500] /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:28:45] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:28:45] [ERROR] [500] /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:30:22] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:30:23] [ERROR] [500] /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:30:25] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:30:25] [ERROR] [500] /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:31:12] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:31:13] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:32:01] [INFO] [ACCÈS SENSIBLE] GET /admin/societe/societe/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:32:02] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:32:05] [INFO] [ACCÈS SENSIBLE] GET /admin/rapports/rapport/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:32:05] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:32:06] [INFO] [ACCÈS SENSIBLE] GET /admin/produits/produit/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-15 21:32:06] [INFO] [ACCÈS SENSIBLE] GET /admin/jsi18n/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-16 18:38:04] [ERROR] [500] /facturer/304/pdf/ — User: blaise.blansa — IP: 127.0.0.1
+[2026-05-16 19:23:49] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-16 19:23:53] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/creer/ — User: Admin_kevin — IP: 127.0.0.1
+[2026-05-16 21:21:27] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-05-16 21:34:48] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-05-16 21:36:17] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1
+[2026-05-16 21:41:10] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 127.0.0.1

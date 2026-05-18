@@ -29,7 +29,6 @@
         <div class="card shadow-sm border-0">
             <div class="card-body p-4 p-lg-5">
 
-                <!-- En-tête avec icône -->
                 <div class="d-flex align-items-center gap-3 mb-4 pb-4 border-bottom">
                     <div class="bg-danger-subtle rounded-3 p-3">
                         <i class="bi bi-box-arrow-up text-danger fs-3"></i>
@@ -60,30 +59,30 @@
                             {{ form.type_sortie.errors }}
                         </div>
 
-                        <!-- Code sortie -->
+                        <!-- Code sortie (Automatique) -->
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Code sortie</label>
                             {{ form.code }}
                             {{ form.code.errors }}
                         </div>
 
-                        <!-- Date de sortie -->
+                        <!-- Date de sortie (Automatique + Verrouillée) -->
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Date de sortie <span class="text-danger">*</span></label>
                             {{ form.date_sortie }}
                             {{ form.date_sortie.errors }}
                         </div>
 
-                        <!-- Entrée stock liée -->
+                        <!-- Produit en stock -->
                         <div class="col-12">
                             <label class="form-label fw-medium">Produit en stock <span class="text-danger">*</span></label>
                             {{ form.entree_stock }}
                             {{ form.entree_stock.errors }}
                         </div>
 
-                        <!-- Info stock disponible (AJAX) -->
+                        <!-- Info stock disponible -->
                         <div class="col-12" id="bloc_stock_info" style="display:none;">
-                            <div class="alert alert-success py-3 mb-0">
+                            <div class="alert alert-info py-3 mb-0">
                                 <strong>Stock disponible :</strong>
                                 <span id="stock_dispo_label" class="fw-bold ms-2">—</span>
                             </div>
@@ -96,35 +95,24 @@
                             {{ form.quantite.errors }}
                         </div>
 
-                        <!-- Prix unitaire -->
+                        <!-- Prix unitaire (Automatique) -->
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Prix unitaire <span class="text-danger">*</span></label>
+                            <label class="form-label fw-medium">Prix unitaire (vente) <span class="text-danger">*</span></label>
                             {{ form.prix }}
                             {{ form.prix.errors }}
                         </div>
 
-                        <!-- Commentaire -->
+                        <!-- Commentaire / Motif -->
                         <div class="col-12">
-                            <label class="form-label fw-medium">Commentaire / Explication</label>
+                            <label class="form-label fw-medium">Motif / Commentaire</label>
                             {{ form.commentaire }}
                             {{ form.commentaire.errors }}
                         </div>
 
                     </div>
 
-                    {% if sortie %}
-                    <div class="mt-4 pt-3 border-top">
-                        <small class="text-muted">
-                            <i class="bi bi-clock me-1"></i>
-                            Enregistré le {{ sortie.date_creation|date:"d/m/Y à H:i" }}
-                        </small>
-                    </div>
-                    {% endif %}
-
-                    <!-- Boutons alignés à droite -->
                     <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
-                        <a href="{% url 'stock:sorties' %}" 
-                           class="btn btn-outline-secondary px-4">
+                        <a href="{% url 'stock:sorties' %}" class="btn btn-outline-secondary px-4">
                             <i class="bi bi-x-lg"></i> Annuler
                         </a>
                         <button type="submit" class="btn btn-primary px-4">
@@ -135,46 +123,67 @@
 
             </div>
         </div>
-
     </div>
 </div>
 
+{% endblock %}
+
+
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
     const selectEntree = document.getElementById('id_entree_stock');
+    const prixInput    = document.getElementById('id_prix');
     const blocInfo     = document.getElementById('bloc_stock_info');
     const labelDispo   = document.getElementById('stock_dispo_label');
 
-    function chargerStockDispo(entreeId) {
+    // Fonction pour charger le prix et le stock disponible
+    function chargerInfosProduit(entreeId) {
         if (!entreeId) {
             blocInfo.style.display = 'none';
+            if (prixInput) prixInput.value = '';
             return;
         }
 
         fetch(`{% url 'stock:stock_disponible' %}?entree_id=${entreeId}`)
             .then(r => r.json())
             .then(data => {
+                // Mise à jour du stock disponible
                 if (data.ok) {
                     blocInfo.style.display = 'block';
-                    labelDispo.textContent = `${data.dispo} ${data.unite}`;
+                    labelDispo.textContent = `${data.dispo} ${data.unite || ''}`;
                 } else {
                     blocInfo.style.display = 'none';
                 }
+
+                // Mise à jour automatique du prix
+                if (data.prix && prixInput) {
+                    prixInput.value = parseFloat(data.prix).toFixed(2);
+                }
             })
-            .catch(() => blocInfo.style.display = 'none');
+            .catch(err => {
+                console.error(err);
+                blocInfo.style.display = 'none';
+            });
     }
 
     if (selectEntree) {
         selectEntree.addEventListener('change', function () {
-            chargerStockDispo(this.value);
+            chargerInfosProduit(this.value);
         });
 
-        // Charger au démarrage si une valeur est déjà sélectionnée (mode modification)
+        // Chargement initial (mode modification)
         if (selectEntree.value) {
-            chargerStockDispo(selectEntree.value);
+            chargerInfosProduit(selectEntree.value);
         }
+    }
+
+    // Verrouillage visuel du prix
+    if (prixInput) {
+        prixInput.readOnly = true;
+        prixInput.style.backgroundColor = '#e9ecef';
     }
 });
 </script>
-
 {% endblock %}

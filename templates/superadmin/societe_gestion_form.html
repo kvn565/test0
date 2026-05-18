@@ -13,7 +13,6 @@
                     <i class="bi bi-gear me-2 text-primary"></i>
                     Modifier les paramètres de <strong>{{ societe.nom }}</strong>
                 </h5>
-                <small class="text-muted">NIF : {{ societe.nif }}</small>
             </div>
 
             <div class="card-body">
@@ -36,20 +35,39 @@
                                 <i class="bi bi-cloud-upload me-1"></i>Configuration API OBR (eBMS)
                             </h6>
                             
-                            {{ obr_form.as_p }}
+                            {{ obr_form.as_p|safe }}
 
-                            <!-- Message d'aide pour obr_base_url -->
-                            <div class="alert alert-info mt-3 small">
-                                <i class="bi bi-info-circle me-1"></i>
-                                <strong>URL API OBR :</strong><br>
-                                Laissez ce champ vide pour utiliser l’URL par défaut : 
-                                <code>https://ebms.obr.gov.bi:9443/ebms_api</code>
+                            <!-- Toggle Mode TEST / PRODUCTION -->
+                            <div class="mt-4 border p-3 rounded bg-light">
+                                <label class="form-label fw-bold">Mode API OBR</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" 
+                                           id="id_obr_mode_production" 
+                                           name="obr_mode_production"
+                                           {% if societe.obr_mode_production %}checked{% endif %}>
+                                    <label class="form-check-label" for="id_obr_mode_production">
+                                        <strong id="mode_label">
+                                            {% if societe.obr_mode_production %}
+                                                PRODUCTION (LIVE)
+                                            {% else %}
+                                                TEST
+                                            {% endif %}
+                                        </strong>
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    <span id="url_preview">
+                                        {% if societe.obr_mode_production %}
+                                            https://ebms.obr.gov.bi:8443/ebms_api
+                                        {% else %}
+                                            https://ebms.obr.gov.bi:9443/ebms_api
+                                        {% endif %}
+                                    </span>
+                                </small>
                             </div>
 
-                            <div class="alert alert-warning mt-3 small">
-                                <i class="bi bi-exclamation-triangle me-1"></i>
-                                Le mot de passe OBR est affiché en clair pour faciliter la modification.
-                                <strong>Ne laissez jamais cette page ouverte sans surveillance.</strong>
+                            <div class="alert alert-info mt-3 small">
+                                Le champ URL ci-dessous sera automatiquement mis à jour selon le mode sélectionné.
                             </div>
                         </div>
 
@@ -58,10 +76,10 @@
                     <div class="mt-5 pt-4 border-top d-flex justify-content-end gap-3">
                         <a href="{% url 'superadmin:societe_gestion_liste' %}" 
                            class="btn btn-outline-secondary px-4">
-                            <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                            <i class="bi bi-arrow-left me-1"></i> Retour
                         </a>
                         <button type="submit" class="btn btn-gold px-4">
-                            <i class="bi bi-save me-2"></i>Enregistrer les modifications
+                            <i class="bi bi-save me-2"></i>Enregistrer
                         </button>
                     </div>
                 </form>
@@ -69,4 +87,27 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('id_obr_mode_production');
+    const label = document.getElementById('mode_label');
+    const urlPreview = document.getElementById('url_preview');
+
+    function updateMode() {
+        if (toggle.checked) {
+            label.textContent = "PRODUCTION (LIVE)";
+            urlPreview.textContent = "https://ebms.obr.gov.bi:8443/ebms_api";
+            urlPreview.style.color = "#d32f2f";
+        } else {
+            label.textContent = "TEST";
+            urlPreview.textContent = "https://ebms.obr.gov.bi:9443/ebms_api";
+            urlPreview.style.color = "#1976d2";
+        }
+    }
+
+    toggle.addEventListener('change', updateMode);
+    updateMode(); // Initial
+});
+</script>
 {% endblock %}

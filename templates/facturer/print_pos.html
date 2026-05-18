@@ -142,7 +142,14 @@
 
 <div class="ticket">
 
-    <!-- En-tête Société -->
+    {# ── Logo en-tête ticket ── #}
+    {% if societe.facture_logo %}
+    <div style="text-align:center; margin-bottom:4px;">
+        <img src="{{ societe.facture_logo.url }}" alt="{{ societe.nom }}" style="max-width:70mm; max-height:20mm;">
+    </div>
+    {% endif %}
+
+    {# ── Nom société ── #}
     <div class="entreprise-nom">{{ societe.nom|upper }}</div>
     <div class="entreprise-sub">
         NIF : {{ societe.nif|default:"—" }}<br>
@@ -190,8 +197,8 @@
                 <td>
                     <div class="designation">{{ ligne.designation }}</div>
                     <div class="sous-detail">
-                        {{ ligne.quantite|floatformat:0 }} × {{ ligne.prix_vente_tvac|floatformat:0 }}
-                        {% if ligne.taux_tva and ligne.taux_tva > 0 %} • TVA {{ ligne.taux_tva }}%{% endif %}
+                        {{ ligne.quantite|floatformat:3 }} × {{ ligne.prix_vente_tvac|floatformat:0 }}
+                        {% if ligne.taux_tva_valeur > 0 %} • TVA {{ ligne.taux_tva_valeur|floatformat:0 }}%{% endif %}
                     </div>
                 </td>
                 <td class="montant">{{ ligne.montant_ttc|floatformat:0 }}</td>
@@ -220,7 +227,7 @@
 
     {% if montant_lettres %}
     <div class="lettres">
-        {{ montant_lettres }}
+        <strong>Nous disons :</strong> {{ montant_lettres }}
     </div>
     {% endif %}
 
@@ -233,30 +240,38 @@
         </div>
     {% else %}
         <div style="text-align:center; font-size:8.5pt; color:#666;">
-            En attente validation OBR
+            En cours de validation OBR
         </div>
     {% endif %}
 
     <div class="separateur"></div>
 
-    <!-- QR Code placé à la fin (comme demandé) -->
+    <!-- QR Code OBR - Aligné à gauche, ID en dessous -->
     {% if qr_code_url %}
-    <div class="qr-container">
-        <img src="{{ qr_code_url }}" alt="QR Code OBR">
+    <div style="text-align: left; margin: 10px 0;">
+        <div style="margin-bottom: 4px;">
+            <img src="{{ qr_code_url }}" alt="QR Code OBR" style="width: 25mm; height: 25mm;">
+        </div>
+        <div style="font-size: 7.5pt; font-family: monospace;">
+            <strong>ID:</strong> {{ invoice_identifier }}
+        </div>
     </div>
     {% endif %}
 
     <!-- Message de remerciement -->
     <div class="thankyou">Merci pour votre confiance !</div>
 
-    <!-- Pied de ticket -->
+    {# ── Pied de ticket ── #}
     <div class="footer-ticket">
-        {{ societe.nom }}<br>
-        NIF : {{ societe.nif|default:"—" }}<br>
-        {{ now|date:"d/m/Y H:i" }}
+        {% if pied_page %}
+            {{ pied_page|linebreaksbr }}
+        {% else %}
+            {{ societe.nom }}<br>
+            NIF : {{ societe.nif|default:"—" }}<br>
+            {{ now|date:"d/m/Y H:i" }}
+        {% endif %}
     </div>
 
 </div>
-
 </body>
 </html>
