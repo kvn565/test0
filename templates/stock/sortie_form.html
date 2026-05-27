@@ -59,14 +59,14 @@
                             {{ form.type_sortie.errors }}
                         </div>
 
-                        <!-- Code sortie (Automatique) -->
+                        <!-- Code sortie -->
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Code sortie</label>
                             {{ form.code }}
                             {{ form.code.errors }}
                         </div>
 
-                        <!-- Date de sortie (Automatique + Verrouillée) -->
+                        <!-- Date de sortie -->
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Date de sortie <span class="text-danger">*</span></label>
                             {{ form.date_sortie }}
@@ -95,14 +95,14 @@
                             {{ form.quantite.errors }}
                         </div>
 
-                        <!-- Prix unitaire (Automatique) -->
+                        <!-- Prix unitaire -->
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Prix unitaire (vente) <span class="text-danger">*</span></label>
                             {{ form.prix }}
                             {{ form.prix.errors }}
                         </div>
 
-                        <!-- Commentaire / Motif -->
+                        <!-- Commentaire -->
                         <div class="col-12">
                             <label class="form-label fw-medium">Motif / Commentaire</label>
                             {{ form.commentaire }}
@@ -135,10 +135,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const selectEntree = document.getElementById('id_entree_stock');
     const prixInput    = document.getElementById('id_prix');
+    const quantiteInput = document.getElementById('id_quantite');
+    const dateInput    = document.getElementById('id_date_sortie');
     const blocInfo     = document.getElementById('bloc_stock_info');
     const labelDispo   = document.getElementById('stock_dispo_label');
 
-    // Fonction pour charger le prix et le stock disponible
+    // ==================== DATE AUTOMATIQUE ====================
+    if (dateInput && !dateInput.value) {
+        const today = new Date().toISOString().slice(0, 10);
+        dateInput.value = today;
+    }
+
+    // ==================== TRONCATURE STRICTE À 3 DÉCIMALES (SANS ARRONDISSEMENT) ====================
+    function truncateToThreeDecimals(value) {
+        if (value === null || value === undefined || isNaN(value)) return '';
+        const num = parseFloat(value);
+        const str = num.toString();
+        
+        if (!str.includes('.')) return num.toFixed(3);
+        
+        const [integer, decimal] = str.split('.');
+        const truncatedDecimal = decimal.substring(0, 3);
+        return `${integer}.${truncatedDecimal.padEnd(3, '0')}`;
+    }
+
+    function applyTruncateOnBlur(input) {
+        if (!input) return;
+        
+        input.addEventListener('blur', function () {
+            if (this.value) {
+                this.value = truncateToThreeDecimals(this.value);
+            }
+        });
+
+        // Empêcher de taper plus de 3 décimales
+        input.addEventListener('input', function () {
+            if (this.value.includes('.')) {
+                let parts = this.value.split('.');
+                if (parts[1] && parts[1].length > 3) {
+                    this.value = parts[0] + '.' + parts[1].substring(0, 3);
+                }
+            }
+        });
+    }
+
+    // Appliquer sur les champs
+    if (quantiteInput) {
+        quantiteInput.step = "0.001";
+        applyTruncateOnBlur(quantiteInput);
+    }
+
+    if (prixInput) {
+        prixInput.step = "0.001";
+        applyTruncateOnBlur(prixInput);
+        prixInput.readOnly = true;
+        prixInput.style.backgroundColor = '#e9ecef';
+    }
+
+    // ==================== CHARGEMENT DES INFOS PRODUIT ====================
     function chargerInfosProduit(entreeId) {
         if (!entreeId) {
             blocInfo.style.display = 'none';
@@ -149,17 +203,16 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`{% url 'stock:stock_disponible' %}?entree_id=${entreeId}`)
             .then(r => r.json())
             .then(data => {
-                // Mise à jour du stock disponible
                 if (data.ok) {
                     blocInfo.style.display = 'block';
-                    labelDispo.textContent = `${data.dispo} ${data.unite || ''}`;
+                    // Affichage sans arrondissement
+                    labelDispo.textContent = `${truncateToThreeDecimals(data.dispo)} ${data.unite || ''}`;
                 } else {
                     blocInfo.style.display = 'none';
                 }
 
-                // Mise à jour automatique du prix
                 if (data.prix && prixInput) {
-                    prixInput.value = parseFloat(data.prix).toFixed(2);
+                    prixInput.value = truncateToThreeDecimals(data.prix);
                 }
             })
             .catch(err => {
@@ -173,16 +226,9 @@ document.addEventListener('DOMContentLoaded', function () {
             chargerInfosProduit(this.value);
         });
 
-        // Chargement initial (mode modification)
         if (selectEntree.value) {
             chargerInfosProduit(selectEntree.value);
         }
-    }
-
-    // Verrouillage visuel du prix
-    if (prixInput) {
-        prixInput.readOnly = true;
-        prixInput.style.backgroundColor = '#e9ecef';
     }
 });
 </script>

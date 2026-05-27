@@ -1,3 +1,4 @@
+from decimal import Decimal, ROUND_DOWN  
 from decimal import Decimal
 from django.db import models
 from societe.models import Societe
@@ -58,12 +59,14 @@ class TauxTVA(models.Model):
     )
 
     nom = models.CharField(max_length=100, verbose_name="Nom du taux")
+    
     valeur = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
+        max_digits=6,           # Augmenté pour supporter XXX.XXX
+        decimal_places=3,       # ← Changement principal
         verbose_name="Taux (%)",
-        help_text="Exemple : 18.00 pour 18%, 10.00 pour 10%"
+        help_text="Exemple : 18.000 pour 18%, 16.667 pour 16.667%, 5.500 pour 5.5%"
     )
+    
     est_defaut = models.BooleanField(default=False, verbose_name="Taux par défaut")
     date_creation = models.DateTimeField(auto_now_add=True)
 
@@ -91,4 +94,4 @@ class TauxTVA(models.Model):
 
     @classmethod
     def get_taux_zero(cls, societe):
-        return cls.objects.filter(societe=societe, valeur=Decimal('0.00')).first()
+        return cls.objects.filter(societe=societe, valeur=Decimal('0.000')).first()

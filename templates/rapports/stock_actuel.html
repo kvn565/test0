@@ -5,7 +5,6 @@
 
 {% block content %}
 
-<!-- Page Header -->
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="page-title mb-1">
@@ -15,18 +14,19 @@
             Inventaire en temps réel — quantités disponibles par produit
         </p>
     </div>
-
-    <!-- Boutons Export + Navigation -->
     <div class="d-flex gap-2 align-items-center">
         {% if lignes %}
-            <a href="{% url 'rapports:export_stock_excel' %}" class="btn btn-success" target="_blank">
-                <i class="bi bi-file-earmark-excel"></i> Excel
-            </a>
-            <a href="{% url 'rapports:export_stock_pdf' %}" class="btn btn-danger" target="_blank">
-                <i class="bi bi-file-earmark-pdf"></i> PDF
-            </a>
+            {% with request.GET.urlencode as querystring %}
+                <a href="{% url 'rapports:export_stock_excel' %}{% if querystring %}?{{ querystring }}{% endif %}" 
+                   class="btn btn-success" target="_blank">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </a>
+                <a href="{% url 'rapports:export_stock_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}" 
+                   class="btn btn-danger" target="_blank">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+            {% endwith %}
         {% endif %}
-
         <a href="{% url 'rapports:entrees' %}" class="btn btn-outline-secondary">
             <i class="bi bi-box-arrow-in-down"></i> Entrées
         </a>
@@ -36,12 +36,11 @@
     </div>
 </div>
 
-<!-- Filtres -->
 {% include 'rapports/_filtres.html' %}
 
 <!-- Totaux -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
+    <div class="col-6 col-md-3">
         <div class="card shadow-sm border-0 h-100 text-center">
             <div class="card-body">
                 <div class="fs-3 fw-bold text-primary">{{ nb|default:0 }}</div>
@@ -49,27 +48,42 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-4">
+    <div class="col-6 col-md-3">
         <div class="card shadow-sm border-0 h-100 text-center">
             <div class="card-body">
-                <div class="fs-3 fw-bold text-danger">{{ lignes|length|default:0 }}</div>
+                <div class="fs-3 fw-bold text-danger">
+                    {% with ruptures=lignes|length %}{{ ruptures }}{% endwith %}
+                </div>
                 <div class="text-muted small">dont en rupture</div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
+
+    <!-- ✅ Une carte par devise, plus de BIF global forcé -->
+    {% for devise, totaux in totaux_par_devise.items %}
+    <div class="col-12 col-md-3">
         <div class="card shadow-sm border-0 h-100 text-center">
             <div class="card-body">
                 <div class="fs-3 fw-bold" style="color:{{ rapport_clr }}">
-                    {{ total_valeur|floatformat:0|default:0 }} BIF
+                    {{ totaux.total_valeur|floatformat:3|default:0 }} {{ devise }}
                 </div>
+                <div class="text-muted small">Valeur stock (PMP) — {{ devise }}</div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 col-md-6">
+        <div class="card shadow-sm border-0 h-100 text-center">
+            <div class="card-body">
+                <div class="fs-3 fw-bold text-muted">—</div>
                 <div class="text-muted small">Valeur totale du stock (PMP)</div>
             </div>
         </div>
     </div>
+    {% endfor %}
 </div>
 
-<!-- Tableau du Stock Actuel -->
+<!-- Tableau -->
 <div class="card shadow-sm border-0">
     {% if lignes %}
         <div class="table-responsive">
@@ -103,25 +117,33 @@
                             {{ l.stock|default:0 }} {{ l.produit.unite|default:"—" }}
                             {% if l.alerte %}<span class="ms-1">⚠</span>{% endif %}
                         </td>
-                        <td class="text-end">{{ l.prix_moyen|floatformat:0|default:0 }} BIF</td>
+                        <!-- ✅ floatformat:3 + devise réelle du produit -->
+                        <td class="text-end">
+                            {{ l.prix_moyen|floatformat:3|default:0 }} {{ l.devise }}
+                        </td>
                         <td class="text-end fw-semibold" style="color:{{ rapport_clr }}">
-                            {{ l.valeur_stock|floatformat:0|default:0 }} BIF
+                            {{ l.valeur_stock|floatformat:3|default:0 }} {{ l.devise }}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
+                <!-- ✅ tfoot : une ligne par devise, plus de total_valeur global -->
                 <tfoot>
+                    {% for devise, totaux in totaux_par_devise.items %}
                     <tr class="table-light fw-bold">
-                        <td colspan="8" class="text-end py-3">Valeur totale du stock (PMP) :</td>
+                        <td colspan="8" class="text-end py-3">
+                            Valeur totale du stock (PMP)
+                            {% if totaux_par_devise|length > 1 %} — {{ devise }}{% endif %} :
+                        </td>
                         <td class="text-end py-3" style="color:{{ rapport_clr }}; font-size:15px;">
-                            {{ total_valeur|floatformat:0|default:0 }} BIF
+                            {{ totaux.total_valeur|floatformat:3|default:0 }} {{ devise }}
                         </td>
                     </tr>
+                    {% endfor %}
                 </tfoot>
             </table>
         </div>
     {% else %}
-        <!-- État vide -->
         <div class="text-center py-5 my-5">
             <i class="bi bi-archive display-1 text-muted opacity-50 mb-3 d-block"></i>
             <h5 class="text-muted mb-2">Aucun produit trouvé</h5>
@@ -130,7 +152,6 @@
     {% endif %}
 </div>
 
-<!-- Note explicative -->
 <div class="mt-4 text-muted small px-2">
     <i class="bi bi-info-circle me-1"></i>
     Stock disponible = Entrées − Sorties hors vente − Quantités vendues (facturées).<br>

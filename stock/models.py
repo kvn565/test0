@@ -33,7 +33,15 @@ class EntreeStock(models.Model):
     produit           = models.ForeignKey(Produit, on_delete=models.PROTECT, related_name='entrees_stock', verbose_name="Produit")
     fournisseur       = models.ForeignKey(Fournisseur, on_delete=models.SET_NULL, null=True, blank=True, related_name='entrees_stock')
 
-    quantite          = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Quantité")
+    # ==================== DEVISE AJOUTÉE ====================
+    devise = models.CharField(
+        max_length=10,
+        choices=Produit.DEVISE_CHOICES,
+        default='BIF',
+        verbose_name="Devise"
+    )
+
+    quantite          = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Quantité")   # Mis à 3 décimales
     prix_revient      = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Prix de revient")
     prix_vente_actuel = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Prix de vente actuel (TVAC)")
 
@@ -65,30 +73,28 @@ class EntreeStock(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.type_entree} | {self.produit.designation} | {self.quantite}"
+        return f"{self.type_entree} | {self.produit.designation} | {self.quantite} {self.devise}"
 
     def save(self, *args, **kwargs):
-        # ====================== CORRECTION PRINCIPALE ======================
         if self.produit_id:
-            # On ne met le prix_vente_actuel automatiquement QUE s'il est vide
+            # Copier automatiquement la devise du produit
+            if not self.devise:
+                self.devise = self.produit.devise
+
+            # Copier le prix de vente si vide
             if not self.prix_vente_actuel or self.prix_vente_actuel == 0:
                 self.prix_vente_actuel = self.produit.prix_vente_tvac
-
-            # On NE force PLUS l'égalité prix_revient == prix_vente_actuel
-            # Même si la société n'est pas assujettie à la TVA
-            # L'utilisateur doit pouvoir saisir les deux valeurs librement
 
         super().save(*args, **kwargs)
 
     # ── Propriétés ──────────────────────────────────────────────────────
-
     @property
     def montant_total(self) -> Decimal:
         return self.quantite * self.prix_revient
 
     @property
     def quantite_sortie(self) -> Decimal:
-        from .models import SortieStock   # Import local pour éviter circularité
+        from .models import SortieStock
         return SortieStock.objects.filter(entree_stock=self).aggregate(
             total=Sum('quantite')
         )['total'] or Decimal('0')
@@ -135,8 +141,16 @@ class SortieStock(models.Model):
         verbose_name="Produit (depuis stock)"
     )
 
-    quantite     = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Quantité sortie")
-    prix         = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Prix unitaire (TVAC)")
+    # Devise déjà présente (conservée)
+    devise = models.CharField(
+        max_length=10,
+        choices=Produit.DEVISE_CHOICES,
+        default='BIF',
+        verbose_name="Devise"
+    )
+
+    quantite = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Quantité sortie")
+    prix     = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Prix unitaire (TVAC)")
 
     commentaire  = models.TextField(blank=True, verbose_name="Commentaire")
     facture      = models.ForeignKey(
@@ -163,18 +177,19 @@ class SortieStock(models.Model):
             designation = self.entree_stock.produit.designation
         except Exception:
             designation = '—'
-        return f"{self.type_sortie} | {designation} | {self.quantite}"
+        return f"{self.type_sortie} | {designation} | {self.quantite} {self.devise}"
 
     def save(self, *args, **kwargs):
         if self.entree_stock_id:
-            # On prend le prix de vente actuel de l'entrée (priorité)
+            if not self.devise:
+                self.devise = self.entree_stock.devise
+
             if not self.prix:
                 self.prix = self.entree_stock.prix_vente_actuel or self.entree_stock.produit.prix_vente_tvac
 
         super().save(*args, **kwargs)
 
     # ── Propriétés ──────────────────────────────────────────────────────
-
     @property
     def produit(self) -> Produit:
         return self.entree_stock.produit

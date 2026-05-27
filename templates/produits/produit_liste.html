@@ -76,31 +76,26 @@
 </div>
 {% endif %}
 
-<!-- ====================== FILTRES SUR UNE SEULE LIGNE ====================== -->
+<!-- Filtres -->
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body py-2">
         <form method="get" class="row g-2 align-items-center flex-nowrap overflow-auto">
-
-            <!-- Recherche -->
             <div class="col" style="min-width: 200px; max-width: 280px;">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="bi bi-search text-muted"></i>
                     </span>
-                    <input type="text"
-                           name="q"
-                           value="{{ q }}"
+                    <input type="text" name="q" value="{{ q }}" 
                            class="form-control form-control-sm border-start-0 ps-0"
                            placeholder="Code, désignation...">
                 </div>
             </div>
 
-            <!-- Catégorie -->
             <div class="col" style="min-width: 160px; max-width: 200px;">
                 <select name="categorie" class="form-select form-select-sm">
                     <option value="">Toutes catégories</option>
                     {% for cat in categories %}
-                        <option value="{{ cat.pk }}"
+                        <option value="{{ cat.pk }}" 
                             {% if categorie_id == cat.pk|stringformat:"s" %}selected{% endif %}>
                             {{ cat.nom }}
                         </option>
@@ -108,26 +103,23 @@
                 </select>
             </div>
 
-            <!-- Origine -->
             <div class="col" style="min-width: 130px; max-width: 160px;">
                 <select name="origine" class="form-select form-select-sm">
                     <option value="">Toutes origines</option>
-                    <option value="LOCAL"   {% if origine == "LOCAL"   %}selected{% endif %}>Local</option>
+                    <option value="LOCAL"   {% if origine == "LOCAL" %}selected{% endif %}>Local</option>
                     <option value="IMPORTE" {% if origine == "IMPORTE" %}selected{% endif %}>Importé</option>
                 </select>
             </div>
 
-            <!-- Statut -->
             <div class="col" style="min-width: 130px; max-width: 160px;">
                 <select name="statut" class="form-select form-select-sm">
                     <option value="">Tous statuts</option>
-                    <option value="ACTIF"     {% if statut == "ACTIF"     %}selected{% endif %}>Actif</option>
-                    <option value="INACTIF"   {% if statut == "INACTIF"   %}selected{% endif %}>Inactif</option>
+                    <option value="ACTIF"     {% if statut == "ACTIF" %}selected{% endif %}>Actif</option>
+                    <option value="INACTIF"   {% if statut == "INACTIF" %}selected{% endif %}>Inactif</option>
                     <option value="BROUILLON" {% if statut == "BROUILLON" %}selected{% endif %}>Brouillon</option>
                 </select>
             </div>
 
-            <!-- Boutons -->
             <div class="col-auto d-flex gap-1">
                 <button type="submit" class="btn btn-primary btn-sm px-3">
                     <i class="bi bi-funnel-fill"></i> Filtrer
@@ -138,12 +130,11 @@
                     </a>
                 {% endif %}
             </div>
-
         </form>
     </div>
 </div>
 
-<!-- ====================== TABLEAU ====================== -->
+<!-- ====================== TABLEAU CORRIGÉ ====================== -->
 <div class="card shadow-sm border-0">
     {% if produits %}
         <div class="table-responsive">
@@ -156,7 +147,8 @@
                         <th>Origine</th>
                         <th>Unité</th>
                         <th class="text-end">Prix vente</th>
-                        <th>TVA</th>
+                        <th class="text-end">TVA</th>
+                        <th class="text-end">Prix TVAC</th>
                         <th>Statut</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -175,10 +167,28 @@
                             {% endif %}
                         </td>
                         <td>{{ p.unite }}</td>
+                        
+                        <!-- Prix avec 3 décimales -->
                         <td class="text-end fw-medium">
-                            {{ p.prix_vente|floatformat:2 }} {{ p.devise }}
+                            {{ p.prix_vente|floatformat:3 }} {{ p.devise }}
                         </td>
-                        <td>{{ p.taux_tva.valeur|default:"—" }} %</td>
+
+                        <!-- TVA (0 si société non assujettie) -->
+                        <td class="text-end">
+                            {% if p.societe and not p.societe.assujeti_tva %}
+                                <span class="text-muted">0 %</span>
+                            {% elif p.taux_tva and p.taux_tva.valeur %}
+                                {{ p.taux_tva.valeur|floatformat:2 }} %
+                            {% else %}
+                                <span class="text-muted">0 %</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Prix TVAC -->
+                        <td class="text-end fw-medium text-primary">
+                            {{ p.prix_vente_tvac|floatformat:3 }} {{ p.devise }}
+                        </td>
+
                         <td>
                             {% if p.statut == 'ACTIF' %}
                                 <span class="badge bg-success">Actif</span>
@@ -188,16 +198,15 @@
                                 <span class="badge bg-secondary">Brouillon</span>
                             {% endif %}
                         </td>
+                        
                         <td class="text-end">
                             <div class="d-flex gap-1 justify-content-end">
-                                <a href="{% url 'produits:detail' p.pk %}"
-                                   class="btn btn-sm btn-outline-info"
-                                   title="Voir le détail">
+                                <a href="{% url 'produits:detail' p.pk %}" 
+                                   class="btn btn-sm btn-outline-info" title="Voir le détail">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{% url 'produits:modifier' p.pk %}"
-                                   class="btn btn-sm btn-outline-secondary"
-                                   title="Modifier">
+                                <a href="{% url 'produits:modifier' p.pk %}" 
+                                   class="btn btn-sm btn-outline-secondary" title="Modifier">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                             </div>
@@ -208,7 +217,6 @@
             </table>
         </div>
 
-        <!-- ====================== PAGINATION ====================== -->
         {% include "stock/pagination.html" %}
 
         <div class="card-footer bg-white text-muted small text-end py-2">

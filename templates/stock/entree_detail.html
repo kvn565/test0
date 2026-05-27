@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load stock_filters %}   <!-- ← Ajout unique et obligatoire -->
+
 {% block title %}Détail entrée stock{% endblock %}
 {% block breadcrumb_parent %}Entrées Stock{% endblock %}
 {% block breadcrumb_current %}Détail #{{ entree.pk }}{% endblock %}
@@ -52,6 +54,10 @@
                         <td class="py-3">{{ entree.fournisseur.nom|default:"—" }}</td>
                     </tr>
                     <tr>
+                        <td class="text-muted py-3">Devise</td>
+                        <td class="py-3 fw-medium">{{ entree.devise }}</td>
+                    </tr>
+                    <tr>
                         <td class="text-muted py-3">N° Réquisition</td>
                         <td class="py-3">{{ entree.numero_ref|default:"—" }}</td>
                     </tr>
@@ -95,25 +101,25 @@
                 
                 <div class="d-flex flex-column gap-3">
                     <div class="bg-light rounded-3 p-4 text-center">
-                        <div class="fs-2 fw-bold text-primary">{{ entree.quantite }}</div>
+                        <div class="fs-2 fw-bold text-primary">{{ entree.quantite|decimal3 }}</div>
                         <div class="text-muted small">{{ entree.produit.unite }}</div>
                         <div class="mt-1 text-muted">Quantité entrée</div>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center bg-white border rounded-3 p-3">
                         <span class="text-muted">Prix de revient</span>
-                        <span class="fw-semibold">{{ entree.prix_revient|floatformat:0 }} BIF</span>
+                        <span class="fw-semibold">{{ entree.prix_revient|decimal3 }} {{ entree.devise }}</span>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center bg-white border rounded-3 p-3">
                         <span class="text-muted">Prix de vente actuel</span>
-                        <span class="fw-semibold text-success">{{ entree.prix_vente_actuel|floatformat:0 }} BIF</span>
+                        <span class="fw-semibold text-success">{{ entree.prix_vente_actuel|decimal3 }} {{ entree.devise }}</span>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center border border-warning rounded-3 p-3 bg-warning-subtle">
                         <span class="fw-medium text-warning-emphasis">Montant total</span>
                         <span class="fw-bold text-warning-emphasis fs-5">
-                            {{ entree.montant_total|floatformat:0 }} BIF
+                            {{ entree.montant_total|decimal3 }} {{ entree.devise }}
                         </span>
                     </div>
                 </div>
@@ -129,18 +135,18 @@
                 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Total entré</span>
-                    <span class="fw-semibold">{{ entree.quantite }} {{ entree.produit.unite }}</span>
+                    <span class="fw-semibold">{{ entree.quantite|decimal3 }} {{ entree.produit.unite }}</span>
                 </div>
                 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="text-muted">Total sorti</span>
-                    <span class="fw-semibold text-danger">- {{ entree.quantite_sortie }} {{ entree.produit.unite }}</span>
+                    <span class="fw-semibold text-danger">- {{ entree.quantite_sortie|decimal3 }} {{ entree.produit.unite }}</span>
                 </div>
                 
                 <div class="border-top pt-3 mt-2 d-flex justify-content-between align-items-center fs-5">
                     <span class="fw-bold">Disponible actuellement</span>
                     <span class="fw-bold {% if entree.quantite_disponible > 0 %}text-success{% else %}text-danger{% endif %}">
-                        {{ entree.quantite_disponible }} {{ entree.produit.unite }}
+                        {{ entree.quantite_disponible|decimal3 }} {{ entree.produit.unite }}
                     </span>
                 </div>
             </div>

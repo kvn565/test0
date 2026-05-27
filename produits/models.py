@@ -166,18 +166,34 @@ class Produit(models.Model):
 
     @property
     def taux_tva_valeur(self) -> Decimal:
-        """Taux TVA en % — 0 si société non assujettie ou taux absent"""
+        """Retourne 0 si la société n'est PAS assujettie à la TVA"""
         if not getattr(self.societe, 'assujeti_tva', False):
-            return Decimal('0')
-        return self.taux_tva.valeur if self.taux_tva else Decimal('0')
+            return Decimal('0.00')          # Forcé à 0
+        
+        # Si la société est assujettie
+        if self.taux_tva:
+            return self.taux_tva.valeur
+        return Decimal('0.00')
+
 
     @property
     def tva_montant(self) -> Decimal:
-        return (self.prix_vente * self.taux_tva_valeur / Decimal('100')).quantize(Decimal('0.001'))
+        """Calcul de la TVA sans arrondissement (3 décimales)"""
+        if not self.prix_vente or self.taux_tva_valeur == 0:
+            return Decimal('0.000')
+        
+        montant = (self.prix_vente * self.taux_tva_valeur / Decimal('100'))
+        return montant.quantize(Decimal('0.001'), rounding='ROUND_DOWN')
+
 
     @property
     def prix_vente_tvac(self) -> Decimal:
-        return (self.prix_vente + self.tva_montant).quantize(Decimal('0.001'))
+        """Prix TVAC avec 3 décimales sans arrondissement"""
+        if not self.prix_vente:
+            return Decimal('0.000')
+        
+        tvac = self.prix_vente + self.tva_montant
+        return tvac.quantize(Decimal('0.001'), rounding='ROUND_DOWN')
 
     @property
     def infos_obr_completes(self):

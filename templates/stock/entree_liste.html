@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load stock_filters %}   <!-- ← Important : à ajouter -->
+
 {% block title %}Entrées Stock{% endblock %}
 {% block breadcrumb_parent %}Stock{% endblock %}
 {% block breadcrumb_current %}Entrées{% endblock %}
@@ -67,11 +69,10 @@
     </div>
 </div>
 
-<!-- Filtres sur une même ligne -->
+<!-- Filtres -->
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body py-2">
         <form method="get" class="row g-2 align-items-end flex-nowrap overflow-auto">
-
             <!-- Recherche -->
             <div class="col" style="min-width: 260px; max-width: 320px;">
                 <div class="input-group input-group-sm">
@@ -104,7 +105,6 @@
                 </select>
             </div>
 
-            <!-- Boutons -->
             <div class="col-auto d-flex gap-1">
                 <button type="submit" class="btn btn-primary btn-sm px-3">
                     <i class="bi bi-funnel-fill"></i> Filtrer
@@ -115,7 +115,6 @@
                     </a>
                 {% endif %}
             </div>
-
         </form>
     </div>
 </div>
@@ -149,11 +148,24 @@
                             <small class="text-muted">{{ e.produit.code }}</small>
                         </td>
                         <td class="text-muted">{{ e.fournisseur.nom|default:"—" }}</td>
+                        
+                        <!-- Quantité -->
                         <td class="text-end fw-medium">
-                            {{ e.quantite }} {{ e.produit.unite }}
+                            {{ e.quantite|decimal3 }} {{ e.produit.unite|default:"" }}
                         </td>
-                        <td class="text-end">{{ e.prix_revient|floatformat:0 }} BIF</td>
-                        <td class="text-end">{{ e.prix_vente_actuel|floatformat:0 }} BIF</td>
+                        
+                        <!-- Prix revient -->
+                        <td class="text-end">
+                            {{ e.prix_revient|decimal3 }} 
+                            <small class="text-muted">{{ e.devise|default:"BIF" }}</small>
+                        </td>
+                        
+                        <!-- Prix vente -->
+                        <td class="text-end">
+                            {{ e.prix_vente_actuel|decimal3 }} 
+                            <small class="text-muted">{{ e.devise|default:"BIF" }}</small>
+                        </td>
+                        
                         <td class="text-muted small">{{ e.date_entree|date:"d/m/Y" }}</td>
                         <td>
                             {% if e.statut_obr == 'ENVOYE' %}

@@ -1,3 +1,5 @@
+{% load facture_extras %}   <!-- ← CETTE LIGNE EST OBLIGATOIRE -->
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,7 +10,11 @@
             --bleu: #0f2a4a;
             --gris-leger: #f1f3f5;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
 
         @page { size: A4 portrait; margin: 0; }
 
@@ -19,7 +25,6 @@
             color: #1a1a1a;
         }
 
-        /* Toujours un padding-bottom pour le footer, qu'il soit vide ou non */
         .page {
             width: 210mm;
             min-height: 297mm;
@@ -27,7 +32,6 @@
             padding: 5mm 8mm 28mm 8mm;
         }
 
-        /* Logo : affiché uniquement si logo_path existe */
         .header-logo { width: 100%; margin-bottom: 4mm; }
         .header-logo img { display: block; width: 100%; max-width: 194mm; max-height: 40mm; }
 
@@ -53,20 +57,48 @@
             caption-side: top;
             text-align: left;
         }
-        .lbl { display: inline-block; width: 135px; font-weight: bold; color: var(--bleu); }
+        .lbl { 
+            display: inline-block; 
+            width: 135px; 
+            font-weight: bold; 
+            color: var(--bleu); 
+        }
 
-        .main-table { width: 100%; border-collapse: collapse; margin: 5mm 0 4mm 0; }
-        .main-table th, .main-table td { border: 1px solid #444; padding: 5px 6px; text-align: center; vertical-align: middle; }
-        .main-table th { background: var(--bleu); color: white; font-size: 8.8pt; }
-        .main-table td:nth-child(2), .main-table th:nth-child(2) { text-align: left; width: 34%; }
+        .main-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 5mm 0 4mm 0; 
+        }
+        .main-table th, .main-table td { 
+            border: 1px solid #444; 
+            padding: 5px 6px; 
+            text-align: center; 
+            vertical-align: middle; 
+        }
+        .main-table th { 
+            background: var(--bleu); 
+            color: white; 
+            font-size: 8.8pt; 
+        }
+        .main-table td:nth-child(2), 
+        .main-table th:nth-child(2) { 
+            text-align: left; 
+            width: 34%; 
+        }
         .main-table td:nth-child(3),
         .main-table td:nth-child(4),
         .main-table td:nth-child(5),
         .main-table td:nth-child(6),
-        .main-table td:nth-child(7) { text-align: right; white-space: nowrap; }
-        .total-row td { font-weight: bold; background: var(--gris-leger); font-size: 9pt; }
+        .main-table td:nth-child(7) { 
+            text-align: right; 
+            white-space: nowrap; 
+        }
+        .total-row td { 
+            font-weight: bold; 
+            background: var(--gris-leger); 
+            font-size: 9pt; 
+        }
 
-        /* Footer toujours présent en bas, vide ou avec texte */
         .footer {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -80,11 +112,16 @@
         }
 
         .small { font-size: 7.8pt; color: #555; }
+
+        /* Police uniforme pour tout le document */
+        .identifiant {
+            font-size: 9pt;
+            font-family: Arial, Helvetica, sans-serif;
+        }
     </style>
 </head>
 <body>
 
-<!-- Footer toujours affiché en bas. Si pied_page vide : footer avec juste la ligne bleue, aucun texte -->
 <div class="footer">
     {% if pied_page %}{{ pied_page|linebreaksbr }}{% endif %}
 </div>
@@ -157,11 +194,11 @@
                         <br><span class="small">TVA {{ ligne.taux_tva_valeur|floatformat:0 }}%</span>
                     {% endif %}
                 </td>
-                <td>{{ ligne.quantite|floatformat:3 }}</td>
-                <td>{{ ligne.prix_unitaire_ht|floatformat:3 }}</td>
-                <td>{{ ligne.montant_ht|floatformat:3 }}</td>
-                <td>{{ ligne.montant_tva|floatformat:3 }}</td>
-                <td>{{ ligne.montant_ttc|floatformat:3 }}</td>
+                <td>{{ ligne.quantite|truncate3 }}</td>
+                <td>{{ ligne.prix_unitaire_ht|truncate3 }}</td>
+                <td>{{ ligne.montant_ht|truncate3 }}</td>
+                <td>{{ ligne.montant_tva|truncate3 }}</td>
+                <td>{{ ligne.montant_ttc|truncate3 }}</td>
             </tr>
             {% empty %}
             <tr>
@@ -174,17 +211,19 @@
         <tfoot>
             <tr class="total-row">
                 <td colspan="4" style="text-align:right; padding-right:8px;">TOTAL GÉNÉRAL</td>
-                <td>{{ facture.total_ht|floatformat:3 }}</td>
-                <td>{{ facture.total_tva|floatformat:3 }}</td>
-                <td>{{ facture.total_ttc|floatformat:3 }}</td>
+                <td>{{ facture.total_ht|truncate3 }}</td>
+                <td>{{ facture.total_tva|truncate3 }}</td>
+                <td>{{ facture.total_ttc|truncate3 }}</td>
             </tr>
         </tfoot>
     </table>
 
-    <p style="margin:3mm 0;"><strong>Nous disons :</strong> {{ montant_lettres|default:"—" }}</p>
+    <!-- APRÈS -->
+    <p style="margin:3mm 0;"><strong>Nous disons :</strong> {{ montant_lettres|default:"—"|safe }}</p>
+    
 
     <div style="margin: 6mm 0 4mm 0; text-align: left;">
-        <div style="font-size: 9pt; font-family: monospace;">
+        <div class="identifiant">
             <strong>Identifiant :</strong> {{ invoice_identifier|default:"Non encore généré" }}
         </div>
         {% if qr_code_url %}
@@ -192,7 +231,6 @@
             <img src="{{ qr_code_url }}" alt="QR Code OBR" style="width: 30mm; height: 30mm;">
         </div>
         {% endif %}
-        
     </div>
 
     <div style="margin-top:12mm; text-align:right;">

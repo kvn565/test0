@@ -1,8 +1,12 @@
 {% comment %}
   Barre de filtres commune à tous les rapports.
   Usage : {% include 'rapports/_filtres.html' %}
+  
+  Variables disponibles via ctx_commun(**f) :
+    date_debut, date_fin, produit_id, service_id
+  Variable optionnelle :
+    show_service_filter — activer le filtre service
 {% endcomment %}
-
 <div class="card mb-3">
     <div style="padding:16px 20px;">
         <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
@@ -10,18 +14,18 @@
             <!-- Date début -->
             <div class="flex-grow-1" style="min-width: 160px;">
                 <label class="form-label small text-muted mb-1">Date début</label>
-                <input type="date" 
-                       name="date_debut" 
-                       value="{{ f.date_debut|default:'' }}" 
+                <input type="date"
+                       name="date_debut"
+                       value="{{ date_debut|default:'' }}"
                        class="form-control">
             </div>
 
             <!-- Date fin -->
             <div class="flex-grow-1" style="min-width: 160px;">
                 <label class="form-label small text-muted mb-1">Date fin</label>
-                <input type="date" 
-                       name="date_fin" 
-                       value="{{ f.date_fin|default:'' }}" 
+                <input type="date"
+                       name="date_fin"
+                       value="{{ date_fin|default:'' }}"
                        class="form-control">
             </div>
 
@@ -32,8 +36,8 @@
                 <select name="produit" class="form-select">
                     <option value="">Tous les produits</option>
                     {% for p in produits %}
-                    <option value="{{ p.pk }}" 
-                            {% if f.produit_id|stringformat:"s" == p.pk|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ p.pk }}"
+                            {% if produit_id|stringformat:"s" == p.pk|stringformat:"s" %}selected{% endif %}>
                         {{ p.designation }}
                     </option>
                     {% endfor %}
@@ -48,8 +52,8 @@
                 <select name="service" class="form-select">
                     <option value="">Tous les services</option>
                     {% for s in services %}
-                    <option value="{{ s.pk }}" 
-                            {% if f.service_id|stringformat:"s" == s.pk|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ s.pk }}"
+                            {% if service_id|stringformat:"s" == s.pk|stringformat:"s" %}selected{% endif %}>
                         {{ s.designation }}
                     </option>
                     {% endfor %}
@@ -62,8 +66,8 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-funnel"></i> Filtrer
                 </button>
-                
-                {% if f.date_debut or f.date_fin or f.produit_id or f.service_id %}
+
+                {% if date_debut or date_fin or produit_id or service_id %}
                 <a href="{% url request.resolver_match.view_name %}" class="btn btn-outline-secondary">
                     <i class="bi bi-x-lg"></i> Effacer
                 </a>

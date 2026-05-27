@@ -1,8 +1,7 @@
-# taux/forms.py
 from django import forms
 from decimal import Decimal
 
-from .models import TauxTVA   # ← Correction importante
+from .models import TauxTVA
 
 
 class TauxForm(forms.ModelForm):
@@ -11,7 +10,6 @@ class TauxForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.societe = societe
 
-        # Filtrage du queryset si nécessaire (bonnes pratiques)
         if societe:
             self.fields['nom'].widget.attrs.update({
                 'placeholder': 'Ex: TVA 18%, Exonéré...',
@@ -19,8 +17,8 @@ class TauxForm(forms.ModelForm):
             })
 
     class Meta:
-        model = TauxTVA                    # ← Changé de Taux à TauxTVA
-        fields = ['nom', 'valeur', 'est_defaut']   # Ajout de est_defaut recommandé
+        model = TauxTVA
+        fields = ['nom', 'valeur', 'est_defaut']
         widgets = {
             'nom': forms.TextInput(attrs={
                 'class':       'form-control',
@@ -29,10 +27,11 @@ class TauxForm(forms.ModelForm):
             }),
             'valeur': forms.NumberInput(attrs={
                 'class':       'form-control',
-                'placeholder': 'Ex: 18.00',
-                'step':        '0.01',
+                'placeholder': 'Ex: 18.000',          # Mis à jour
+                'step':        '0.001',               # ← Changement principal
                 'min':         '0',
                 'max':         '100',
+                'inputmode':   'decimal',
             }),
             'est_defaut': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
@@ -56,8 +55,14 @@ class TauxForm(forms.ModelForm):
 
     def clean_valeur(self):
         valeur = self.cleaned_data.get('valeur')
-        if valeur is not None and (valeur < 0 or valeur > 100):
-            raise forms.ValidationError("La valeur doit être comprise entre 0 et 100.")
+        if valeur is not None:
+            if valeur < 0 or valeur > 100:
+                raise forms.ValidationError("La valeur doit être comprise entre 0 et 100.")
+            
+            # Option importante : normaliser à exactement 3 décimales sans arrondi forcé
+            # (troncature ou quantize selon la stratégie choisie précédemment)
+            valeur = valeur.quantize(Decimal('0.001'))   # ou Decimal('0.000')
+            
         return valeur
 
     def save(self, commit=True):

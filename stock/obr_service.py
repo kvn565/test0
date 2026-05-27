@@ -1,6 +1,7 @@
 import requests
 import logging
 from zoneinfo import ZoneInfo
+from decimal import Decimal, ROUND_DOWN
 from django.utils import timezone
 from django.db import transaction
 
@@ -9,14 +10,25 @@ logger = logging.getLogger(__name__)
 TIMEOUT = 30
 
 # Endpoints OBR
-ENDPOINT_LOGIN             = "/login/"
-ENDPOINT_ADD_STOCK_LOCAL   = "/AddStockMovement/"
+ENDPOINT_LOGIN = "/login/"
+ENDPOINT_ADD_STOCK_LOCAL = "/AddStockMovement/"
 ENDPOINT_ADD_STOCK_IMPORTE = "/AddStockMovementImporters/"
 
 
 # ====================== HELPERS ======================
+def truncate3(value):
+    """Tronque strictement à 3 décimales SANS AUCUN ARRONDISSEMENT"""
+    if value is None:
+        return Decimal('0.000')
+    try:
+        dec = Decimal(str(value))
+        return dec.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+    except:
+        logger.warning(f"truncate3: Impossible de convertir {value}")
+        return Decimal('0.000')
+
+
 def get_obr_base_url(societe):
-    """Retourne l'URL de base OBR de la société"""
     url = getattr(societe, 'obr_base_url', None)
     if not url or not str(url).strip():
         raise ValueError(
@@ -27,12 +39,10 @@ def get_obr_base_url(societe):
 
 
 def build_obr_url(societe, endpoint):
-    """Construit l'URL complète"""
     return f"{get_obr_base_url(societe)}{endpoint}"
 
 
 def get_obr_datetime():
-    """Retourne la date/heure au format OBR (GMT+2 - Bujumbura)"""
     bujumbura_tz = ZoneInfo("Africa/Bujumbura")
     now_buj = timezone.now().astimezone(bujumbura_tz)
     return now_buj.strftime("%Y-%m-%d %H:%M:%S")
@@ -40,10 +50,6 @@ def get_obr_datetime():
 
 # ====================== VÉRIFICATION CONFIGURATION ======================
 def check_obr_configuration(societe):
-    """
-    Vérifie si l'OBR est bien configuré.
-    Retourne (success: bool, message: str)
-    """
     if not getattr(societe, 'obr_actif', False):
         return False, "Intégration OBR désactivée pour cette société."
 
@@ -61,7 +67,6 @@ def check_obr_configuration(societe):
 
 # ====================== APPEL API ======================
 def _post_obr(url, payload, token=None):
-    """Fonction utilitaire sécurisée pour les requêtes POST vers l'OBR"""
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
@@ -83,7 +88,6 @@ def _post_obr(url, payload, token=None):
 
 # ====================== AUTHENTIFICATION ======================
 def get_token_obr(societe):
-    """Récupère le token Bearer pour une société"""
     username = getattr(societe, "obr_username", "").strip()
     password = getattr(societe, "obr_password", "").strip()
 
@@ -103,20 +107,17 @@ def get_token_obr(societe):
 
 # ====================== ENVOI ENTRÉE STOCK ======================
 def envoyer_entree_stock(entree):
-    """Envoie une entrée en stock vers l'OBR"""
+    """Envoie une entrée en stock vers l'OBR (3 décimales strictes)"""
     from .models import EntreeStock
 
     societe = entree.societe
 
-    # ====================== NOUVEAU : VÉRIFICATION CONFIGURATION ======================
     configured, config_msg = check_obr_configuration(societe)
     if not configured:
-        # Supprimer l'enregistrement pour ne pas laisser de mouvement "en attente"
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
-        return False, f"❌ {config_msg} Veuillez configurer l'OBR dans l'administration."
+        return False, f"❌ {config_msg}"
 
-    # Si déjà traité
     if entree.statut_obr != 'EN_ATTENTE':
         return True, "Déjà traité"
 
@@ -124,7 +125,7 @@ def envoyer_entree_stock(entree):
     if not system_id:
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
-        return False, "System ID OBR non configuré. Enregistrement supprimé."
+        return False, "System ID OBR non configuré."
 
     produit = entree.produit
     est_importe = getattr(produit, "origine", "").upper() == "IMPORTE"
@@ -138,14 +139,18 @@ def envoyer_entree_stock(entree):
         getattr(entree.facture, 'facture_originale', None)):
         invoice_ref = str(entree.facture.facture_originale.numero or "")[:30]
 
+    # === Application de truncate3 ===
+    quantite = truncate3(entree.quantite)
+    prix_revient = truncate3(getattr(entree, 'prix_revient', 0))
+
     payload = {
         "system_or_device_id":       str(system_id),
         "item_code":                 str(produit.code or f"PROD-{produit.pk}")[:30],
         "item_designation":          str(produit.designation)[:500],
-        "item_quantity":             float(entree.quantite),
+        "item_quantity":             str(quantite),                    # 3 décimales
         "item_measurement_unit":     str(produit.unite or 'unité')[:20],
-        "item_cost_price":           float(getattr(entree, 'prix_revient', 0) or 0),
-        "item_cost_price_currency":  "BIF",
+        "item_cost_price":           str(prix_revient),                # 3 décimales
+        "item_cost_price_currency":  str(entree.devise or 'BIF'),
         "item_movement_type":        str(entree.type_entree),
         "item_movement_invoice_ref": invoice_ref,
         "item_movement_description": str(entree.commentaire or f"Entrée stock {entree.type_entree}")[:500],
@@ -170,12 +175,11 @@ def envoyer_entree_stock(entree):
                 message_obr=data.get("msg", "Envoyé avec succès"),
                 date_envoi_obr=timezone.now(),
             )
-            logger.info(f"[OBR SUCCESS] Entrée #{entree.pk} ({entree.type_entree}) - {societe}")
+            logger.info(f"[OBR SUCCESS] Entrée #{entree.pk}")
             return True, data.get("msg", "Succès")
 
-        # ====================== ÉCHEC : On supprime ======================
         msg = data.get("msg", f"Erreur HTTP {status}")
-        logger.warning(f"[OBR FAILED] Entrée #{entree.pk} → Suppression automatique")
+        logger.warning(f"[OBR FAILED] Entrée #{entree.pk}")
         
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
@@ -183,7 +187,7 @@ def envoyer_entree_stock(entree):
         return False, f"Échec OBR - Enregistrement supprimé ({msg})"
 
     except Exception as e:
-        logger.error(f"[OBR EXCEPTION] Entrée #{entree.pk} → Suppression automatique")
+        logger.error(f"[OBR EXCEPTION] Entrée #{entree.pk}", exc_info=True)
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
         return False, f"Erreur technique - Enregistrement supprimé ({str(e)[:100]})"
@@ -191,17 +195,16 @@ def envoyer_entree_stock(entree):
 
 # ====================== ENVOI SORTIE STOCK ======================
 def envoyer_sortie_stock(sortie):
-    """Envoie une sortie stock vers l'OBR"""
+    """Envoie une sortie stock vers l'OBR (3 décimales strictes)"""
     from .models import SortieStock
 
     societe = sortie.societe
 
-    # Vérification configuration
     configured, config_msg = check_obr_configuration(societe)
     if not configured:
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
-        return False, f"❌ {config_msg} Veuillez configurer l'OBR dans l'administration."
+        return False, f"❌ {config_msg}"
 
     if sortie.statut_obr != 'EN_ATTENTE':
         return True, "Déjà traité"
@@ -210,19 +213,22 @@ def envoyer_sortie_stock(sortie):
     if not system_id:
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
-        return False, "System ID OBR non configuré. Enregistrement supprimé."
+        return False, "System ID OBR non configuré."
 
-    produit = sortie.produit
-    url = build_obr_url(societe, ENDPOINT_ADD_STOCK_LOCAL)
+    produit = sortie.produit   # ou sortie.entree_stock.produit selon ta relation
+
+    # === Application de truncate3 ===
+    quantite = truncate3(sortie.quantite)
+    prix = truncate3(getattr(sortie, 'prix', 0))
 
     payload = {
         "system_or_device_id":       str(system_id),
         "item_code":                 str(produit.code or f"PROD-{produit.pk}")[:30],
         "item_designation":          str(produit.designation)[:500],
-        "item_quantity":             float(sortie.quantite),
+        "item_quantity":             str(quantite),               # 3 décimales
         "item_measurement_unit":     str(produit.unite or 'unité')[:20],
-        "item_cost_price":           float(getattr(sortie, 'prix', 0) or 0),
-        "item_cost_price_currency":  "BIF",
+        "item_cost_price":           str(prix),                   # 3 décimales
+        "item_cost_price_currency":  str(sortie.devise or 'BIF'),
         "item_movement_type":        str(sortie.type_sortie),
         "item_movement_invoice_ref": "",
         "item_movement_description": str(sortie.commentaire or f"Sortie stock {sortie.type_sortie}")[:500],
@@ -231,7 +237,8 @@ def envoyer_sortie_stock(sortie):
 
     try:
         token = get_token_obr(societe)
-        status, data = _post_obr(url, payload, token)
+        status, data = _post_obr(url=build_obr_url(societe, ENDPOINT_ADD_STOCK_LOCAL), 
+                                payload=payload, token=token)
 
         if status == 200 and data.get("success"):
             SortieStock.objects.filter(pk=sortie.pk).update(
@@ -239,11 +246,11 @@ def envoyer_sortie_stock(sortie):
                 message_obr=data.get("msg", "Envoyé avec succès"),
                 date_envoi_obr=timezone.now(),
             )
-            logger.info(f"[OBR SUCCESS] Sortie #{sortie.pk} - {societe}")
+            logger.info(f"[OBR SUCCESS] Sortie #{sortie.pk}")
             return True, data.get("msg", "Succès")
 
         msg = data.get("msg", f"Erreur HTTP {status}")
-        logger.warning(f"[OBR FAILED] Sortie #{sortie.pk} → Suppression automatique")
+        logger.warning(f"[OBR FAILED] Sortie #{sortie.pk}")
         
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
@@ -251,7 +258,7 @@ def envoyer_sortie_stock(sortie):
         return False, f"Échec OBR - Enregistrement supprimé ({msg})"
 
     except Exception as e:
-        logger.error(f"[OBR EXCEPTION] Sortie #{sortie.pk} → Suppression automatique")
+        logger.error(f"[OBR EXCEPTION] Sortie #{sortie.pk}", exc_info=True)
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
         return False, f"Erreur technique - Enregistrement supprimé ({str(e)[:100]})"

@@ -1,7 +1,7 @@
 import requests
 import logging
 import time
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 from django.utils import timezone
 from django.core.cache import cache
@@ -20,20 +20,32 @@ MAX_RETRIES = 5
 BASE_RETRY_DELAY = 8
 
 CACHE_TOKEN_KEY_TEMPLATE = "obr_token_{societe_pk}"
-CACHE_TOKEN_TIMEOUT = 2700  # 45 minutes
+CACHE_TOKEN_TIMEOUT = 2700
 
 VERIFY_CERT = not settings.DEBUG
 if not VERIFY_CERT:
     logger.warning("⚠️ VERIFY_CERT désactivé → Mode développement uniquement !")
 
-ENDPOINT_LOGIN          = "/login/"
-ENDPOINT_ADD_INVOICE    = "/addInvoice_confirm/"
+ENDPOINT_LOGIN = "/login/"
+ENDPOINT_ADD_INVOICE = "/addInvoice_confirm/"
 ENDPOINT_CANCEL_INVOICE = "/cancelInvoice/"
 
 
-# ─── URL DYNAMIQUE (Test / Production) ─────────────────────────────────────
+# ─── TRONCATURE STRICTE 3 DÉCIMALES ─────────────────────────────────────
+def truncate3(value):
+    """Tronque strictement à 3 décimales SANS AUCUN ARRONDISSEMENT"""
+    if value is None:
+        return Decimal('0.000')
+    try:
+        dec = Decimal(str(value).strip())
+        return dec.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+    except:
+        logger.warning(f"Impossible de convertir en Decimal: {value}")
+        return Decimal('0.000')
+
+
+# ─── URL & TOKEN (inchangé) ─────────────────────────────────────────────
 def get_obr_base_url(societe):
-    """9443 = Test, 8443 = Production"""
     host = "ebms.obr.gov.bi"
     port = 9443 if getattr(societe, 'obr_api_test', True) else 8443
     return f"https://{host}:{port}/ebms_api"
@@ -46,7 +58,6 @@ def get_obr_headers(societe):
     }
 
 
-# ─── TOKEN ─────────────────────────────────────────────────────────────────
 def get_obr_token(societe):
     cache_key = CACHE_TOKEN_KEY_TEMPLATE.format(societe_pk=societe.pk)
     token = cache.get(cache_key)
@@ -79,27 +90,19 @@ def invalidate_obr_token(societe):
     cache.delete(cache_key)
 
 
-# ─── PAYLOAD FACTURE ───────────────────────────────────────────────────────
+# ─── PAYLOAD (3 décimales partout) ─────────────────────────────────────
 def build_invoice_payload(facture):
-    """Construction du payload OBR"""
-    
-    # === CORRECTION IMPORTANTE ===
-    # On ne régénère l'identifiant QUE s'il n'existe pas encore
     if not facture.invoice_identifier:
         facture.generate_invoice_identifier()
         facture.save(update_fields=['invoice_identifier'])
-    
-    print(f"[DEBUG] invoice_identifier envoyé → {facture.invoice_identifier}")
-
-    # ... reste de ton code ...
 
     societe = facture.societe
     client = facture.client
     lignes = facture.lignes.select_related('produit', 'service', 'taux_tva').all()
 
-        # Synchronisation stricte avec l'identifiant
+    # Date
     try:
-        date_part = facture.invoice_identifier.split('/')[2]  # YYYYMMDDHHMMSS
+        date_part = facture.invoice_identifier.split('/')[2]
         y, m, d = date_part[0:4], date_part[4:6], date_part[6:8]
         h, min_, s = date_part[8:10], date_part[10:12], date_part[12:14]
         invoice_date_str = f"{y}-{m}-{d} {h}:{min_}:{s}"
@@ -144,22 +147,19 @@ def build_invoice_payload(facture):
         "invoice_items": []
     }
 
-    # ... (le reste pour les lignes et avoirs reste le même)
-
-    # Gestion des avoirs
     if facture.type_facture in ['FA', 'RC'] and facture.facture_originale:
         payload["invoice_ref"] = facture.facture_originale.numero[:30]
         payload["cn_motif"] = (facture.motif_avoir or "Avoir / Note de crédit")[:500]
 
-    # Lignes de la facture
+    # Lignes avec 3 décimales strictes
     for ligne in lignes:
-        prix_ht = float(getattr(ligne, 'prix_unitaire_ht', 0) or 0)
-        quantite = float(ligne.quantite or 0)
-        taux = float(getattr(ligne.taux_tva, 'valeur', 0) or 0)
+        prix_ht = truncate3(getattr(ligne, 'prix_unitaire_ht', 0))
+        quantite = truncate3(ligne.quantite or 0)
+        taux = truncate3(getattr(ligne.taux_tva, 'valeur', 0))
 
-        montant_ht = round(prix_ht * quantite, 2)
-        montant_tva = round(montant_ht * taux / 100, 2)
-        montant_ttc = round(montant_ht + montant_tva, 2)
+        montant_ht = truncate3(prix_ht * quantite)
+        montant_tva = truncate3(montant_ht * taux / Decimal('100'))
+        montant_ttc = truncate3(montant_ht + montant_tva)
 
         payload["invoice_items"].append({
             "item_designation": str(ligne.designation)[:500],

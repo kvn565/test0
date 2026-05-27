@@ -9,6 +9,7 @@ from clients.models import Client
 from produits.models import Produit
 from services.models import Service
 from taux.models import TauxTVA
+from decimal import Decimal, ROUND_DOWN
 
 
 class FactureHeaderForm(forms.ModelForm):
@@ -125,9 +126,17 @@ class LigneFactureForm(forms.ModelForm):
         widgets = {
             'produit': forms.Select(attrs={'class': 'form-select'}),
             'service': forms.Select(attrs={'class': 'form-select'}),
-            'quantite': forms.NumberInput(attrs={'class': 'form-control text-end', 'step': '0.01', 'min': '0.01'}),
+            'quantite': forms.NumberInput(attrs={
+                'class': 'form-control text-end', 
+                'step': '0.001', 
+                'min': '0.001'
+            }),
             'designation': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Désignation'}),
-            'prix_vente_tvac': forms.NumberInput(attrs={'class': 'form-control text-end', 'step': '0.01', 'min': '0.01'}),
+            'prix_vente_tvac': forms.NumberInput(attrs={
+                'class': 'form-control text-end', 
+                'step': '0.001', 
+                'min': '0.001'
+            }),
             'taux_tva': forms.Select(attrs={'class': 'form-select'}),
         }
 
@@ -153,34 +162,42 @@ class LigneFactureForm(forms.ModelForm):
         self.fields['prix_vente_tvac'].required = True
         self.fields['taux_tva'].required = False  # ← Ajouté: géré par le modèle
 
-    def clean(self):
-        cleaned_data = super().clean()
-        produit = cleaned_data.get('produit')
-        service = cleaned_data.get('service')
+        def clean(self):
+            cleaned_data = super().clean()
+            produit = cleaned_data.get('produit')
+            service = cleaned_data.get('service')
+            quantite = cleaned_data.get('quantite')
+            prix_tvac = cleaned_data.get('prix_vente_tvac')
 
-        if not produit and not service:
-            raise ValidationError("Vous devez sélectionner un produit OU un service.")
+            if not produit and not service:
+                raise ValidationError("Vous devez sélectionner un produit OU un service.")
 
-        if produit and service:
-            raise ValidationError("Choisissez soit un produit, soit un service.")
+            if produit and service:
+                raise ValidationError("Choisissez soit un produit, soit un service.")
 
-        # ====================== ANTI-DOUBLON PRODUIT ======================
-        if self.facture and produit:
-            qs = LigneFacture.objects.filter(
-                facture=self.facture,
-                produit=produit
-            )
-            if self.instance and self.instance.pk:
-                qs = qs.exclude(pk=self.instance.pk)
+            # ====================== TRONCATURE À 3 DÉCIMALES ======================
+            if quantite is not None:
+                cleaned_data['quantite'] = quantite.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
-            if qs.exists():
-                raise ValidationError({
-                    'produit': f"Le produit « {produit.designation} » est déjà présent dans cette facture. "
-                               "Un même produit ne peut apparaître qu'une seule fois."
-                })
-        # ===================================================================
+            if prix_tvac is not None:
+                cleaned_data['prix_vente_tvac'] = prix_tvac.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+            # =====================================================================
 
-        return cleaned_data
+            # ====================== ANTI-DOUBLON PRODUIT ======================
+            if self.facture and produit:
+                qs = LigneFacture.objects.filter(
+                    facture=self.facture,
+                    produit=produit
+                )
+                if self.instance and self.instance.pk:
+                    qs = qs.exclude(pk=self.instance.pk)
+
+                if qs.exists():
+                    raise ValidationError({
+                        'produit': f"Le produit « {produit.designation} » est déjà présent dans cette facture."
+                    })
+
+            return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)

@@ -19,9 +19,9 @@ class ServiceForm(forms.ModelForm):
             }),
             'prix_vente': forms.NumberInput(attrs={
                 'class': 'form-control text-end',
-                'step': '0.01',
+                'step': '0.001',                    # ← Principal changement
                 'min': '0',
-                'placeholder': '0.00',
+                'placeholder': '0.000',             # ← Mis à jour
             }),
             'taux_tva': forms.Select(attrs={'class': 'form-select'}),
             'statut': forms.Select(attrs={'class': 'form-select'}),
@@ -37,14 +37,14 @@ class ServiceForm(forms.ModelForm):
                 # Société NON assujettie → Seulement taux 0%
                 self.fields['taux_tva'].queryset = TauxTVA.objects.filter(
                     societe=societe,
-                    valeur=Decimal('0.00')
+                    valeur=Decimal('0.000')          # ← Mis à jour à 3 décimales
                 ).order_by('valeur')
 
                 if self.fields['taux_tva'].queryset.exists():
                     self.fields['taux_tva'].initial = self.fields['taux_tva'].queryset.first().id
 
             else:
-                # Société assujettie → Tous les taux de cette société
+                # Société assujettie → Tous les taux
                 self.fields['taux_tva'].queryset = TauxTVA.objects.filter(
                     societe=societe
                 ).order_by('valeur')
@@ -72,8 +72,13 @@ class ServiceForm(forms.ModelForm):
 
     def clean_prix_vente(self):
         prix = self.cleaned_data.get('prix_vente')
-        if prix is not None and prix < 0:
-            raise ValidationError("Le prix de vente ne peut pas être négatif.")
+        if prix is not None:
+            if prix < 0:
+                raise ValidationError("Le prix de vente ne peut pas être négatif.")
+            
+            # Normalisation à exactement 3 décimales (cohérent avec les autres modules)
+            prix = prix.quantize(Decimal('0.001'))
+            
         return prix
 
     def clean(self):
@@ -81,7 +86,7 @@ class ServiceForm(forms.ModelForm):
 
         if self.societe and hasattr(self.societe, 'assujeti_tva') and not self.societe.assujeti_tva:
             taux = cleaned_data.get('taux_tva')
-            if taux and taux.valeur != Decimal('0.00'):
+            if taux and taux.valeur != Decimal('0.000'):   # ← Mis à jour à 3 décimales
                 self.add_error('taux_tva', "Les sociétés non assujetties ne peuvent utiliser que le taux 0%.")
 
         return cleaned_data

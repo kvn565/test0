@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load facture_filters %}
 {% block title %}{{ facture.display_numero }} — WIBABI{% endblock %}
 {% block nav_facturer %}active{% endblock %}
 
@@ -51,10 +51,10 @@
                     <div class="text-md-end w-100 w-md-auto">
                         <div class="text-muted small text-uppercase mb-1">Total TTC</div>
                         <h3 id="total-ttc" class="fw-bold text-primary mb-1">
-                            {{ facture.total_ttc|floatformat:0 }} {{ facture.devise }}
+                            {{ facture.total_ttc|truncate3 }} {{ facture.devise }}
                         </h3>
                         <div id="total-ht" class="text-muted small">
-                            HT : {{ facture.total_ht|floatformat:0 }} | TVA : {{ facture.total_tva|floatformat:0 }}
+                            HT : {{ facture.total_ht|truncate3 }} | TVA : {{ facture.total_tva|truncate3 }}
                         </div>
 
                         <div class="d-flex flex-wrap gap-2 justify-content-md-end mt-3">
@@ -124,17 +124,16 @@
                             <td><div class="fw-medium">{{ ligne.designation }}</div></td>
                             <td class="text-center small" data-stock-id="{{ ligne.produit.pk|default:'0' }}">
                                 {% if ligne.produit %}
-                                    {{ ligne.produit.stock_projete|floatformat:0 }}
+                                    {{ ligne.produit.stock_projete|truncate3 }}
                                 {% else %}
                                     —
                                 {% endif %}
                             </td>
-                            <td class="text-center small">{{ ligne.taux_tva }}%</td>
-                            <td class="text-end small">{{ ligne.prix_vente_tvac|floatformat:0 }}</td>
-                            <td class="text-end fw-medium">{{ ligne.quantite|floatformat:2 }}</td>
-                            <td class="text-end small">{{ ligne.montant_ht|floatformat:0 }}</td>
-                            <td class="text-end small">{{ ligne.montant_tva|floatformat:0 }}</td>
-                            <td class="text-end fw-bold text-primary">{{ ligne.montant_ttc|floatformat:0 }}</td>
+                            <td class="text-end small">{{ ligne.prix_vente_tvac|truncate3 }}</td>
+                            <td class="text-end fw-medium">{{ ligne.quantite|truncate3 }}</td>
+                            <td class="text-end small">{{ ligne.montant_ht|truncate3 }}</td>
+                            <td class="text-end small">{{ ligne.montant_tva|truncate3 }}</td>
+                            <td class="text-end fw-bold text-primary">{{ ligne.montant_ttc|truncate3 }}</td>
                             {% if facture.statut_obr == 'EN_ATTENTE' %}
                              <td class="text-end">
                                  <button class="btn btn-sm btn-outline-primary me-1" 
@@ -159,9 +158,9 @@
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="6" class="text-end fw-medium">Sous-totaux</td>
-                            <td id="ft-ht" class="text-end fw-medium">{{ facture.total_ht|floatformat:0 }}</td>
-                            <td id="ft-tva" class="text-end fw-medium">{{ facture.total_tva|floatformat:0 }}</td>
-                            <td id="ft-ttc" class="text-end fw-bold text-primary">{{ facture.total_ttc|floatformat:0 }} {{ facture.devise }}</td>
+                            <td id="ft-ht" class="text-end fw-medium">{{ facture.total_ht|truncate3 }}</td>
+                            <td id="ft-tva" class="text-end fw-medium">{{ facture.total_tva|truncate3 }}</td>
+                            <td id="ft-ttc" class="text-end fw-bold text-primary">{{ facture.total_ttc|truncate3 }} {{ facture.devise }}</td>
                             {% if facture.statut_obr == 'EN_ATTENTE' %}<td></td>{% endif %}
                         </tr>
                     </tfoot>
@@ -411,7 +410,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const required = document.getElementById('motifRequired');
 
             if (statut === 'ENVOYE') {
-                motifGroup.style.display = 'block';
+                if (statut === 'ENVOYE') {
+                    motifGroup.style.display = 'block';
+                    required.style.display = 'inline';
+                } else {
+                    motifGroup.style.display = 'none';
+                    required.style.display = 'none';
+                }
                 required.style.display = 'inline';
                 infoBox.innerHTML = '<strong>Facture déjà envoyée à l’OBR.</strong><br>Le motif est obligatoire pour l\'annulation.';
             } else {
@@ -426,7 +431,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnAnnuler) btnAnnuler.addEventListener('click', confirmerAnnulation);
 });
 
-
+function truncate3(value) {
+    if (value === null || value === undefined) return "0.000";
+    const num = parseFloat(value);
+    if (isNaN(num)) return "0.000";
+    return (Math.floor(num * 1000) / 1000).toFixed(3);
+}
 // ==================== GESTION TVA ====================
 function _setTva(valeur) {
     const effective = SOCIETE_ASSUJETTIE_TVA ? (parseFloat(valeur) || 0) : 0;
@@ -539,7 +549,7 @@ function afficherDetails(data) {
     document.getElementById('info-stock').textContent = data.stock !== undefined ? data.stock : '—';
 
     _setTva(data.taux_tva);
-    document.getElementById('input-prix').value = Number(data.prix_ttc || 0).toFixed(2);
+    document.getElementById('input-prix').value = Number(data.prix_ttc || 0).toFixed(3);  // ← changé en 3
 
     document.getElementById('details-ligne').style.display = 'block';
     document.getElementById('btn-ajouter-ligne').disabled = false;
@@ -547,7 +557,7 @@ function afficherDetails(data) {
     calculerPreview();
 }
 
-// ==================== PREVIEW (corrigé - une seule fonction) ====================
+// ==================== PREVIEW (Version corrigée - 3 décimales) ====================
 function calculerPreview() {
     const prixTvac = parseFloat(document.getElementById('input-prix').value) || 0;
     const qte = parseFloat(document.getElementById('input-qte').value) || 0;
@@ -567,9 +577,14 @@ function calculerPreview() {
     }
     const ttc = ht + montantTva;
 
-    document.getElementById('prev-ht').textContent  = Math.round(ht);
-    document.getElementById('prev-tva').textContent = Math.round(montantTva);
-    document.getElementById('prev-ttc').textContent = Math.round(ttc);
+    // TRONCATURE à 3 décimales (sans arrondi)
+    function truncate3(num) {
+        return (Math.floor(num * 1000) / 1000).toFixed(3);
+    }
+
+    document.getElementById('prev-ht').textContent  = truncate3(ht);
+    document.getElementById('prev-tva').textContent = truncate3(montantTva);
+    document.getElementById('prev-ttc').textContent = truncate3(ttc);
     document.getElementById('preview').style.display = 'block';
 }
 
@@ -664,14 +679,14 @@ function updateLigneInTable(data, isEdit) {
         <td class="text-muted small">${index}</td>
         <td><div class="fw-medium">${data.designation}</div></td>
         <td class="text-center small" data-stock-id="${data.produit_id || 'null'}">
-            ${data.stock_apres !== null ? Number(data.stock_apres).toFixed(0) : '—'}
+            ${data.stock_apres !== null ? truncate3(data.stock_apres) : '—'}
         </td>
         <td class="text-center small">${data.taux_tva}%</td>
-        <td class="text-end small">${Number(data.prix_tvac).toFixed(0)}</td>
-        <td class="text-end fw-medium">${Number(data.quantite).toFixed(2)}</td>
-        <td class="text-end small">${Number(data.montant_ht).toFixed(0)}</td>
-        <td class="text-end small">${Number(data.montant_tva).toFixed(0)}</td>
-        <td class="text-end fw-bold text-primary">${Number(data.montant_ttc).toFixed(0)}</td>
+        <td class="text-end small">${Number(data.prix_tvac).toFixed(3)}</td>
+        <td class="text-end fw-medium">${Number(data.quantite).toFixed(3)}</td>
+        <td class="text-end small">${Number(data.montant_ht).toFixed(3)}</td>
+        <td class="text-end small">${Number(data.montant_tva).toFixed(3)}</td>
+        <td class="text-end fw-bold text-primary">${Number(data.montant_ttc).toFixed(3)}</td>
         <td class="text-end">
             <div class="btn-group">
                 <button class="btn btn-sm btn-outline-primary" 
@@ -693,16 +708,22 @@ function updateInvoiceTotals(data) {
     // Mise à jour de l'en-tête
     const ttcHeader = document.getElementById('total-ttc');
     const subTotalsHeader = document.getElementById('total-ht');
-    if (ttcHeader) ttcHeader.textContent = `${Number(data.total_ttc).toFixed(0)} ${FACTURE_DEVISE}`;
-    if (subTotalsHeader) subTotalsHeader.textContent = `HT : ${Number(data.total_ht).toFixed(0)} | TVA : ${Number(data.total_tva).toFixed(0)}`;
+
+    if (ttcHeader) {
+        ttcHeader.textContent = `${truncate3(data.total_ttc)} ${FACTURE_DEVISE}`;
+    }
+
+    if (subTotalsHeader) {
+        subTotalsHeader.textContent = `HT : ${truncate3(data.total_ht)} | TVA : ${truncate3(data.total_tva)}`;
+    }
 
     // Mise à jour du footer de table
     const ftHt = document.getElementById('ft-ht');
     const ftTva = document.getElementById('ft-tva');
     const ftTtc = document.getElementById('ft-ttc');
-    if (ftHt) ftHt.textContent = Number(data.total_ht).toFixed(0);
-    if (ftTva) ftTva.textContent = Number(data.total_tva).toFixed(0);
-    if (ftTtc) ftTtc.textContent = `${Number(data.total_ttc).toFixed(0)} ${FACTURE_DEVISE}`;
+    if (ftHt) ftHt.textContent = Number(data.total_ht).toFixed(3);
+    if (ftTva) ftTva.textContent = Number(data.total_tva).toFixed(3);
+    if (ftTtc) ftTtc.textContent = `${Number(data.total_ttc).toFixed(3)} ${FACTURE_DEVISE}`;
 }
 
 function showToast(msg, type) {
@@ -770,16 +791,13 @@ async function envoyerOBR() {
 }
 
 // ==================== ANNULATION ====================
+// ==================== CONFIRMATION ANNULATION (Correction minimale) ====================
 async function confirmerAnnulation() {
     const btn = document.getElementById('btnConfirmerAnnulation');
     const motif = document.getElementById('motifAnnulation').value.trim();
 
-    if ((btn.dataset.statut || FACTURE_STATUT).toUpperCase() === 'ENVOYE' && !motif) {
-        alert("Le motif est obligatoire pour une facture envoyée à l'OBR.");
-        return;
-    }
+    if (!confirm("Confirmez-vous la suppression de cette facture ?")) return;
 
-    isSubmitting = true; 
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
 
@@ -787,25 +805,33 @@ async function confirmerAnnulation() {
     formData.append('motif', motif);
 
     try {
-        const response = await fetch(BASE_URLS.annuler, {
+        const response = await fetch("{% url 'facturer:annuler' facture.pk %}", {
             method: 'POST',
-            headers: { 'X-CSRFToken': CSRF_TOKEN },
+            headers: { 
+                'X-CSRFToken': CSRF_TOKEN 
+            },
             body: formData
         });
+
+        // Vérification importante
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+
         if (data.ok) {
+            alert(data.message || "Facture supprimée avec succès");
             window.location.href = "{% url 'facturer:liste' %}";
         } else {
-            isSubmitting = false;
-            alert(data.error || "Erreur annulation");
+            alert(data.error || "Erreur lors de l'opération");
         }
     } catch (e) {
-        isSubmitting = false;
-        alert("Erreur réseau");
+        console.error("Erreur annulation:", e);
+        alert("Erreur de connexion ou de serveur. Veuillez réessayer.");
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Confirmer';
-        modalAnnuler?.hide();
+        btn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Confirmer l\'annulation';
     }
 }
 

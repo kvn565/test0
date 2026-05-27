@@ -1,4 +1,3 @@
-# services/models.py
 from django.db import models
 from decimal import Decimal
 from societe.models import Societe
@@ -14,12 +13,18 @@ class Service(models.Model):
 
     societe       = models.ForeignKey(Societe, on_delete=models.CASCADE, related_name='services')
     designation   = models.CharField(max_length=200, verbose_name="Désignation")
-    prix_vente    = models.DecimalField(max_digits=12, decimal_places=3, default=0, verbose_name="Prix de vente HT")
+    
+    prix_vente    = models.DecimalField(
+        max_digits=12, 
+        decimal_places=3, 
+        default=Decimal('0.000'),      # ← Correction
+        verbose_name="Prix de vente HT"
+    )
     
     taux_tva = models.ForeignKey(
         TauxTVA,
         on_delete=models.PROTECT,
-        null=True,          # Gardé nullable pour l'instant
+        null=True,
         blank=True,
         related_name='services',
         verbose_name="Taux TVA"
@@ -37,12 +42,13 @@ class Service(models.Model):
         unique_together = [('societe', 'designation')]
 
     def __str__(self):
-        return f"{self.designation} ({self.taux_tva})"
+        return f"{self.designation} ({self.prix_vente if self.prix_vente else '0.000'})"
 
     @property
     def tva_montant(self) -> Decimal:
-        if not self.societe.applique_tva:
+        if not self.taux_tva or not getattr(self.societe, 'applique_tva', False):
             return Decimal('0.000')
+        
         tva = (self.prix_vente * self.taux_tva.valeur / Decimal('100'))
         return tva.quantize(Decimal('0.001'))
 

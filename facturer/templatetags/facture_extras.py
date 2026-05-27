@@ -7,8 +7,10 @@
 # Chargez le filtre dans le template avec :  {% load facture_extras %}
 
 from django import template
+from decimal import Decimal, ROUND_DOWN
 
 register = template.Library()
+
 
 
 @register.filter(name='splitlines')
@@ -28,3 +30,15 @@ def splitlines(value):
         return []
     # On ne garde que les lignes non vides pour éviter les lignes blanches
     return [line for line in value.splitlines() if line.strip()]
+    
+@register.filter(name='truncate3')
+def truncate_to_3_decimals(value):
+    """Tronque strictement à 3 décimales sans aucun arrondi"""
+    if value is None:
+        return "0.000"
+    try:
+        dec = Decimal(str(value))
+        truncated = dec.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+        return f"{truncated:.3f}"
+    except:
+        return "0.000"

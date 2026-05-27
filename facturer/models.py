@@ -8,6 +8,15 @@ from clients.models import Client
 from produits.models import Produit
 from services.models import Service
 from taux.models import TauxTVA
+from decimal import Decimal, ROUND_DOWN
+
+def quantize_3dec(value):
+    """Tronque à exactement 3 décimales sans arrondissement"""
+    if value is None:
+        return Decimal('0.000')
+    if isinstance(value, (int, float)):
+        value = Decimal(str(value))
+    return value.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
 
 class Facture(models.Model):
@@ -61,9 +70,9 @@ class Facture(models.Model):
     mode_paiement = models.CharField(max_length=10, choices=MODE_PAIEMENT_CHOICES, default='CAISSE', verbose_name="Mode de paiement")
     applique_tva = models.BooleanField(default=True, verbose_name="Appliquer la TVA")
 
-    total_ht = models.DecimalField(max_digits=14, decimal_places=2, default=0, editable=False)
-    total_tva = models.DecimalField(max_digits=14, decimal_places=2, default=0, editable=False)
-    total_ttc = models.DecimalField(max_digits=14, decimal_places=2, default=0, editable=False)
+    total_ht = models.DecimalField(max_digits=14, decimal_places=3, default=0, editable=False)
+    total_tva = models.DecimalField(max_digits=14, decimal_places=3, default=0, editable=False)
+    total_ttc = models.DecimalField(max_digits=14, decimal_places=3, default=0, editable=False)
 
     statut_obr = models.CharField(max_length=20, choices=STATUT_OBR_CHOICES, default='EN_ATTENTE', editable=False)
     message_obr = models.TextField(blank=True, editable=False)
@@ -202,21 +211,23 @@ class Facture(models.Model):
     #  CALCULS & UTILITAIRES                                              #
     # ------------------------------------------------------------------ #
     def recalculer_totaux(self):
+        """Recalcule les totaux avec troncature stricte à 3 décimales"""
         lignes = self.lignes.all()
 
-        total_ht  = Decimal('0')
+        total_ht = Decimal('0')
         total_tva = Decimal('0')
         total_ttc = Decimal('0')
 
         for ligne in lignes:
-            total_ht  += ligne.montant_ht
+            total_ht += ligne.montant_ht
             total_tva += ligne.montant_tva
             total_ttc += ligne.montant_ttc
 
+        # Troncature stricte à 3 décimales (sans arrondi)
         Facture.objects.filter(pk=self.pk).update(
-            total_ht=total_ht.quantize(Decimal('0.01')),
-            total_tva=total_tva.quantize(Decimal('0.01')),
-            total_ttc=total_ttc.quantize(Decimal('0.01')),
+            total_ht=total_ht.quantize(Decimal('0.001'), rounding=ROUND_DOWN),
+            total_tva=total_tva.quantize(Decimal('0.001'), rounding=ROUND_DOWN),
+            total_ttc=total_ttc.quantize(Decimal('0.001'), rounding=ROUND_DOWN),
         )
 
         self.refresh_from_db(fields=['total_ht', 'total_tva', 'total_ttc'])
@@ -225,7 +236,7 @@ class Facture(models.Model):
     def montant_en_lettres(self):
         try:
             from num2words import num2words
-            montant = int(round(self.total_ttc))
+            montant = int(self.total_ttc.quantize(Decimal('1'), rounding=ROUND_DOWN))
             devise_text = "francs burundais" if self.devise == "BIF" else self.devise.lower()
             return num2words(montant, lang='fr').capitalize() + f" {devise_text}."
         except Exception:
@@ -276,7 +287,7 @@ class LigneFacture(models.Model):
 
     prix_vente_tvac = models.DecimalField(
         max_digits=12,
-        decimal_places=2,
+        decimal_places=3,
         null=True,
         blank=True,
         verbose_name="Prix de vente TVAC",

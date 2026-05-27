@@ -98,38 +98,47 @@ def entree_creer(request):
 
     if request.method == 'POST':
         form = EntreeStockForm(request.POST, societe=societe)
+        
         if form.is_valid():
             entree = form.save()
             produit = entree.produit
+            
+            # Mise à jour du prix du produit
             if entree.prix_vente_actuel:
-                produit.prix_vente = entree.prix_vente_actuel
+                produit.prix_vente = entree.prix_vente_actuel  # ou prix_vente_tvac selon ton modèle
                 produit.save()
+
             messages.success(request, f"Entrée stock enregistrée pour « {produit.designation} ».")
+            
+            # OBR
             success, msg_obr = envoyer_entree_stock(entree)
             if success:
                 messages.success(request, f"✅ OBR : {msg_obr}")
             else:
-                messages.warning(request, f"⚠️ Entrée enregistrée, mais l'envoi OBR a échoué : {msg_obr}")
+                messages.warning(request, f"⚠️ OBR échoué : {msg_obr}")
+
             return redirect('stock:entrees')
+        
+        else:
+            # === DEBUG TRÈS IMPORTANT ===
+            print("=== ERREURS DU FORMULAIRE ===")
+            print(form.errors)
+            print(form.non_field_errors())
+            messages.error(request, "Veuillez corriger les erreurs dans le formulaire.")
+
     else:
         form = EntreeStockForm(societe=societe)
 
+    # Données pour JavaScript (prix)
     produits = Produit.objects.filter(societe=societe, statut='ACTIF').order_by('designation')
-
-    # ✅ Sérialisation Python — aucun problème de locale ou d'apostrophe
-    prix_json = json.dumps({
-        str(p.pk): str(p.prix_vente)
-        for p in produits
-    })
+    prix_json = json.dumps({str(p.pk): str(p.prix_vente) for p in produits})
 
     return render(request, 'stock/entree_form.html', {
-        'form':      form,
-        'titre':     'Nouvelle entrée stock',
-        'action':    'Enregistrer',
-        'produits':  produits,
-        'prix_json': prix_json,   # ✅ ajouté
+        'form': form,
+        'titre': 'Nouvelle entrée stock',
+        'action': 'Enregistrer',
+        'prix_json': prix_json,
     })
-
 
 @login_required
 def entree_modifier(request, pk):

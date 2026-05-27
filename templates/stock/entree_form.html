@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% block title %}{{ titre }}{% endblock %}
 {% block breadcrumb_parent %}Entrées Stock{% endblock %}
 {% block breadcrumb_current %}{{ titre }}{% endblock %}
@@ -63,18 +64,12 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">
-                                Date d'entrée <span class="text-danger">*</span>
-                            </label>
-                            {# Affichage lecture seule — la vraie valeur est forcée dans clean_date_entree() #}
-                            <input type="date"
-                                   class="form-control"
-                                   value="{{ form.date_entree.value|date:'Y-m-d' }}"
-                                   readonly
-                                   tabindex="-1"
-                                   style="background-color:#e9ecef; cursor:not-allowed; pointer-events:none;">
-                            {# Champ caché qui sera réellement soumis #}
-                            <input type="hidden" name="date_entree" value="{{ form.date_entree.value|date:'Y-m-d' }}">
+                            <label class="form-label fw-medium">Date d'entrée <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" 
+                                   value="{% if form.date_entree.value %}{{ form.date_entree.value|date:'Y-m-d' }}{% else %}{{ timezone.now|date:'Y-m-d' }}{% endif %}"
+                                   readonly style="background-color:#e9ecef; cursor:not-allowed; font-weight:bold;">
+                            <input type="hidden" name="date_entree" 
+                                   value="{% if form.date_entree.value %}{{ form.date_entree.value|date:'Y-m-d' }}{% else %}{{ timezone.now|date:'Y-m-d' }}{% endif %}">
                             {{ form.date_entree.errors }}
                         </div>
 
@@ -106,21 +101,12 @@
                             <label class="form-label fw-medium">Prix de vente actuel (TVAC) <span class="text-danger">*</span></label>
                             {{ form.prix_vente_actuel }}
                             {{ form.prix_vente_actuel.errors }}
-                            <div class="form-text text-info">
-                                <i class="bi bi-info-circle"></i> Prix TVAC du produit (synchronisé automatiquement)
-                            </div>
                         </div>
 
-                    </div>
+                        <!-- Devise caché -->
+                        <input type="hidden" name="devise" value="{{ form.devise.value|default:'BIF' }}">
 
-                    {% if entree %}
-                    <div class="mt-4 pt-3 border-top">
-                        <small class="text-muted">
-                            <i class="bi bi-clock me-1"></i>
-                            Enregistré le {{ entree.date_creation|date:"d/m/Y à H:i" }}
-                        </small>
                     </div>
-                    {% endif %}
 
                     <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
                         <a href="{% url 'stock:entrees' %}" class="btn btn-outline-secondary px-4">
@@ -142,36 +128,26 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
     const selectProduit = document.getElementById('id_produit');
-    const champPrix     = document.getElementById('id_prix_vente_actuel');
-
-    // ✅ Injecté depuis Python via json.dumps — virgules et apostrophes gérés
+    const champPrix = document.getElementById('id_prix_vente_actuel');
     const prixMap = {{ prix_json|safe }};
 
     window.chargerPrixDepuisProduit = function(produitId) {
-        if (!champPrix) return;
-        const val = prixMap[String(produitId)];
-        champPrix.value = (val !== undefined) ? val : '';
+        if (champPrix && prixMap) {
+            const val = prixMap[String(produitId)];
+            if (val !== undefined) champPrix.value = val;
+        }
     };
 
-    if (selectProduit && champPrix) {
+    if (selectProduit) {
         selectProduit.addEventListener('change', function () {
             window.chargerPrixDepuisProduit(this.value);
         });
 
-        if (selectProduit.value && !champPrix.value) {
+        if (selectProduit.value) {
             window.chargerPrixDepuisProduit(selectProduit.value);
         }
     }
-
-    const dateVisible = document.querySelector('input[type="date"][readonly]');
-    if (dateVisible) {
-        ['keydown', 'paste', 'cut', 'drop'].forEach(evt =>
-            dateVisible.addEventListener(evt, e => e.preventDefault())
-        );
-    }
-
 });
 </script>
 {% endblock %}

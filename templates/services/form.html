@@ -64,14 +64,14 @@
                             {{ form.designation.errors }}
                         </div>
 
-                        <!-- Prix de vente -->
+                        <!-- Prix de vente - CORRIGÉ -->
                         <div class="col-md-6">
                             <label class="form-label">Prix de vente <span class="text-danger">*</span></label>
                             {{ form.prix_vente }}
                             {{ form.prix_vente.errors }}
                         </div>
 
-                        <!-- Devise (si tu en as une dans le formulaire) -->
+                        <!-- Devise -->
                         {% if form.devise %}
                         <div class="col-md-6">
                             <label class="form-label">Devise <span class="text-danger">*</span></label>
