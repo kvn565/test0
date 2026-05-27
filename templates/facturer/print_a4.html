@@ -243,3 +243,212 @@
 </div>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ facture.display_numero }}</title>
+    <style>
+        :root {
+            --bleu: #0f2a4a;
+            --gris-leger: #f1f3f5;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @page { size: A4 portrait; margin: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8.8pt;
+            line-height: 1.25;
+            color: #1a1a1a;
+        }
+
+        /* Toujours un padding-bottom pour le footer, qu'il soit vide ou non */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 5mm 8mm 28mm 8mm;
+        }
+
+        /* Logo : affiché uniquement si logo_path existe */
+        .header-logo { width: 100%; margin-bottom: 4mm; }
+        .header-logo img { display: block; width: 100%; max-width: 194mm; max-height: 40mm; }
+
+        .title-bar {
+            background: var(--bleu);
+            color: white;
+            padding: 7px 0;
+            text-align: center;
+            font-size: 13.5pt;
+            font-weight: bold;
+            margin-bottom: 6mm;
+        }
+
+        .parties { display: flex; gap: 10mm; margin-bottom: 7mm; }
+        .partie { flex: 1; }
+        .partie caption {
+            font-weight: bold;
+            color: var(--bleu);
+            border-bottom: 2px solid var(--bleu);
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            font-size: 9.5pt;
+            caption-side: top;
+            text-align: left;
+        }
+        .lbl { display: inline-block; width: 135px; font-weight: bold; color: var(--bleu); }
+
+        .main-table { width: 100%; border-collapse: collapse; margin: 5mm 0 4mm 0; }
+        .main-table th, .main-table td { border: 1px solid #444; padding: 5px 6px; text-align: center; vertical-align: middle; }
+        .main-table th { background: var(--bleu); color: white; font-size: 8.8pt; }
+        .main-table td:nth-child(2), .main-table th:nth-child(2) { text-align: left; width: 34%; }
+        .main-table td:nth-child(3),
+        .main-table td:nth-child(4),
+        .main-table td:nth-child(5),
+        .main-table td:nth-child(6),
+        .main-table td:nth-child(7) { text-align: right; white-space: nowrap; }
+        .total-row td { font-weight: bold; background: var(--gris-leger); font-size: 9pt; }
+
+        /* Footer toujours présent en bas, vide ou avec texte */
+        .footer {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 15mm;
+            padding: 3mm 8mm 4mm 8mm;
+            text-align: center;
+            font-size: 7.8pt;
+            line-height: 1.4;
+            border-top: 1.5px solid var(--bleu);
+            background: #fff;
+        }
+
+        .small { font-size: 7.8pt; color: #555; }
+    </style>
+</head>
+<body>
+
+<!-- Footer toujours affiché en bas. Si pied_page vide : footer avec juste la ligne bleue, aucun texte -->
+<div class="footer">
+    {% if pied_page %}{{ pied_page|linebreaksbr }}{% endif %}
+</div>
+
+<div class="page">
+
+    {% if logo_path %}
+    <div class="header-logo">
+        <img src="{{ logo_path }}" alt="{{ societe.nom }}">
+    </div>
+    {% endif %}
+
+    <div class="title-bar">
+        FACTURE N° {{ facture.display_numero }} — {{ facture.date_facture|date:"d/m/Y" }} à {{ facture.heure_facture|time:"H:i" }}
+    </div>
+
+    <div class="parties">
+        <div class="partie">
+            <table>
+                <caption>A. IDENTIFICATEUR DU VENDEUR</caption>
+                <tr><td><span class="lbl">Nom / Raison sociale</span></td><td>: {{ societe.nom|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">NIF</span></td><td>: {{ societe.nif|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Registre de commerce</span></td><td>: {{ societe.registre|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Téléphone</span></td><td>: {{ societe.telephone|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Email</span></td><td>: {{ societe.email_societe|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Province</span></td><td>: {{ societe.province|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Commune</span></td><td>: {{ societe.commune|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Quartier</span></td><td>: {{ societe.quartier|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Avenue</span></td><td>: {{ societe.avenue|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">N°</span></td><td>: {{ societe.numero|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Assujetti à la TVA</span></td><td>: {% if societe.assujeti_tva %}Oui{% else %}Non{% endif %}</td></tr>
+                <tr><td><span class="lbl">Centre fiscal</span></td><td>: {{ societe.centre_fiscale|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Forme juridique</span></td><td>: {{ societe.forme|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Secteur d'activité</span></td><td>: {{ societe.secteur|default:"—" }}</td></tr>
+            </table>
+        </div>
+
+        <div class="partie">
+            <table>
+                <caption>B. IDENTIFICATEUR DU CLIENT</caption>
+                <tr><td><span class="lbl">Nom du client</span></td><td>: {{ facture.client.nom|default:"Client divers" }}</td></tr>
+                <tr><td><span class="lbl">NIF</span></td><td>: {{ facture.client.nif|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Résident à</span></td><td>: {{ facture.client.adresse|default:facture.client.adresse_complete|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Assujetti à la TVA</span></td><td>: {% if facture.client.assujeti_tva %}Oui{% else %}Non{% endif %}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <p style="font-weight:bold; margin:2mm 0 1mm;">Doit ce qui suit :</p>
+
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th style="width:4%;">N°</th>
+                <th style="width:34%;">DÉSIGNATION</th>
+                <th style="width:8%;">QTÉ</th>
+                <th style="width:13%;">P.U HTVA</th>
+                <th style="width:13%;">P.T HTVA</th>
+                <th style="width:14%;">TVA ({{ facture.devise }})</th>
+                <th style="width:14%;">P.T TVAC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in lignes %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td style="text-align:left;">
+                    {{ ligne.designation }}
+                    {% if ligne.taux_tva_valeur %}
+                        <br><span class="small">TVA {{ ligne.taux_tva_valeur|floatformat:0 }}%</span>
+                    {% endif %}
+                </td>
+                <td>{{ ligne.quantite|floatformat:3 }}</td>
+                <td>{{ ligne.prix_unitaire_ht|floatformat:3 }}</td>
+                <td>{{ ligne.montant_ht|floatformat:3 }}</td>
+                <td>{{ ligne.montant_tva|floatformat:3 }}</td>
+                <td>{{ ligne.montant_ttc|floatformat:3 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="padding:20px; text-align:center; font-style:italic; color:#666;">
+                    Aucune ligne enregistrée.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="4" style="text-align:right; padding-right:8px;">TOTAL GÉNÉRAL</td>
+                <td>{{ facture.total_ht|floatformat:3 }}</td>
+                <td>{{ facture.total_tva|floatformat:3 }}</td>
+                <td>{{ facture.total_ttc|floatformat:3 }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <p style="margin:3mm 0;"><strong>Nous disons :</strong> {{ montant_lettres|default:"—" }}</p>
+
+    <div style="margin: 6mm 0 4mm 0; text-align: left;">
+        <div style="font-size: 9pt; font-family: monospace;">
+            <strong>Identifiant :</strong> {{ invoice_identifier|default:"Non encore généré" }}
+        </div>
+        {% if qr_code_url %}
+        <div style="margin-bottom: 5px;">
+            <img src="{{ qr_code_url }}" alt="QR Code OBR" style="width: 30mm; height: 30mm;">
+        </div>
+        {% endif %}
+        
+    </div>
+
+    <div style="margin-top:12mm; text-align:right;">
+        <p style="border-top:1.8px solid #000; width:260px; margin-left:auto; padding-top:5px;">
+            <strong>Directeur Gérant</strong><br>
+            {{ societe.nom_complet_gerant|default:societe.nom }}
+        </p>
+    </div>
+
+</div>
+</body>
+</html>
+
