@@ -3336,3 +3336,1369 @@ App 2814120 output: [2026-04-23 15:39:19] [INFO] [ACCÈS SENSIBLE] GET /superadm
 App 3308905 output: ATTENTION : Chemin GTK non trouvé : C:\Program Files\GTK3-Runtime Win64\bin
 App 3309073 output: ATTENTION : Chemin GTK non trouvé : C:\Program Files\GTK3-Runtime Win64\bin
 App 3308905 output: [2026-04-23 17:01:48] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 74.7.243.221
+App 464897 output: Stock app : services charges avec succes
+App 465170 output: Stock app : services charges avec succes
+App 464897 output: [2026-05-18 19:55:12] [ERROR] Internal Server Error: /facturer/ajax/info-produit/2/
+App 464897 output: Traceback (most recent call last):
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 241, in __get__
+App 464897 output:     rel_obj = self.field.get_cached_value(instance)
+App 464897 output:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/mixins.py", line 21, in get_cached_value
+App 464897 output:     return instance._state.fields_cache[self.cache_name]
+App 464897 output:            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+App 464897 output: KeyError: 'taux_tva'
+App 464897 output: During handling of the above exception, another exception occurred:
+App 464897 output: Traceback (most recent call last):
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 464897 output:     response = get_response(request)
+App 464897 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 464897 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 464897 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 464897 output:     return func(*args, **kwds)
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/views/decorators/http.py", line 64, in inner
+App 464897 output:     return func(request, *args, **kwargs)
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 464897 output:     return view_func(request, *args, **kwargs)
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/app.facturation.bi/facturer/views.py", line 600, in ajax_info_produit
+App 464897 output:     taux_obj = get_taux_tva_effectif(societe, produit)
+App 464897 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/app.facturation.bi/facturer/services/calculators.py", line 35, in get_taux_tva_effectif
+App 464897 output:     if objet and hasattr(objet, 'taux_tva') and objet.taux_tva:
+App 464897 output:                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 257, in __get__
+App 464897 output:     rel_obj = self.get_object(instance)
+App 464897 output:               ^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 222, in get_object
+App 464897 output:     return qs.get(self.field.get_reverse_related_filter(instance))
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 639, in get
+App 464897 output:     raise self.model.DoesNotExist(
+App 464897 output: taux.models.TauxTVA.DoesNotExist: TauxTVA matching query does not exist.
+App 464897 output: [2026-05-18 19:55:12] [ERROR] Internal Server Error: /facturer/ajax/info-produit/2/
+App 464897 output: Traceback (most recent call last):
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 241, in __get__
+App 464897 output:     rel_obj = self.field.get_cached_value(instance)
+App 464897 output:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/mixins.py", line 21, in get_cached_value
+App 464897 output:     return instance._state.fields_cache[self.cache_name]
+App 464897 output:            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+App 464897 output: KeyError: 'taux_tva'
+App 464897 output: During handling of the above exception, another exception occurred:
+App 464897 output: Traceback (most recent call last):
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 464897 output:     response = get_response(request)
+App 464897 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 464897 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 464897 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 464897 output:     return func(*args, **kwds)
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/views/decorators/http.py", line 64, in inner
+App 464897 output:     return func(request, *args, **kwargs)
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 464897 output:     return view_func(request, *args, **kwargs)
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/app.facturation.bi/facturer/views.py", line 600, in ajax_info_produit
+App 464897 output:     taux_obj = get_taux_tva_effectif(societe, produit)
+App 464897 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/app.facturation.bi/facturer/services/calculators.py", line 35, in get_taux_tva_effectif
+App 464897 output:     if objet and hasattr(objet, 'taux_tva') and objet.taux_tva:
+App 464897 output:                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 257, in __get__
+App 464897 output:     rel_obj = self.get_object(instance)
+App 464897 output:               ^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/related_descriptors.py", line 222, in get_object
+App 464897 output:     return qs.get(self.field.get_reverse_related_filter(instance))
+App 464897 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 464897 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 639, in get
+App 464897 output:     raise self.model.DoesNotExist(
+App 464897 output: taux.models.TauxTVA.DoesNotExist: TauxTVA matching query does not exist.
+App 464897 output: [2026-05-18 19:55:12] [ERROR] [500] /facturer/ajax/info-produit/2/ — User: blaise.blansa — IP: 143.105.213.43
+App 464897 output: [ pid=464897, time=2026-05-18 20:57:43,732 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_debut received a naive datetime (2026-05-18 00:00:00) while time zone support is active.
+App 464897 output:   warnings.warn(
+App 464897 output: [ pid=464897, time=2026-05-18 20:57:43,733 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-18 00:00:00) while time zone support is active.
+App 464897 output:   warnings.warn(
+App 464897 output: [ pid=464897, time=2026-05-18 20:57:43,740 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-25 00:00:00) while time zone support is active.
+App 464897 output:   warnings.warn(
+App 464897 output: [ pid=464897, time=2026-05-18 20:57:43,740 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-21 00:00:00) while time zone support is active.
+App 464897 output:   warnings.warn(
+App 464897 output: [2026-05-18 21:02:36] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Admin_kevin — IP: 143.105.213.43
+App 464897 output: [DEBUG] invoice_identifier envoyé → 4001001496/ws400100149601262/20260518191521/FN/9/2026
+App 464897 output: [ pid=464897, time=2026-05-18 21:16:18,301 ]: Ignored `background: var(--bleu)` at 30:13, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:16:18,301 ]: Ignored `gap: 10mm` at 39:35, unknown property.
+App 464897 output: [ pid=464897, time=2026-05-18 21:16:18,302 ]: Ignored `border-bottom: 2px solid var(--bleu)` at 44:13, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:16:18,303 ]: Ignored `background: var(--bleu)` at 55:26, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:16:18,304 ]: Ignored `background: var(--gris-leger)` at 62:44, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:16:18,304 ]: Ignored `border-top: 1.5px solid var(--bleu)` at 73:13, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:37,307 ]: Ignored `background: var(--bleu)` at 30:13, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:37,307 ]: Ignored `gap: 10mm` at 39:35, unknown property.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:37,308 ]: Ignored `border-bottom: 2px solid var(--bleu)` at 44:13, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:37,309 ]: Ignored `background: var(--bleu)` at 55:26, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:37,310 ]: Ignored `background: var(--gris-leger)` at 62:44, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:37,311 ]: Ignored `border-top: 1.5px solid var(--bleu)` at 73:13, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:37,355 ]: Failed to load image at "file:///home/gcbvghdlauy/app.facturation.bi/media/factures/logos/0..jpeg" (Pixbuf error: Unrecognized image file format)
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:50,301 ]: Ignored `size: 80mm auto` at 3:13, invalid value.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:50,303 ]: Ignored `word-break: break-word` at 75:13, unknown property.
+App 464897 output: [ pid=464897, time=2026-05-18 21:18:50,384 ]: Failed to load image at "http://app.facturation.bi/media/factures/logos/0..jpeg" (Pixbuf error: Unrecognized image file format)
+App 3272454 output: Stock app : services charges avec succes
+App 4087612 output: Stock app : services charges avec succes
+App 3134107 output: Stock app : services charges avec succes
+App 3602257 output: Stock app : services charges avec succes
+App 3644851 output: Stock app : services charges avec succes
+App 3645071 output: Stock app : services charges avec succes
+App 3644851 output: [2026-05-19 19:38:46] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.225
+App 3644851 output: [2026-05-19 19:41:24] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.225
+App 3644851 output: [2026-05-19 19:52:20] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 74.7.241.28
+App 3644851 output: [2026-05-19 19:55:45] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.225
+App 3644851 output: [2026-05-19 19:57:32] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.225
+App 3644851 output: [2026-05-19 19:57:35] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 143.105.213.225
+App 3644851 output: [2026-05-19 20:02:35] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 107.172.195.118
+App 3644851 output: [2026-05-19 20:02:35] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 107.172.195.118
+App 4077405 output: Stock app : services charges avec succes
+App 4077599 output: Stock app : services charges avec succes
+App 4077405 output: [2026-05-19 20:39:58] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 103.4.250.219
+App 4077405 output: [2026-05-19 20:39:59] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 103.4.250.219
+App 4077405 output: [2026-05-19 22:05:29] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 101.32.244.128
+App 488407 output: Stock app : services charges avec succes
+App 488407 output: [2026-05-19 22:31:27] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 43.157.50.58
+App 488407 output: [2026-05-19 22:57:58] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 57.141.20.9
+App 2024870 output: Stock app : services charges avec succes
+App 3125191 output: Stock app : services charges avec succes
+App 3670150 output: Stock app : services charges avec succes
+App 3963515 output: Stock app : services charges avec succes
+App 3963702 output: Stock app : services charges avec succes
+App 3963515 output: [2026-05-20 10:18:42] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 27.115.124.112
+App 3963515 output: [2026-05-20 10:54:23] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 51.75.128.50
+App 3963515 output: [2026-05-20 10:54:38] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 51.75.128.50
+App 884296 output: Stock app : services charges avec succes
+App 884296 output: [2026-05-20 14:31:27] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 154.117.232.229
+App 2110718 output: Stock app : services charges avec succes
+App 2638486 output: Stock app : services charges avec succes
+App 2638486 output: [ pid=2638486, time=2026-05-20 20:04:14,559 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_debut received a naive datetime (2026-05-20 00:00:00) while time zone support is active.
+App 2638486 output:   warnings.warn(
+App 2638486 output: [ pid=2638486, time=2026-05-20 20:04:14,560 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-20 00:00:00) while time zone support is active.
+App 2638486 output:   warnings.warn(
+App 2638486 output: [ pid=2638486, time=2026-05-20 20:04:14,569 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-27 00:00:00) while time zone support is active.
+App 2638486 output:   warnings.warn(
+App 2638486 output: [ pid=2638486, time=2026-05-20 20:04:14,569 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-23 00:00:00) while time zone support is active.
+App 2638486 output:   warnings.warn(
+App 2638486 output: [2026-05-20 20:09:38] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/8/ — User: Bakame — IP: 143.105.213.44
+App 2638486 output: === POST brut ===
+App 2638486 output: obr_password reÃ§u: '7Wo_B--s'
+App 2638486 output: obr_form valid:
+App 2638486 output:  True
+App 2638486 output: obr_form errors: 
+App 2638486 output: obr_password cleaned: 
+App 2638486 output: '7Wo_B--s'
+App 2638486 output: === AVANT SAVE ===
+App 2638486 output: societe.obr_password: '7Wo_B--s'
+App 2638486 output: === APRÃˆS SAVE ===
+App 2638486 output: obr_password en base: 
+App 2638486 output: '7Wo_B--s'
+App 3296786 output: Stock app : services charges avec succes
+App 1220420 output: Stock app : services charges avec succes
+App 1587491 output: Stock app : services charges avec succes
+App 2342266 output: Stock app : services charges avec succes
+App 3554754 output: Stock app : services charges avec succes
+App 427834 output: Stock app : services charges avec succes
+App 643355 output: Stock app : services charges avec succes
+App 643355 output: [2026-05-21 19:57:43] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 216.73.216.56
+App 2779274 output: Stock app : services charges avec succes
+App 3133856 output: Stock app : services charges avec succes
+App 3580753 output: Stock app : services charges avec succes
+App 3580753 output: [2026-05-22 04:39:30] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 157.55.39.58
+App 3580753 output: [2026-05-22 07:03:19] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 31.40.204.244
+App 3580753 output: [2026-05-22 07:03:21] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 31.40.204.182
+App 3580753 output: [2026-05-22 07:03:22] [INFO] [ACCÈS SENSIBLE] POST /setup/ — User: anonyme — IP: 31.40.204.182
+App 270411 output: Stock app : services charges avec succes
+App 1209020 output: Stock app : services charges avec succes
+App 1209020 output: [2026-05-22 11:14:47] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 207.46.13.107
+App 1598433 output: Stock app : services charges avec succes
+App 1598433 output: [2026-05-22 11:37:27] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 43.140.37.167
+App 2117721 output: Stock app : services charges avec succes
+App 2240421 output: Stock app : services charges avec succes
+App 2564271 output: Stock app : services charges avec succes
+App 3222129 output: Stock app : services charges avec succes
+App 3222129 output: [2026-05-22 16:37:41] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 66.249.68.168
+App 3393553 output: Stock app : services charges avec succes
+App 3393553 output: [2026-05-22 18:47:55] [WARNING] Forbidden (Referer checking failed - no Referer.): /accounts/login/
+App 3393553 output: [2026-05-22 18:47:55] [WARNING] [403] /accounts/login/ — User: anonyme — IP: 35.182.248.205
+App 3393553 output: [2026-05-22 18:47:55] [WARNING] Forbidden (Referer checking failed - no Referer.): /accounts/login/
+App 3393553 output: [2026-05-22 18:47:55] [WARNING] [403] /accounts/login/ — User: anonyme — IP: 35.182.248.205
+App 3393553 output: [2026-05-22 18:47:55] [WARNING] Forbidden (Referer checking failed - no Referer.): /accounts/login/
+App 3393553 output: [2026-05-22 18:47:55] [WARNING] [403] /accounts/login/ — User: anonyme — IP: 35.182.248.205
+App 3393553 output: [2026-05-22 18:47:56] [WARNING] Forbidden (Referer checking failed - no Referer.): /
+App 3393553 output: [2026-05-22 18:47:56] [WARNING] [403] / — User: anonyme — IP: 35.182.248.205
+App 3999404 output: Stock app : services charges avec succes
+App 2144465 output: Stock app : services charges avec succes
+App 3237828 output: Stock app : services charges avec succes
+App 3878630 output: Stock app : services charges avec succes
+App 64173 output: Stock app : services charges avec succes
+App 64173 output: [2026-05-23 10:35:29] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 46.202.241.153
+App 64173 output: [2026-05-23 10:35:31] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 82.38.166.122
+App 65450 output: Stock app : services charges avec succes
+App 1088045 output: Stock app : services charges avec succes
+App 1870736 output: Stock app : services charges avec succes
+App 1870736 output: [2026-05-23 19:24:54] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 43.130.174.37
+App 321410 output: Stock app : services charges avec succes
+App 527798 output: Stock app : services charges avec succes
+App 527798 output: [2026-05-24 05:00:30] [WARNING] Forbidden (Referer checking failed - no Referer.): /accounts/login/
+App 527798 output: [2026-05-24 05:00:30] [WARNING] [403] /accounts/login/ — User: anonyme — IP: 18.202.225.13
+App 527798 output: [2026-05-24 05:00:31] [WARNING] Forbidden (Referer checking failed - no Referer.): /accounts/login/
+App 527798 output: [2026-05-24 05:00:31] [WARNING] [403] /accounts/login/ — User: anonyme — IP: 18.202.225.13
+App 527798 output: [2026-05-24 05:00:31] [WARNING] Forbidden (Referer checking failed - no Referer.): /accounts/login/
+App 527798 output: [2026-05-24 05:00:31] [WARNING] [403] /accounts/login/ — User: anonyme — IP: 18.202.225.13
+App 527798 output: [2026-05-24 05:00:34] [WARNING] Forbidden (Referer checking failed - no Referer.): /
+App 527798 output: [2026-05-24 05:00:34] [WARNING] [403] / — User: anonyme — IP: 18.202.225.13
+App 2637235 output: Stock app : services charges avec succes
+App 3847305 output: Stock app : services charges avec succes
+App 3847305 output: [2026-05-24 12:05:53] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 40.77.167.243
+App 509950 output: Stock app : services charges avec succes
+App 1451514 output: Stock app : services charges avec succes
+App 1814859 output: Stock app : services charges avec succes
+App 2974529 output: Stock app : services charges avec succes
+App 2974529 output: [2026-05-24 22:49:01] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 52.167.144.20
+App 344364 output: Stock app : services charges avec succes
+App 344364 output: [2026-05-25 06:37:02] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 40.77.167.154
+App 2267160 output: Stock app : services charges avec succes
+App 3518764 output: Stock app : services charges avec succes
+App 115671 output: Stock app : services charges avec succes
+App 359555 output: Stock app : services charges avec succes
+App 359555 output: [ pid=359555, time=2026-05-25 18:01:46,847 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_debut received a naive datetime (2026-05-25 00:00:00) while time zone support is active.
+App 359555 output:   warnings.warn(
+App 359555 output: [ pid=359555, time=2026-05-25 18:01:46,848 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-25 00:00:00) while time zone support is active.
+App 359555 output:   warnings.warn(
+App 359555 output: [ pid=359555, time=2026-05-25 18:01:46,876 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-06-01 00:00:00) while time zone support is active.
+App 359555 output:   warnings.warn(
+App 359555 output: [ pid=359555, time=2026-05-25 18:01:46,877 ]: /home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1611: RuntimeWarning: DateTimeField CleActivation.date_fin received a naive datetime (2026-05-28 00:00:00) while time zone support is active.
+App 359555 output:   warnings.warn(
+App 359555 output: [2026-05-25 18:02:16] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/ — User: Bakame — IP: 143.105.213.217
+App 359555 output: [2026-05-25 18:09:25] [INFO] [ACCÈS SENSIBLE] GET /superadmin/cles/9/ — User: Bakame — IP: 143.105.213.217
+App 359555 output: [DEBUG] invoice_identifier envoyé → 4001001496/ws400100149601262/20260525161540/FN/10/2026
+App 359555 output: [2026-05-25 18:20:59] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:20:59] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:20:59] [ERROR] [500] /stock/entrees/nouveau/ — User: vicoco — IP: 143.105.213.217
+App 359555 output: [2026-05-25 18:21:06] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:06] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:06] [ERROR] [500] /stock/entrees/nouveau/ — User: vicoco — IP: 143.105.213.217
+App 359555 output: [2026-05-25 18:21:19] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:19] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:19] [ERROR] [500] /stock/entrees/nouveau/ — User: vicoco — IP: 143.105.213.217
+App 359555 output: [2026-05-25 18:21:30] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:30] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:30] [ERROR] [500] /stock/entrees/nouveau/ — User: vicoco — IP: 143.105.213.217
+App 359555 output: [2026-05-25 18:21:46] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:46] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:21:46] [ERROR] [500] /stock/entrees/nouveau/ — User: vicoco — IP: 143.105.213.217
+App 359555 output: [2026-05-25 18:22:32] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:22:32] [ERROR] Internal Server Error: /stock/entrees/nouveau/
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: MySQLdb.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: The above exception was the direct cause of the following exception:
+App 359555 output: Traceback (most recent call last):
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+App 359555 output:     response = get_response(request)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
+App 359555 output:     response = wrapped_callback(request, *callback_args, **callback_kwargs)
+App 359555 output:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/opt/alt/python312/lib64/python3.12/contextlib.py", line 81, in inner
+App 359555 output:     return func(*args, **kwds)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+App 359555 output:     return view_func(request, *args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/views.py", line 102, in entree_creer
+App 359555 output:     entree = form.save()
+App 359555 output:              ^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/forms/models.py", line 574, in save
+App 359555 output:     self.instance.save()
+App 359555 output:   File "/home/gcbvghdlauy/app.facturation.bi/stock/models.py", line 81, in save
+App 359555 output:     super().save(*args, **kwargs)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 874, in save
+App 359555 output:     self.save_base(
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 966, in save_base
+App 359555 output:     updated = self._save_table(
+App 359555 output:               ^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1169, in _save_table
+App 359555 output:     results = self._do_insert(
+App 359555 output:               ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/base.py", line 1220, in _do_insert
+App 359555 output:     return manager._insert(
+App 359555 output:            ^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+App 359555 output:     return getattr(self.get_queryset(), name)(*args, **kwargs)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/query.py", line 1918, in _insert
+App 359555 output:     return query.get_compiler(using=using).execute_sql(returning_fields)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1925, in execute_sql
+App 359555 output:     cursor.execute(sql, params)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+App 359555 output:     return self._execute_with_wrappers(
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+App 359555 output:     return executor(sql, params, many, context)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+App 359555 output:     with self.db.wrap_database_errors:
+App 359555 output:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/utils.py", line 94, in __exit__
+App 359555 output:     raise dj_exc_value.with_traceback(traceback) from exc_value
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+App 359555 output:     return self.cursor.execute(sql, params)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib/python3.12/site-packages/django/db/backends/mysql/base.py", line 78, in execute
+App 359555 output:     return self.cursor.execute(query, args)
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 179, in execute
+App 359555 output:     res = self._query(mogrified_query)
+App 359555 output:           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 331, in _query
+App 359555 output:     self._do_get_result(db)
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 136, in _do_get_result
+App 359555 output:     self._result = result = self._get_result()
+App 359555 output:                             ^^^^^^^^^^^^^^^^^^
+App 359555 output:   File "/home/gcbvghdlauy/virtualenv/app.facturation.bi/3.12/lib64/python3.12/site-packages/MySQLdb/cursors.py", line 363, in _get_result
+App 359555 output:     return self._get_db().store_result()
+App 359555 output:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+App 359555 output: django.db.utils.IntegrityError: (1048, "Column 'societe_id' cannot be null")
+App 359555 output: [2026-05-25 18:22:32] [ERROR] [500] /stock/entrees/nouveau/ — User: vicoco — IP: 143.105.213.217
+App 2801796 output: Stock app : services charges avec succes
+App 2801796 output: [2026-05-25 19:39:58] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 52.167.144.197
+App 2801796 output: [2026-05-25 21:23:42] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 196.190.61.162
+App 2801796 output: [2026-05-25 21:24:04] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 103.92.202.71
+App 3983262 output: Stock app : services charges avec succes
+App 3983262 output: [2026-05-26 02:31:29] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 52.167.144.205
+App 3118605 output: Stock app : services charges avec succes
+App 3401749 output: Stock app : services charges avec succes
+App 3794281 output: Stock app : services charges avec succes
+App 3794281 output: [2026-05-26 11:13:17] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 74.7.227.134
+App 324040 output: Stock app : services charges avec succes
+App 324040 output: [2026-05-26 12:39:39] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 40.77.167.144
+App 502575 output: Stock app : services charges avec succes
+App 502575 output: [2026-05-26 13:08:34] [WARNING] Forbidden (CSRF cookie not set.): /
+App 502575 output: [2026-05-26 13:08:34] [WARNING] [403] / — User: anonyme — IP: 34.9.216.246
+App 603770 output: Stock app : services charges avec succes
+App 1792821 output: Stock app : services charges avec succes
+App 1792821 output: [ pid=1792821, time=2026-05-26 16:40:23,516 ]: Ignored `size: 80mm auto` at 3:13, invalid value.
+App 1792821 output: [ pid=1792821, time=2026-05-26 16:40:23,519 ]: Ignored `word-break: break-word` at 75:13, unknown property.
+App 1792821 output: [ pid=1792821, time=2026-05-26 16:40:23,862 ]: Failed to load image at "https://app.facturation.bi/media/factures/logos/0..jpeg" (Pixbuf error: Unrecognized image file format)
+App 1792821 output: [2026-05-26 17:50:19] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 40.77.167.54
+App 2850952 output: Stock app : services charges avec succes
+App 2850952 output: [2026-05-26 19:10:20] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 170.106.73.216
+App 3962442 output: Stock app : services charges avec succes
+App 1685058 output: Stock app : services charges avec succes
+App 2095747 output: Stock app : services charges avec succes
+App 2095747 output: [2026-05-27 08:57:46] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 52.167.144.217
+App 3544652 output: Stock app : services charges avec succes
+App 3544652 output: [2026-05-27 10:44:04] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 154.117.219.206
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:15:31,888 ]: Ignored `background: var(--bleu)` at 30:13, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:15:31,888 ]: Ignored `gap: 10mm` at 39:35, unknown property.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:15:31,889 ]: Ignored `border-bottom: 2px solid var(--bleu)` at 44:13, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:15:31,890 ]: Ignored `background: var(--bleu)` at 55:26, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:15:31,891 ]: Ignored `background: var(--gris-leger)` at 62:44, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:15:31,892 ]: Ignored `border-top: 1.5px solid var(--bleu)` at 73:13, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:15:32,015 ]: Failed to load image at "file:///home/gcbvghdlauy/app.facturation.bi/media/factures/logos/0..jpeg" (Pixbuf error: Unrecognized image file format)
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:16:47,412 ]: Ignored `background: var(--bleu)` at 30:13, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:16:47,413 ]: Ignored `gap: 10mm` at 39:35, unknown property.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:16:47,413 ]: Ignored `border-bottom: 2px solid var(--bleu)` at 44:13, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:16:47,414 ]: Ignored `background: var(--bleu)` at 55:26, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:16:47,415 ]: Ignored `background: var(--gris-leger)` at 62:44, invalid value.
+App 3544652 output: [ pid=3544652, time=2026-05-27 12:16:47,416 ]: Ignored `border-top: 1.5px solid var(--bleu)` at 73:13, invalid value.
+App 3544652 output: [DEBUG] invoice_identifier envoyé → 4001001496/ws400100149601262/20260527101742/FN/11/2026
+App 630812 output: Stock app : services charges avec succes
+App 630812 output: [2026-05-27 14:13:10] [INFO] [ACCÈS SENSIBLE] GET /setup/ — User: anonyme — IP: 40.77.167.151
+App 1378184 output: Stock app : services charges avec succes
