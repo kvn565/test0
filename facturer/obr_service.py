@@ -267,7 +267,6 @@ def envoyer_facture_obr(facture):
         return {'success': False, 'message': str(e)}
 
 
-# ─── ANNULATION FACTURE ────────────────────────────────────────────────────
 def annuler_facture_obr(facture, motif: str):
     if not motif or not motif.strip():
         return {'success': False, 'message': "Motif obligatoire"}
@@ -276,14 +275,12 @@ def annuler_facture_obr(facture, motif: str):
     societe = facture.societe
 
     try:
-        # Vérification société active
-        check_societe_active(societe)
-
         if facture.statut_obr == 'ENVOYE':
             if not facture.invoice_identifier:
                 return {'success': False, 'message': "invoice_identifier manquant"}
 
-            url = build_obr_url(societe, ENDPOINT_CANCEL_INVOICE)
+            base_url = get_obr_base_url(societe)
+            url = f"{base_url}{ENDPOINT_CANCEL_INVOICE}"
 
             payload = {
                 "invoice_identifier": facture.invoice_identifier,
@@ -345,7 +342,6 @@ def annuler_facture_obr(facture, motif: str):
         except:
             pass
         return {'success': False, 'message': str(e)}
-
 
 @transaction.atomic
 def traiter_stock_pour_avoir(facture):

@@ -145,6 +145,7 @@ def facture_liste(request):
         'statuts': Facture.STATUT_OBR_CHOICES,
         'produits_qs': Produit.objects.filter(societe=societe).order_by('designation'),
         'services_qs': Service.objects.filter(societe=societe).order_by('designation'),
+        'has_facture_en_attente': Facture.objects.filter(societe=societe, statut_obr='EN_ATTENTE').exists(),
     })
 
 
@@ -314,7 +315,18 @@ def ajax_creer_facture(request):
     form = FactureHeaderForm(societe=societe, data=request.POST)
 
     if not form.is_valid():
-        return JsonResponse({'ok': False, 'errors': form.errors.get_json_data()}, status=400)
+        import json as _json
+        erreurs = form.errors.get_json_data()
+        print("=" * 60)
+        print("[FORM ERREURS DETAIL]")
+        print(_json.dumps(erreurs, indent=2, ensure_ascii=False))
+        print("POST reçu :", dict(request.POST))
+        print("=" * 60)
+        return JsonResponse({
+            'ok': False,
+            'errors': erreurs,
+            'error': {k: [e['message'] for e in v] for k, v in erreurs.items()}
+        }, status=400)
 
     try:
         with transaction.atomic():
@@ -432,21 +444,41 @@ def ajax_get_produits_facture_originale(request, facture_id):
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
     facture_originale = get_object_or_404(Facture, pk=facture_id, societe=societe, type_facture='FN')
-    lignes = facture_originale.lignes.filter(produit__isnull=False).select_related('produit')
+    lignes = facture_originale.lignes.filter(produit__isnull=False).select_related('produit', 'taux_tva')
 
-    data = [
-        {
+    societe_assujettie = getattr(societe, 'assujeti_tva', False)
+
+    from taux.models import TauxTVA
+    from decimal import Decimal, ROUND_DOWN
+
+    def truncate3(value):
+        """Tronque strictement à 3 décimales SANS arrondissement"""
+        if value is None:
+            return 0.0
+        try:
+            return float(Decimal(str(value)).quantize(Decimal('0.001'), rounding=ROUND_DOWN))
+        except Exception:
+            return 0.0
+
+    taux_zero = TauxTVA.get_taux_zero(societe)
+    valeur_zero = truncate3(taux_zero.valeur if taux_zero else 0)
+
+    data = []
+    for ligne in lignes:
+        if societe_assujettie and ligne.taux_tva:
+            taux_valeur = truncate3(ligne.taux_tva.valeur)
+        else:
+            taux_valeur = valeur_zero
+
+        data.append({
             'id': ligne.produit.pk,
             'designation': ligne.produit.designation,
-            'quantite_vendue': float(ligne.quantite),
-            'prix_ttc': float(ligne.prix_vente_tvac),
-            'taux_tva': float(ligne.taux_tva),
-        }
-        for ligne in lignes
-    ]
+            'quantite_vendue': truncate3(ligne.quantite),
+            'prix_ttc':        truncate3(ligne.prix_vente_tvac or 0),
+            'taux_tva':        taux_valeur,
+        })
 
     return JsonResponse({'ok': True, 'produits': data})
-
 
 # ──────────────────────────────────────────────
 #  AJAX — TAUX TVA

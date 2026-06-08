@@ -315,35 +315,39 @@
 {% block extra_js %}
 <script>
 // ==================== VARIABLES GLOBALES ====================
-const FACTURE_ID      = {{ facture.pk }};
-const FACTURE_STATUT  = '{{ facture.statut_obr }}';
-const FACTURE_TYPE    = '{{ facture.type_facture }}';
-const CSRF_TOKEN      = '{{ csrf_token|escapejs }}';
-const FACTURE_DEVISE  = '{{ facture.devise|escapejs }}';
+const FACTURE_ID           = {{ facture.pk }};
+const FACTURE_STATUT       = '{{ facture.statut_obr }}';
+const FACTURE_TYPE         = '{{ facture.type_facture }}';
+const FACTURE_ORIGINALE_ID = {{ facture.facture_originale.pk|default:'null' }};
+const CSRF_TOKEN           = '{{ csrf_token|escapejs }}';
+const FACTURE_DEVISE       = '{{ facture.devise|escapejs }}';
 const SOCIETE_ASSUJETTIE_TVA = {{ facture.societe.assujeti_tva|yesno:"true,false" }};
 
 const BASE_URLS = {
-    produit: "{% url 'facturer:ajax-info-produit' 0 %}".replace('/0/', '/'),
-    service: "{% url 'facturer:ajax-info-service' 0 %}".replace('/0/', '/'),
-    ajouter: "{% url 'facturer:ajax-ajouter-ligne' %}",
-    modifier: "{% url 'facturer:ajax-modifier-ligne' %}",
-    supprimer: "{% url 'facturer:ajax-supprimer-ligne' %}",
-    annuler: "{% url 'facturer:annuler' facture.pk %}",
-    envoyer_obr: "{% url 'facturer:ajax-envoyer-obr' facture.pk %}",
-    supprimer_en_attente: "{% url 'facturer:ajax-supprimer-facture-en-attente' %}"
+    produit:              "{% url 'facturer:ajax-info-produit' 0 %}".replace('/0/', '/'),
+    service:              "{% url 'facturer:ajax-info-service' 0 %}".replace('/0/', '/'),
+    ajouter:              "{% url 'facturer:ajax-ajouter-ligne' %}",
+    modifier:             "{% url 'facturer:ajax-modifier-ligne' %}",
+    supprimer:            "{% url 'facturer:ajax-supprimer-ligne' %}",
+    annuler:              "{% url 'facturer:annuler' facture.pk %}",
+    envoyer_obr:          "{% url 'facturer:ajax-envoyer-obr' facture.pk %}",
+    supprimer_en_attente: "{% url 'facturer:ajax-supprimer-facture-en-attente' %}",
+    produits_originale: "{% url 'facturer:ajax_get_produits_facture_originale' 0 %}".replace('0/', '')
 };
 
-let modalLigne = null;
+let modalLigne   = null;
 let modalAnnuler = null;
-let editingLigneId = null; // null = ajout, sinon ID de la ligne en cours de modif
-let isSubmitting = false;  // Pour désactiver l'anti-abandon lors d'actions légitimes
+let editingLigneId = null;
+let isSubmitting   = false;
+
+// Stocke les données produits de la facture originale (FA)
+let produitsOriginaux = {};
 
 // ==================== ANTI-DOUBLON ====================
 let produitsDansFacture = new Set();
 
 function initProduitsDansFacture() {
     produitsDansFacture.clear();
-    // On cherche tous les <td> qui ont l'attribut data-stock-id
     document.querySelectorAll('td[data-stock-id]').forEach(td => {
         const id = td.getAttribute('data-stock-id');
         if (id && id !== '0' && id !== 'null') {
@@ -359,14 +363,13 @@ function produitExisteDeja(produitId) {
 
 // ==================== INITIALISATION ====================
 document.addEventListener('DOMContentLoaded', () => {
-    modalLigne = new bootstrap.Modal(document.getElementById('modalLigne'));
+    modalLigne   = new bootstrap.Modal(document.getElementById('modalLigne'));
     modalAnnuler = new bootstrap.Modal(document.getElementById('modalAnnulerFacture'));
 
-    initProduitsDansFacture();   // ← Important
+    initProduitsDansFacture();
 
-    // ==================== ANTI-ABANDON (Optimisé) ====================
-    window.addEventListener('beforeunload', function (e) {
-        // On ne supprime que si on n'est pas en train de soumettre ET que c'est EN_ATTENTE
+    // ── Anti-abandon ──
+    window.addEventListener('beforeunload', function () {
         if (!isSubmitting && FACTURE_STATUT === 'EN_ATTENTE') {
             const params = new URLSearchParams();
             params.append('facture_id', FACTURE_ID);
@@ -374,10 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Gestion des liens de navigation (sidebar, etc.)
     document.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Si le lien est externe au module facture ou vers la liste
+        link.addEventListener('click', function () {
             const href = this.getAttribute('href');
             if (href && !href.startsWith('#') && !href.includes(FACTURE_ID) && FACTURE_STATUT === 'EN_ATTENTE') {
                 const params = new URLSearchParams();
@@ -387,57 +388,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ── Boutons ──
     const btnAjouter = document.getElementById('btn-ajouter-ligne');
     if (btnAjouter) btnAjouter.addEventListener('click', ajouterLigne);
 
     const btnEnvoyer = document.getElementById('btn-envoyer-obr');
     if (btnEnvoyer) btnEnvoyer.addEventListener('click', envoyerOBR);
 
-    // Initialisation du modal d'annulation
+    const btnAnnuler = document.getElementById('btnConfirmerAnnulation');
+    if (btnAnnuler) btnAnnuler.addEventListener('click', confirmerAnnulation);
+
+    // ── Modal annulation : affichage conditionnel du motif ──
     const modalAnnulerEl = document.getElementById('modalAnnulerFacture');
     if (modalAnnulerEl) {
         modalAnnulerEl.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
-            const id = button.getAttribute('data-facture-id');
             const statut = (button.getAttribute('data-facture-statut') || '').toUpperCase();
-            
-            const btnConfirmer = document.getElementById('btnConfirmerAnnulation');
-            btnConfirmer.dataset.factureId = id;
-            btnConfirmer.dataset.statut = statut;
+
+            document.getElementById('btnConfirmerAnnulation').dataset.statut = statut;
 
             const motifGroup = document.getElementById('motifGroup');
-            const infoBox = document.getElementById('info-annulation');
-            const required = document.getElementById('motifRequired');
+            const required   = document.getElementById('motifRequired');
+            const infoBox    = document.getElementById('info-annulation');
 
             if (statut === 'ENVOYE') {
-                if (statut === 'ENVOYE') {
-                    motifGroup.style.display = 'block';
-                    required.style.display = 'inline';
-                } else {
-                    motifGroup.style.display = 'none';
-                    required.style.display = 'none';
-                }
-                required.style.display = 'inline';
-                infoBox.innerHTML = '<strong>Facture déjà envoyée à l’OBR.</strong><br>Le motif est obligatoire pour l\'annulation.';
+                motifGroup.style.display = 'block';
+                required.style.display   = 'inline';
+                infoBox.innerHTML = '<strong>Facture déjà envoyée à l\'OBR.</strong><br>Le motif est obligatoire pour l\'annulation.';
             } else {
                 motifGroup.style.display = 'none';
-                required.style.display = 'none';
+                required.style.display   = 'none';
                 infoBox.innerHTML = 'Cette facture est en cours (non envoyée). Elle sera <strong>supprimée définitivement</strong>.';
             }
         });
     }
-
-    const btnAnnuler = document.getElementById('btnConfirmerAnnulation');
-    if (btnAnnuler) btnAnnuler.addEventListener('click', confirmerAnnulation);
 });
 
+// ==================== UTILITAIRES ====================
 function truncate3(value) {
     if (value === null || value === undefined) return "0.000";
     const num = parseFloat(value);
     if (isNaN(num)) return "0.000";
     return (Math.floor(num * 1000) / 1000).toFixed(3);
 }
-// ==================== GESTION TVA ====================
+
 function _setTva(valeur) {
     const effective = SOCIETE_ASSUJETTIE_TVA ? (parseFloat(valeur) || 0) : 0;
     document.getElementById('info-tva').textContent = effective;
@@ -447,82 +441,159 @@ function _getTva() {
     return parseFloat(document.getElementById('info-tva').textContent) || 0;
 }
 
-// ==================== MODAL LIGNE ====================
-function ouvrirModalLigne() {
-    modalLigne.show();
-    reinitModalLigne();
-}
-
-function reinitModalLigne() {
-    editingLigneId = null;
-    document.getElementById('modalLigneLabel').innerHTML = '<i class="bi bi-plus-circle text-warning me-2"></i>Ajouter une ligne';
-    document.getElementById('btn-ajouter-ligne').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Ajouter la ligne';
-
-    document.getElementById('sel-produit').value = '';
-    document.getElementById('sel-service').value = '';
-    document.getElementById('sel-produit').disabled = false;
-    document.getElementById('sel-service').disabled = false;
-
-    document.getElementById('details-ligne').style.display = 'none';
-    document.getElementById('btn-ajouter-ligne').disabled = true;
-    document.getElementById('erreur-ligne').style.display = 'none';
-    
-    document.getElementById('input-prix').value = '';
-    document.getElementById('input-qte').value = '';
-    
-    document.getElementById('preview').style.display = 'none';
-    _setTva(0);
-}
-
-function ouvrirEdition(pk, produitId, serviceId, qte, prix, tva) {
-    editingLigneId = pk;
-    document.getElementById('modalLigneLabel').innerHTML = '<i class="bi bi-pencil text-primary me-2"></i>Modifier la ligne';
-    document.getElementById('btn-ajouter-ligne').innerHTML = '<i class="bi bi-check-circle me-2"></i>Enregistrer les modifications';
-
-    if (produitId) {
-        document.getElementById('sel-produit').value = produitId;
-        document.getElementById('sel-service').value = '';
-        document.getElementById('sel-service').disabled = true;
-    } else {
-        document.getElementById('sel-service').value = serviceId;
-        document.getElementById('sel-produit').value = '';
-        document.getElementById('sel-produit').disabled = true;
-    }
-
-    document.getElementById('input-prix').value = prix;
-    document.getElementById('input-qte').value = qte;
-    
-    _setTva(tva);
-    document.getElementById('details-ligne').style.display = 'block';
-    document.getElementById('btn-ajouter-ligne').disabled = false;
-    
-    modalLigne.show();
-    calculerPreview();
-}
-
 function showError(msg) {
     const errDiv = document.getElementById('erreur-ligne');
     errDiv.textContent = msg;
     errDiv.style.display = msg ? 'block' : 'none';
 }
 
-// ==================== CHARGEMENT PRODUIT - ANTI DOUBLON ====================
+function showToast(msg, type) {
+    console.log(`[${type}] ${msg}`);
+}
+
+// ==================== MODAL LIGNE ====================
+function ouvrirModalLigne() {
+    reinitModalLigne();
+    modalLigne.show();
+
+    // Pour les factures d'avoir : charger les produits de la facture originale
+    if (FACTURE_TYPE === 'FA' && FACTURE_ORIGINALE_ID) {
+        chargerProduitsFactureOriginale();
+    }
+}
+
+function reinitModalLigne() {
+    editingLigneId = null;
+
+    document.getElementById('modalLigneLabel').innerHTML = '<i class="bi bi-plus-circle text-warning me-2"></i>Ajouter une ligne';
+    document.getElementById('btn-ajouter-ligne').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Ajouter la ligne';
+
+    document.getElementById('sel-produit').value    = '';
+    document.getElementById('sel-service').value    = '';
+    document.getElementById('sel-produit').disabled = false;
+    document.getElementById('sel-service').disabled = false;
+
+    document.getElementById('input-prix').value = '';
+    document.getElementById('input-qte').value  = '';
+    document.getElementById('input-qte').max    = '';
+
+    document.getElementById('details-ligne').style.display  = 'none';
+    document.getElementById('btn-ajouter-ligne').disabled   = true;
+    document.getElementById('erreur-ligne').style.display   = 'none';
+    document.getElementById('preview').style.display        = 'none';
+
+    _setTva(0);
+}
+
+function ouvrirEdition(pk, produitId, serviceId, qte, prix, tva) {
+    editingLigneId = pk;
+
+    document.getElementById('modalLigneLabel').innerHTML = '<i class="bi bi-pencil text-primary me-2"></i>Modifier la ligne';
+    document.getElementById('btn-ajouter-ligne').innerHTML = '<i class="bi bi-check-circle me-2"></i>Enregistrer les modifications';
+
+    if (produitId) {
+        document.getElementById('sel-produit').value    = produitId;
+        document.getElementById('sel-service').value    = '';
+        document.getElementById('sel-service').disabled = true;
+    } else {
+        document.getElementById('sel-service').value    = serviceId;
+        document.getElementById('sel-produit').value    = '';
+        document.getElementById('sel-produit').disabled = true;
+    }
+
+    document.getElementById('input-prix').value = prix;
+    document.getElementById('input-qte').value  = qte;
+
+    _setTva(tva);
+    document.getElementById('details-ligne').style.display = 'block';
+    document.getElementById('btn-ajouter-ligne').disabled  = false;
+
+    modalLigne.show();
+    calculerPreview();
+}
+
+
+async function chargerProduitsFactureOriginale() {
+    if (!FACTURE_ORIGINALE_ID) {
+        console.warn('[FA] FACTURE_ORIGINALE_ID est null — impossible de charger les produits');
+        document.getElementById('sel-produit').innerHTML = '<option value="">Aucune facture originale liée</option>';
+        return;
+    }
+
+    const selectProduit = document.getElementById('sel-produit');
+    selectProduit.innerHTML = '<option value="">-- Chargement...</option>';
+    produitsOriginaux = {};
+
+    const url = BASE_URLS.produits_originale + FACTURE_ORIGINALE_ID + '/';
+    console.log('[FA] Chargement produits FA depuis :', url);
+
+    try {
+        const r = await fetch(url);
+
+        if (!r.ok) {
+            console.error('[FA] Erreur HTTP :', r.status, r.statusText);
+            selectProduit.innerHTML = '<option value="">Erreur de chargement (' + r.status + ')</option>';
+            return;
+        }
+
+        const data = await r.json();
+        console.log('[FA] Réponse produits :', data);
+
+        selectProduit.innerHTML = '<option value="">-- Choisir un produit --</option>';
+
+        if (data.ok && data.produits && data.produits.length > 0) {
+            data.produits.forEach(p => {
+                produitsOriginaux[String(p.id)] = {
+                    quantite_vendue: p.quantite_vendue,
+                    prix_ttc:        p.prix_ttc,
+                    taux_tva:        p.taux_tva,
+                };
+
+                const opt = document.createElement('option');
+                opt.value       = p.id;
+                opt.textContent = `${p.designation} (Qté vendue : ${p.quantite_vendue})`;
+                selectProduit.appendChild(opt);
+            });
+        } else {
+            selectProduit.innerHTML = '<option value="">Aucun produit trouvé sur la facture originale</option>';
+            console.warn('[FA] Aucun produit retourné :', data);
+        }
+
+    } catch (e) {
+        selectProduit.innerHTML = '<option value="">Erreur de chargement</option>';
+        console.error('[FA] Exception lors du chargement :', e);
+    }
+}
+
+// ==================== CHARGEMENT INFO PRODUIT ====================
 async function chargerInfoProduit() {
     const pk = document.getElementById('sel-produit').value;
     if (!pk) return;
 
-    // Bloque immédiatement si le produit existe déjà
-    if (produitExisteDeja(pk)) {
+    // Blocage doublon (sauf en édition)
+    if (!editingLigneId && produitExisteDeja(pk)) {
         showError("Ce produit est déjà présent dans cette facture.");
-        document.getElementById('sel-produit').value = ''; // Reset
+        document.getElementById('sel-produit').value = '';
         return;
     }
 
     try {
-        const res = await fetch(`${BASE_URLS.produit}${pk}?facture_id=${FACTURE_ID}`);
+        const res  = await fetch(`${BASE_URLS.produit}${pk}?facture_id=${FACTURE_ID}`);
         const data = await res.json();
+
         if (data.ok) {
             afficherDetails(data);
+
+            // Préremplir la quantité depuis la facture originale (FA uniquement)
+            if (FACTURE_TYPE === 'FA' && produitsOriginaux[String(pk)]) {
+                const qteVendue = parseFloat(produitsOriginaux[String(pk)].quantite_vendue) || 0;
+                if (qteVendue > 0) {
+                    const inputQte = document.getElementById('input-qte');
+                    inputQte.value = qteVendue.toFixed(3);
+                    inputQte.max   = qteVendue;
+                    calculerPreview();
+                }
+            }
         } else {
             showError(data.error || 'Erreur produit');
         }
@@ -531,11 +602,12 @@ async function chargerInfoProduit() {
     }
 }
 
+// ==================== CHARGEMENT INFO SERVICE ====================
 async function chargerInfoService() {
     const pk = document.getElementById('sel-service').value;
     if (!pk) return;
     try {
-        const res = await fetch(`${BASE_URLS.service}${pk}?facture_id=${FACTURE_ID}`);
+        const res  = await fetch(`${BASE_URLS.service}${pk}?facture_id=${FACTURE_ID}`);
         const data = await res.json();
         if (data.ok) afficherDetails(data);
         else showError(data.error || 'Erreur service');
@@ -546,22 +618,19 @@ async function chargerInfoService() {
 
 function afficherDetails(data) {
     document.getElementById('info-designation').textContent = data.designation || '—';
-    document.getElementById('info-stock').textContent = data.stock !== undefined ? data.stock : '—';
-
+    document.getElementById('info-stock').textContent       = data.stock !== undefined ? data.stock : '—';
     _setTva(data.taux_tva);
-    document.getElementById('input-prix').value = Number(data.prix_ttc || 0).toFixed(3);  // ← changé en 3
-
+    document.getElementById('input-prix').value = Number(data.prix_ttc || 0).toFixed(3);
     document.getElementById('details-ligne').style.display = 'block';
-    document.getElementById('btn-ajouter-ligne').disabled = false;
-
+    document.getElementById('btn-ajouter-ligne').disabled  = false;
     calculerPreview();
 }
 
-// ==================== PREVIEW (Version corrigée - 3 décimales) ====================
+// ==================== PREVIEW ====================
 function calculerPreview() {
     const prixTvac = parseFloat(document.getElementById('input-prix').value) || 0;
-    const qte = parseFloat(document.getElementById('input-qte').value) || 0;
-    const tauxTva = _getTva();
+    const qte      = parseFloat(document.getElementById('input-qte').value)  || 0;
+    const tauxTva  = _getTva();
 
     if (qte <= 0 || prixTvac <= 0) {
         document.getElementById('preview').style.display = 'none';
@@ -572,15 +641,10 @@ function calculerPreview() {
     let montantTva = 0;
 
     if (tauxTva > 0) {
-        ht = (prixTvac / (1 + tauxTva / 100)) * qte;
+        ht         = (prixTvac / (1 + tauxTva / 100)) * qte;
         montantTva = ht * (tauxTva / 100);
     }
     const ttc = ht + montantTva;
-
-    // TRONCATURE à 3 décimales (sans arrondi)
-    function truncate3(num) {
-        return (Math.floor(num * 1000) / 1000).toFixed(3);
-    }
 
     document.getElementById('prev-ht').textContent  = truncate3(ht);
     document.getElementById('prev-tva').textContent = truncate3(montantTva);
@@ -588,57 +652,50 @@ function calculerPreview() {
     document.getElementById('preview').style.display = 'block';
 }
 
-// ==================== AJOUTER LIGNE ====================
+// ==================== AJOUTER / MODIFIER LIGNE ====================
 async function ajouterLigne() {
     showError('');
 
     const produitId = document.getElementById('sel-produit').value;
-    const prixTvac = parseFloat(document.getElementById('input-prix').value) || 0;
-    const qte = parseFloat(document.getElementById('input-qte').value) || 0;
+    const prixTvac  = parseFloat(document.getElementById('input-prix').value) || 0;
+    const qte       = parseFloat(document.getElementById('input-qte').value)  || 0;
 
     if (!editingLigneId && produitId && produitExisteDeja(produitId)) {
         return showError("Ce produit est déjà présent dans cette facture.");
     }
-
     if (!prixTvac || prixTvac <= 0) return showError('Prix TVAC obligatoire');
-    if (!qte || qte <= 0) return showError('Quantité obligatoire et supérieure à 0');
+    if (!qte || qte <= 0)           return showError('Quantité obligatoire et supérieure à 0');
 
-    const url = editingLigneId ? BASE_URLS.modifier : BASE_URLS.ajouter;
+    const url     = editingLigneId ? BASE_URLS.modifier : BASE_URLS.ajouter;
     const payload = {
         facture_id: FACTURE_ID,
-        ligne_id: editingLigneId,
+        ligne_id:   editingLigneId,
         produit_id: produitId || null,
         service_id: document.getElementById('sel-service').value || null,
-        quantite: qte,
-        prix_tvac: prixTvac
+        quantite:   qte,
+        prix_tvac:  prixTvac
     };
 
     const btn = document.getElementById('btn-ajouter-ligne');
-
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
 
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': CSRF_TOKEN
-            },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
             body: JSON.stringify(payload)
         });
 
         const data = await response.json();
 
         if (data.ok) {
-            // Mise à jour dynamique du DOM
             updateLigneInTable(data, !!editingLigneId);
             updateInvoiceTotals(data);
-            
-            // Mise à jour du stock projeté dans toute la page
+
             if (data.produit_id && data.stock_apres !== null) {
                 document.querySelectorAll(`[data-stock-id="${data.produit_id}"]`).forEach(el => {
-                    el.textContent = Number(data.stock_apres).toFixed(0);
+                    el.textContent = truncate3(data.stock_apres);
                 });
             }
 
@@ -646,28 +703,28 @@ async function ajouterLigne() {
             initProduitsDansFacture();
             showToast(data.message || "Succès", "success");
         } else {
-            alert(data.error || "Erreur lors de l'enregistrement");
+            showError(data.error || "Erreur lors de l'enregistrement");
         }
     } catch (e) {
         console.error(e);
-        alert("Erreur réseau");
+        showError("Erreur réseau");
     } finally {
-        btn.disabled = false;
-        btn.innerHTML = editingLigneId ? '<i class="bi bi-pencil-square me-2"></i>Modifier' : '<i class="bi bi-plus-circle me-2"></i>Ajouter la ligne';
+        btn.disabled  = false;
+        btn.innerHTML = editingLigneId
+            ? '<i class="bi bi-check-circle me-2"></i>Enregistrer les modifications'
+            : '<i class="bi bi-plus-circle me-2"></i>Ajouter la ligne';
     }
 }
 
-// ==================== MISE À JOUR DYNAMIQUE DU DOM ====================
+// ==================== DOM LIGNE ====================
 function updateLigneInTable(data, isEdit) {
-    const tbody = document.getElementById('tbody-lignes');
-    const rowId = `ligne-${data.ligne_id}`;
-    let tr = document.getElementById(rowId);
+    const tbody  = document.getElementById('tbody-lignes');
+    const rowId  = `ligne-${data.ligne_id}`;
+    let tr       = document.getElementById(rowId);
 
     if (!tr) {
-        // Suppression du message "Aucune ligne"
         const emptyRow = document.getElementById('ligne-vide');
         if (emptyRow) emptyRow.remove();
-        
         tr = document.createElement('tr');
         tr.id = rowId;
         tbody.appendChild(tr);
@@ -689,12 +746,12 @@ function updateLigneInTable(data, isEdit) {
         <td class="text-end fw-bold text-primary">${Number(data.montant_ttc).toFixed(3)}</td>
         <td class="text-end">
             <div class="btn-group">
-                <button class="btn btn-sm btn-outline-primary" 
+                <button class="btn btn-sm btn-outline-primary"
                         onclick="ouvrirEdition(${data.ligne_id}, '${data.produit_id || ''}', '', ${data.quantite}, ${data.prix_tvac}, ${data.taux_tva})"
                         title="Modifier">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger" 
+                <button class="btn btn-sm btn-outline-danger"
                         onclick="supprimerLigne(${data.ligne_id}, this)"
                         title="Supprimer">
                     <i class="bi bi-trash"></i>
@@ -705,46 +762,37 @@ function updateLigneInTable(data, isEdit) {
 }
 
 function updateInvoiceTotals(data) {
-    // Mise à jour de l'en-tête
-    const ttcHeader = document.getElementById('total-ttc');
+    const ttcHeader      = document.getElementById('total-ttc');
     const subTotalsHeader = document.getElementById('total-ht');
 
-    if (ttcHeader) {
-        ttcHeader.textContent = `${truncate3(data.total_ttc)} ${FACTURE_DEVISE}`;
-    }
+    if (ttcHeader)       ttcHeader.textContent       = `${truncate3(data.total_ttc)} ${FACTURE_DEVISE}`;
+    if (subTotalsHeader) subTotalsHeader.textContent  = `HT : ${truncate3(data.total_ht)} | TVA : ${truncate3(data.total_tva)}`;
 
-    if (subTotalsHeader) {
-        subTotalsHeader.textContent = `HT : ${truncate3(data.total_ht)} | TVA : ${truncate3(data.total_tva)}`;
-    }
-
-    // Mise à jour du footer de table
-    const ftHt = document.getElementById('ft-ht');
+    const ftHt  = document.getElementById('ft-ht');
     const ftTva = document.getElementById('ft-tva');
     const ftTtc = document.getElementById('ft-ttc');
-    if (ftHt) ftHt.textContent = Number(data.total_ht).toFixed(3);
-    if (ftTva) ftTva.textContent = Number(data.total_tva).toFixed(3);
-    if (ftTtc) ftTtc.textContent = `${Number(data.total_ttc).toFixed(3)} ${FACTURE_DEVISE}`;
-}
 
-function showToast(msg, type) {
-    console.log(`[${type}] ${msg}`);
+    if (ftHt)  ftHt.textContent  = truncate3(data.total_ht);
+    if (ftTva) ftTva.textContent = truncate3(data.total_tva);
+    if (ftTtc) ftTtc.textContent = `${truncate3(data.total_ttc)} ${FACTURE_DEVISE}`;
 }
 
 // ==================== SUPPRIMER LIGNE ====================
 async function supprimerLigne(ligneId, btn) {
     if (!confirm('Supprimer cette ligne ?')) return;
 
-    btn.disabled = true;
+    btn.disabled  = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
     try {
         const response = await fetch(BASE_URLS.supprimer, {
-            method: 'POST',
+            method:  'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF_TOKEN },
-            body: new URLSearchParams({ 'ligne_id': ligneId })
+            body:    new URLSearchParams({ 'ligne_id': ligneId })
         });
 
         const data = await response.json();
+
         if (data.ok) {
             document.getElementById(`ligne-${ligneId}`).remove();
             updateInvoiceTotals(data);
@@ -755,7 +803,7 @@ async function supprimerLigne(ligneId, btn) {
     } catch (e) {
         alert("Erreur réseau");
     } finally {
-        btn.disabled = false;
+        btn.disabled  = false;
         btn.innerHTML = '<i class="bi bi-trash"></i>';
     }
 }
@@ -765,75 +813,74 @@ async function envoyerOBR() {
     if (!confirm("Confirmez-vous l'envoi à l'OBR ?")) return;
 
     const btn = document.getElementById('btn-envoyer-obr');
-    isSubmitting = true; 
-    btn.disabled = true;
+    isSubmitting  = true;
+    btn.disabled  = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
 
     try {
         const response = await fetch(BASE_URLS.envoyer_obr, {
-            method: 'POST',
+            method:  'POST',
             headers: { 'X-CSRFToken': CSRF_TOKEN }
         });
         const data = await response.json();
+
         if (data.ok) {
             window.location.href = "{% url 'facturer:liste' %}";
         } else {
-            isSubmitting = false; 
+            isSubmitting  = false;
             alert(data.error || "Erreur d'envoi");
         }
     } catch (e) {
         isSubmitting = false;
         alert("Erreur réseau");
     } finally {
-        btn.disabled = false;
+        btn.disabled  = false;
         btn.innerHTML = '<i class="bi bi-send me-2"></i>Envoyer à OBR';
     }
 }
 
-// ==================== ANNULATION ====================
-// ==================== CONFIRMATION ANNULATION (Correction minimale) ====================
+// ==================== ANNULATION FACTURE ====================
 async function confirmerAnnulation() {
-    const btn = document.getElementById('btnConfirmerAnnulation');
-    const motif = document.getElementById('motifAnnulation').value.trim();
+    const btn    = document.getElementById('btnConfirmerAnnulation');
+    const motif  = document.getElementById('motifAnnulation').value.trim();
+    const statut = (btn.dataset.statut || '').toUpperCase();
 
-    if (!confirm("Confirmez-vous la suppression de cette facture ?")) return;
+    if (statut === 'ENVOYE' && !motif) {
+        alert("Le motif est obligatoire pour une facture envoyée à l'OBR.");
+        return;
+    }
 
-    btn.disabled = true;
+    if (!confirm("Confirmez-vous cette action ?")) return;
+
+    btn.disabled  = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
 
     const formData = new FormData();
     formData.append('motif', motif);
 
     try {
-        const response = await fetch("{% url 'facturer:annuler' facture.pk %}", {
-            method: 'POST',
-            headers: { 
-                'X-CSRFToken': CSRF_TOKEN 
-            },
-            body: formData
+        const response = await fetch(BASE_URLS.annuler, {
+            method:  'POST',
+            headers: { 'X-CSRFToken': CSRF_TOKEN },
+            body:    formData
         });
-
-        // Vérification importante
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         const data = await response.json();
 
         if (data.ok) {
-            alert(data.message || "Facture supprimée avec succès");
+            alert(data.message || "Opération réussie.");
             window.location.href = "{% url 'facturer:liste' %}";
         } else {
-            alert(data.error || "Erreur lors de l'opération");
+            alert(data.error || "Erreur lors de l'opération.");
         }
     } catch (e) {
         console.error("Erreur annulation:", e);
-        alert("Erreur de connexion ou de serveur. Veuillez réessayer.");
+        alert("Erreur de connexion ou de serveur.");
     } finally {
-        btn.disabled = false;
+        btn.disabled  = false;
         btn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Confirmer l\'annulation';
+        if (modalAnnuler) modalAnnuler.hide();
     }
 }
-
 </script>
 {% endblock %}
