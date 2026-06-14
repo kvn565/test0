@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Devis {{ devis.display_numero }}</title>
+    <style>
+        @page { margin: 1.5cm; size: A4; }
+        body { font-family: 'DejaVu Sans', sans-serif; font-size: 11pt; color: #222; }
+        .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #1a3a5c; }
+        .header h1 { color: #1a3a5c; font-size: 18pt; margin: 0; }
+        .header .numero { font-size: 14pt; color: #555; }
+        .infos { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .infos .box { width: 45%; }
+        .infos table { width: 100%; font-size: 10pt; }
+        .infos td { padding: 2px 0; }
+        .infos .label { color: #888; width: 100px; }
+        table.items { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        table.items th { background: #1a3a5c; color: #fff; padding: 8px; text-align: left; font-size: 10pt; }
+        table.items td { padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 10pt; }
+        table.items tr:nth-child(even) { background: #f8f9fa; }
+        .totaux { width: 300px; margin-left: auto; }
+        .totaux td { padding: 4px 8px; font-size: 10pt; }
+        .totaux .total { font-weight: bold; font-size: 12pt; color: #1a3a5c; }
+        .footer { margin-top: 30px; font-size: 9pt; color: #888; text-align: center; border-top: 1px solid #ddd; padding-top: 15px; }
+        .signature { margin-top: 40px; }
+        .signature td { width: 50%; text-align: center; font-size: 10pt; padding-top: 50px; }
+        .badge-expire { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ societe.nom|upper }}</h1>
+        <p>
+            {{ societe.adresse_complete|default:'' }}
+            {% if societe.avenue %}, {{ societe.avenue }}{% endif %}
+            {% if societe.commune %} - {{ societe.commune }}{% endif %}
+        </p>
+        {% if societe.nif %}<p>NIF : {{ societe.nif }}</p>{% endif %}
+        <div class="numero">DEVIS N° {{ devis.display_numero }}</div>
+    </div>
+
+    <div class="infos">
+        <div class="box">
+            <table>
+                <tr><td class="label">Client</td><td><strong>{{ devis.client.nom }}</strong></td></tr>
+                {% if devis.client.telephone %}<tr><td class="label">Tél</td><td>{{ devis.client.telephone }}</td></tr>{% endif %}
+                {% if devis.client.adresse %}<tr><td class="label">Adresse</td><td>{{ devis.client.adresse }}</td></tr>{% endif %}
+            </table>
+        </div>
+        <div class="box">
+            <table>
+                <tr><td class="label">Date</td><td>{{ devis.date_devis|date:'d/m/Y' }}</td></tr>
+                <tr><td class="label">Valable jusqu'au</td><td>{% if devis.est_expire %}<span class="badge-expire">{{ devis.date_validite|date:'d/m/Y' }} (EXPIRÉ)</span>{% else %}{{ devis.date_validite|date:'d/m/Y' }}{% endif %}</td></tr>
+                <tr><td class="label">Devise</td><td>{{ devis.devise }}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th style="width:50%;">Désignation</th>
+                <th style="width:10%;text-align:center;">Qté</th>
+                <th style="width:15%;text-align:right;">Prix unitaire</th>
+                <th style="width:15%;text-align:right;">Total HT</th>
+                <th style="width:10%;text-align:center;">TVA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in lignes %}
+            <tr>
+                <td>{{ ligne.designation }}</td>
+                <td style="text-align:center;">{{ ligne.quantite|floatformat:3 }}</td>
+                <td style="text-align:right;">{{ ligne.prix_vente_tvac|floatformat:0 }}</td>
+                <td style="text-align:right;">{{ ligne.montant_ht|floatformat:0 }}</td>
+                <td style="text-align:center;">{% if ligne.taux_tva_valeur > 0 %}{{ ligne.taux_tva_valeur|floatformat:0 }}%{% else %}0%{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="totaux">
+        <tr><td>Total HT</td><td style="text-align:right;">{{ devis.total_ht|floatformat:0 }} {{ devis.devise }}</td></tr>
+        <tr><td>Total TVA</td><td style="text-align:right;">{{ devis.total_tva|floatformat:0 }} {{ devis.devise }}</td></tr>
+        <tr class="total"><td>Total TTC</td><td style="text-align:right;">{{ devis.total_ttc|floatformat:0 }} {{ devis.devise }}</td></tr>
+    </table>
+
+    {% if devis.notes %}
+    <div style="margin-top:15px;">
+        <strong>Conditions / Notes :</strong>
+        <p>{{ devis.notes|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    <div class="signature">
+        <table>
+            <tr>
+                <td>Signature et cachet du client</td>
+                <td>Signature et cachet du prestataire</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>{{ societe.nom }} — {{ societe.nif }} — {{ societe.telephone|default:'' }}</p>
+        <p>Document généré le {{ now|date:'d/m/Y à H:i' }}</p>
+    </div>
+</body>
+</html>

@@ -42,9 +42,11 @@ def entree_liste(request):
     type_mvt = request.GET.get('type', '')
     page_num = request.GET.get('page', 1)   # ← Ajout pour la pagination
 
-    entrees = EntreeStock.objects.filter(societe=societe)\
+    base = EntreeStock.objects.filter(societe=societe)\
         .select_related('produit', 'fournisseur')\
-        .order_by('-date_creation')   # Important : ordonner les résultats
+        .order_by('-date_creation')
+
+    entrees = base.exclude(statut_obr__in=['EN_ATTENTE', 'ECHEC'])
 
     if q:
         entrees = entrees.filter(
@@ -58,8 +60,7 @@ def entree_liste(request):
     if type_mvt:
         entrees = entrees.filter(type_entree=type_mvt)
 
-    # ====================== PAGINATION ======================
-    paginator = Paginator(entrees, 5)        # 5 éléments par page (comme tu as demandé)
+    paginator = Paginator(entrees, 5)
     try:
         entrees_page = paginator.page(page_num)
     except PageNotAnInteger:
@@ -69,21 +70,20 @@ def entree_liste(request):
 
     stats = {
         'total':      entrees.count(),
-        'en_attente': entrees.filter(statut_obr='EN_ATTENTE').count(),
         'envoyes':    entrees.filter(statut_obr='ENVOYE').count(),
-        'echecs':     entrees.filter(statut_obr='ECHEC').count(),
+        'annulees':   entrees.filter(statut_obr='ANNULE').count(),
     }
 
     return render(request, 'stock/entree_liste.html', {
-        'entrees':  entrees_page,           # ← On passe l'objet paginé
+        'entrees':  entrees_page,
         'stats':    stats,
         'q':        q,
         'statut':   statut,
         'type_mvt': type_mvt,
         'types':    EntreeStock.TYPE_ENTREE_CHOICES,
-        'statuts':  EntreeStock.STATUT_OBR_CHOICES,
-        'paginator': paginator,             # Pour les infos dans le template
-        'page_obj':  entrees_page,          # Recommandé par Django
+        'statuts':  [s for s in EntreeStock.STATUT_OBR_CHOICES if s[0] not in ('EN_ATTENTE', 'ECHEC')],
+        'paginator': paginator,
+        'page_obj':  entrees_page,
     })
 
 
@@ -249,9 +249,11 @@ def sortie_liste(request):
     type_mvt = request.GET.get('type', '')
     page_num = request.GET.get('page', 1)
 
-    sorties = SortieStock.objects.filter(societe=societe)\
+    base = SortieStock.objects.filter(societe=societe)\
         .select_related('entree_stock__produit')\
         .order_by('-date_creation')
+
+    sorties = base.exclude(statut_obr__in=['EN_ATTENTE', 'ECHEC'])
 
     if q:
         sorties = sorties.filter(
@@ -264,7 +266,6 @@ def sortie_liste(request):
     if type_mvt:
         sorties = sorties.filter(type_sortie=type_mvt)
 
-    # ====================== PAGINATION ======================
     paginator = Paginator(sorties, 5)
     try:
         sorties_page = paginator.page(page_num)
@@ -275,9 +276,8 @@ def sortie_liste(request):
 
     stats = {
         'total':      sorties.count(),
-        'en_attente': sorties.filter(statut_obr='EN_ATTENTE').count(),
         'envoyes':    sorties.filter(statut_obr='ENVOYE').count(),
-        'echecs':     sorties.filter(statut_obr='ECHEC').count(),
+        'annulees':   sorties.filter(statut_obr='ANNULE').count(),
     }
 
     return render(request, 'stock/sortie_liste.html', {
@@ -287,7 +287,7 @@ def sortie_liste(request):
         'statut':    statut,
         'type_mvt':  type_mvt,
         'types':     SortieStock.TYPE_SORTIE_CHOICES,
-        'statuts':   SortieStock.STATUT_OBR_CHOICES,
+        'statuts':  [s for s in SortieStock.STATUT_OBR_CHOICES if s[0] not in ('EN_ATTENTE', 'ECHEC')],
         'paginator': paginator,
         'page_obj':  sorties_page,
     })

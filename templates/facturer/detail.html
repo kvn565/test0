@@ -114,7 +114,7 @@
                             <th class="text-end">HT</th>
                             <th class="text-end">TVA</th>
                             <th class="text-end">TTC</th>
-                            {% if facture.statut_obr == 'EN_ATTENTE' %}<th></th>{% endif %}
+                            {% if facture.statut_obr == 'EN_ATTENTE' %}<th>Actions</th>{% endif %}
                         </tr>
                     </thead>
                     <tbody id="tbody-lignes">
@@ -122,29 +122,47 @@
                         <tr id="ligne-{{ ligne.pk }}">
                             <td class="text-muted small">{{ forloop.counter }}</td>
                             <td><div class="fw-medium">{{ ligne.designation }}</div></td>
+                            
+                            <!-- Stock actuel -->
                             <td class="text-center small" data-stock-id="{{ ligne.produit.pk|default:'0' }}">
                                 {% if ligne.produit %}
-                                    {{ ligne.produit.stock_projete|truncate3 }}
+                                    {{ ligne.produit.stock_disponible|truncate3 }}
                                 {% else %}
                                     —
                                 {% endif %}
                             </td>
+                            
+                            <!-- TVA % -->
+                            <td class="text-center small">
+                                {{ ligne.taux_tva_valeur|default:0|floatformat:2 }}%
+                            </td>
+                            
+                            <!-- Prix TVAC -->
                             <td class="text-end small">{{ ligne.prix_vente_tvac|truncate3 }}</td>
+                            
+                            <!-- Quantité -->
                             <td class="text-end fw-medium">{{ ligne.quantite|truncate3 }}</td>
+                            
+                            <!-- Montant HT -->
                             <td class="text-end small">{{ ligne.montant_ht|truncate3 }}</td>
+                            
+                            <!-- Montant TVA -->
                             <td class="text-end small">{{ ligne.montant_tva|truncate3 }}</td>
+                            
+                            <!-- Montant TTC -->
                             <td class="text-end fw-bold text-primary">{{ ligne.montant_ttc|truncate3 }}</td>
+                            
                             {% if facture.statut_obr == 'EN_ATTENTE' %}
-                             <td class="text-end">
-                                 <button class="btn btn-sm btn-outline-primary me-1" 
-                                         onclick="ouvrirEdition({{ ligne.pk }}, '{{ ligne.produit_id|default:'' }}', '{{ ligne.service_id|default:'' }}', {{ ligne.quantite|stringformat:'.2f' }}, {{ ligne.prix_vente_tvac|stringformat:'.2f' }}, {{ ligne.taux_tva|stringformat:'.2f' }})"
-                                         title="Modifier">
-                                     <i class="bi bi-pencil"></i>
-                                 </button>
-                                 <button class="btn btn-sm btn-outline-danger" onclick="supprimerLigne({{ ligne.pk }}, this)" title="Supprimer">
-                                     <i class="bi bi-trash"></i>
-                                 </button>
-                             </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary me-1" 
+                                        onclick="ouvrirEdition({{ ligne.pk }}, '{{ ligne.produit_id|default:'' }}', '{{ ligne.service_id|default:'' }}', {{ ligne.quantite|stringformat:'.2f' }}, {{ ligne.prix_vente_tvac|stringformat:'.2f' }}, {{ ligne.taux_tva_valeur|stringformat:'.2f' }})"
+                                        title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="supprimerLigne({{ ligne.pk }}, this)" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
                             {% endif %}
                         </tr>
                         {% empty %}
@@ -155,6 +173,7 @@
                         </tr>
                         {% endfor %}
                     </tbody>
+                    
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="6" class="text-end fw-medium">Sous-totaux</td>
@@ -718,9 +737,9 @@ async function ajouterLigne() {
 
 // ==================== DOM LIGNE ====================
 function updateLigneInTable(data, isEdit) {
-    const tbody  = document.getElementById('tbody-lignes');
-    const rowId  = `ligne-${data.ligne_id}`;
-    let tr       = document.getElementById(rowId);
+    const tbody = document.getElementById('tbody-lignes');
+    const rowId = `ligne-${data.ligne_id}`;
+    let tr = document.getElementById(rowId);
 
     if (!tr) {
         const emptyRow = document.getElementById('ligne-vide');
@@ -730,20 +749,35 @@ function updateLigneInTable(data, isEdit) {
         tbody.appendChild(tr);
     }
 
-    const index = isEdit ? tr.cells[0].textContent : tbody.rows.length;
+    const index = isEdit ? tr.cells[0].textContent : (tbody.rows.length + 1);
 
     tr.innerHTML = `
         <td class="text-muted small">${index}</td>
         <td><div class="fw-medium">${data.designation}</div></td>
+        
+        <!-- Stock actuel -->
         <td class="text-center small" data-stock-id="${data.produit_id || 'null'}">
             ${data.stock_apres !== null ? truncate3(data.stock_apres) : '—'}
         </td>
+        
+        <!-- TVA % -->
         <td class="text-center small">${data.taux_tva}%</td>
+        
+        <!-- Prix TVAC -->
         <td class="text-end small">${Number(data.prix_tvac).toFixed(3)}</td>
+        
+        <!-- Quantité -->
         <td class="text-end fw-medium">${Number(data.quantite).toFixed(3)}</td>
+        
+        <!-- HT -->
         <td class="text-end small">${Number(data.montant_ht).toFixed(3)}</td>
+        
+        <!-- TVA -->
         <td class="text-end small">${Number(data.montant_tva).toFixed(3)}</td>
+        
+        <!-- TTC -->
         <td class="text-end fw-bold text-primary">${Number(data.montant_ttc).toFixed(3)}</td>
+        
         <td class="text-end">
             <div class="btn-group">
                 <button class="btn btn-sm btn-outline-primary"

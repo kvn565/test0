@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, date
 from django import forms
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
@@ -198,6 +198,7 @@ class InscriptionChefForm(forms.Form):
     chef_password2 = forms.CharField(label="Confirmer le mot de passe",
                                      widget=forms.PasswordInput(attrs={'class': 'form-control'}), required=True)
 
+    # APRÈS
     def clean_nif(self):
         nif = self.cleaned_data.get('nif', '').strip().upper()
         try:
@@ -206,18 +207,28 @@ class InscriptionChefForm(forms.Form):
             raise forms.ValidationError("Ce NIF n'existe pas dans le système.")
 
         now = timezone.now()
-        cle_active = societe.cles_activation.filter(
-            statut='ACTIVE', date_debut__lte=now, date_fin__gte=now
+
+        # ✅ CORRECTION : accepter DISPONIBLE aussi.
+        # À l'inscription, le chef n'a pas encore saisi sa clé → statut = DISPONIBLE.
+        # On vérifie uniquement que la clé existe, est valide et non révoquée.
+        cle_disponible = societe.cles_activation.filter(
+            statut__in=['DISPONIBLE', 'ACTIVE'],
+            active=True,
+            date_debut__lte=now,
+            date_fin__gte=now,
         ).first()
 
-        if not cle_active:
-            raise forms.ValidationError("Aucune licence active pour ce NIF.")
+        if not cle_disponible:
+            raise forms.ValidationError(
+                "Aucune licence disponible pour ce NIF. "
+                "Contactez l'administrateur pour obtenir une clé d'activation."
+            )
 
         if Utilisateur.objects.filter(societe=societe, type_poste='DIRECTEUR').exists():
             raise forms.ValidationError("Un directeur est déjà inscrit pour cette société.")
 
-        self._societe = societe
-        self._cle_active = cle_active
+        self._societe     = societe
+        self._cle_active  = cle_disponible   # sera activée après saisie de la clé
         return nif
 
     def clean_chef_username(self):
@@ -264,58 +275,48 @@ class ClePayanteForm(forms.Form):
             raise forms.ValidationError("Veuillez entrer une clé de licence.")
         return cle
 
+    # APRÈS
     def verifier_pour_societe(self, societe):
-        """
-        Vérifie si la clé est valide pour cette société.
-        Accepte les clés en statut DISPONIBLE.
-        """
         cle_saisie = self.cleaned_data.get('cle_activation')
 
         try:
-            # Recherche principale : clé liée à cette société
+            # Recherche stricte : clé liée à CETTE société uniquement
             cle = CleActivation.objects.select_related('societe').get(
                 cle_visible=cle_saisie,
-                societe=societe
+                societe=societe,
             )
-
-            # Vérifications
-            if cle.utilisee:
-                return False, "Cette clé a déjà été utilisée.", None
-
-            if cle.statut == 'REVOQUEE':
-                return False, "Cette clé a été révoquée par l'administrateur.", None
-
-            if cle.statut == 'EXPIREE':
-                return False, "Cette clé est déjà expirée.", None
-
-            # On accepte DISPONIBLE et ACTIVE (au cas où)
-            if cle.statut not in ('DISPONIBLE', 'ACTIVE'):
-                return False, f"Cette clé n'est pas disponible (statut: {cle.statut}).", None
-
-            # Vérification de la date de fin
-            if cle.date_fin and cle.date_fin.date() < date.today():
-                return False, "Cette clé est expirée.", None
-
-            return True, "Clé valide et prête à être activée.", cle
-
         except CleActivation.DoesNotExist:
-            # Deuxième tentative : chercher la clé sans filtrer la société (sécurité moindre)
-            try:
-                cle = CleActivation.objects.select_related('societe').get(cle_visible=cle_saisie)
-                
-                if cle.societe and cle.societe.pk != societe.pk:
-                    return False, "Cette clé appartient à une autre société.", None
-                
-                if cle.utilisee:
-                    return False, "Cette clé a déjà été utilisée.", None
-                    
-                return True, "Clé valide.", cle
-                
-            except CleActivation.DoesNotExist:
-                return False, "Clé invalide ou inexistante. Vérifiez le code saisi.", None
-
+            # ✅ CORRECTION SÉCURITÉ : on ne cherche plus sans le filtre société.
+            # Si la clé n'appartient pas à cette société → message générique.
+            return False, "Clé invalide ou inexistante. Vérifiez le code saisi.", None
         except Exception as e:
             return False, f"Erreur technique : {str(e)}", None
+
+        # ── Vérifications dans l'ordre logique ──────────────────────
+        if cle.statut == 'REVOQUEE':
+            return False, "Cette clé a été révoquée par l'administrateur.", None
+
+        if cle.statut == 'EXPIREE':
+            return False, "Cette clé est déjà expirée.", None
+
+        if cle.date_fin and cle.date_fin.date() < date.today():
+            return False, "Cette clé est expirée.", None
+
+        if cle.utilisee:
+            # ✅ CORRECTION : message plus précis — clé utilisée ≠ clé invalide
+            return False, (
+                "Cette clé a déjà été activée. "
+                "Contactez l'administrateur pour obtenir un renouvellement."
+            ), None
+
+        # Seul statut acceptable pour une activation : DISPONIBLE
+        if cle.statut != 'DISPONIBLE':
+            return False, (
+                f"Cette clé n'est pas activable (statut : {cle.statut}). "
+                "Contactez l'administrateur."
+            ), None
+
+        return True, "Clé valide et prête à être activée.", cle
 
 
 # ═══════════════════════════════════════════════════════════════

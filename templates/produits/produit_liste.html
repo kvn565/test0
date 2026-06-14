@@ -149,6 +149,7 @@
                         <th class="text-end">Prix vente</th>
                         <th class="text-end">TVA</th>
                         <th class="text-end">Prix TVAC</th>
+                        <th class="text-end">Stock</th>
                         <th>Statut</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -187,6 +188,17 @@
                         <!-- Prix TVAC -->
                         <td class="text-end fw-medium text-primary">
                             {{ p.prix_vente_tvac|floatformat:3 }} {{ p.devise }}
+                        </td>
+
+                        <!-- Stock disponible -->
+                        <td class="text-end fw-bold">
+                            {% with stock=p.stock_disponible %}
+                                {% if stock <= 0 %}
+                                    <span class="text-danger">{{ stock }}</span>
+                                {% else %}
+                                    <span class="text-success">{{ stock }}</span>
+                                {% endif %}
+                            {% endwith %}
                         </td>
 
                         <td>

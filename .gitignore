@@ -1,4 +1,3 @@
-cat > .gitignore << 'EOF'
 # Django
 *.log
 *.pot
@@ -12,14 +11,11 @@ collected_static/
 
 # Python
 *.py[cod]
-*$py.class
 *.so
 .Python
 env/
 venv/
 ENV/
-env.bak/
-venv.bak/
 .python-version
 
 # Environment variables
@@ -27,10 +23,7 @@ venv.bak/
 .env.local
 .env.*.local
 
-# Django migrations (ne pas ignorer les migrations !)
-# !**/migrations/
-
-# IDE / Editor
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -41,19 +34,6 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
-# Virtual environments
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Coverage and testing
-.coverage
-htmlcov/
-.tox/
-.cache
-nosetests.xml
-coverage.xml
-
 # Django specific
 *.sqlite3
 local_settings.py
-EOFrestart.txt

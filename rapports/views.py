@@ -1,9 +1,9 @@
-from decimal import Decimal, ROUND_DOWN
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
-from collections import defaultdict
+from decimal import Decimal
+from django.utils import timezone
 
 from produits.models import Produit
 from services.models import Service
@@ -16,7 +16,6 @@ from .utils import generer_excel, generer_pdf
 # ══════════════════════════════════════════════
 #  HELPERS
 # ══════════════════════════════════════════════
-
 def _check_droit(request):
     societe = getattr(request.user, 'societe', None)
     if not societe:
@@ -44,42 +43,9 @@ def ctx_commun(f, societe):
     }
 
 
-def quantize_3dec(value) -> Decimal:
-    """✅ Utilisé partout - 3 décimales sans arrondissement strict"""
-    if value is None:
-        return Decimal('0.000')
-    return Decimal(value).quantize(Decimal('0.001'), rounding=ROUND_DOWN)
-
-
-def format_titre_avec_dates(titre_base, date_debut, date_fin):
-    if not date_debut and not date_fin:
-        return titre_base
-    
-    parts = []
-    if date_debut:
-        try:
-            d = date_debut.split('-')
-            parts.append(f"du {d[2]}/{d[1]}/{d[0]}")
-        except:
-            parts.append(f"du {date_debut}")
-    if date_fin:
-        try:
-            d = date_fin.split('-')
-            parts.append(f"au {d[2]}/{d[1]}/{d[0]}")
-        except:
-            parts.append(f"au {date_fin}")
-    
-    titre = f"{titre_base} ({' '.join(parts)})"
-    # Nettoyage pour Excel (supprime les caractères interdits)
-    titre = titre.replace('/', '-').replace('\\', '-')
-    
-    return titre
-
-
 # ══════════════════════════════════════════════
 #  RAPPORTS PRINCIPAUX
 # ══════════════════════════════════════════════
-
 @login_required
 def rapport_entrees(request):
     societe, erreur = _check_droit(request)
@@ -93,33 +59,36 @@ def rapport_entrees(request):
         'produit', 'produit__categorie', 'fournisseur'
     ).order_by('-date_entree')
 
-    if f['date_debut']: qs = qs.filter(date_entree__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_entree__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(produit__id=f['produit_id'])
+    if f['date_debut']:
+        qs = qs.filter(date_entree__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_entree__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(produit__id=f['produit_id'])
 
-    # Calcul par devise
-    totaux_par_devise = defaultdict(lambda: {
-        'nb': 0,
-        'total_qte': Decimal('0'),
-        'total_valeur': Decimal('0')
-    })
+    totaux = qs.aggregate(nb=Count('id'), total_qte=Sum('quantite'))
+    totaux['total_valeur'] = sum(e.montant_total for e in qs)
 
+    totaux_par_devise = {}
     for e in qs:
-        devise = getattr(e.produit, 'devise', 'BIF')
-        d = totaux_par_devise[devise]
-        d['nb'] += 1
-        d['total_qte'] += quantize_3dec(e.quantite or 0)
-        d['total_valeur'] += quantize_3dec(e.montant_total or 0)
+        d = e.produit.devise or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'nb': 0, 'total_qte': Decimal('0'), 'total_valeur': Decimal('0')}
+        totaux_par_devise[d]['nb'] += 1
+        totaux_par_devise[d]['total_qte'] += Decimal(str(e.quantite or 0))
+        totaux_par_devise[d]['total_valeur'] += Decimal(str(e.montant_total or 0))
 
     return render(request, 'rapports/entrees.html', {
         **ctx_commun(f, societe),
         'lignes': qs,
-        'totaux_par_devise': dict(totaux_par_devise),
-        'titre': format_titre_avec_dates('Entrées / Achats', f['date_debut'], f['date_fin']),
+        'totaux': totaux,
+        'totaux_par_devise': totaux_par_devise,
+        'titre': 'Entrées / Achats',
         'rapport': 'entrees',
         'rapport_icone': 'bi-box-arrow-in-down',
         'rapport_clr': '#0284c7',
     })
+
 
 @login_required
 def rapport_cout_stock(request):
@@ -134,40 +103,35 @@ def rapport_cout_stock(request):
         'facture', 'facture__client', 'produit', 'service'
     ).order_by('-facture__date_facture')
 
-    if f['date_debut']: qs = qs.filter(facture__date_facture__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(facture__date_facture__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(produit__id=f['produit_id'])
-    if f['service_id']: qs = qs.filter(service__id=f['service_id'])
+    if f['date_debut']:
+        qs = qs.filter(facture__date_facture__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(facture__date_facture__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(produit__id=f['produit_id'])
+    if f['service_id']:
+        qs = qs.filter(service__id=f['service_id'])
 
     ll = list(qs)
 
-    # Calcul par devise
-    totaux_par_devise = defaultdict(lambda: {
-        'nb': 0, 'total_ht': Decimal('0'), 'total_tva': Decimal('0'), 'total_ttc': Decimal('0')
-    })
-
+    totaux_par_devise = {}
     for l in ll:
-        devise = getattr(l.facture, 'devise', 'BIF') or 'BIF'
-        d = totaux_par_devise[devise]
-        d['nb'] += 1
-        d['total_ht']  += quantize_3dec(getattr(l, 'montant_ht', 0))
-        d['total_tva'] += quantize_3dec(getattr(l, 'montant_tva', 0))
-        d['total_ttc'] += quantize_3dec(getattr(l, 'montant_ttc', 0))
-
-    total_ht  = sum(d['total_ht'] for d in totaux_par_devise.values())
-    total_tva = sum(d['total_tva'] for d in totaux_par_devise.values())
-    total_ttc = sum(d['total_ttc'] for d in totaux_par_devise.values())
+        d = l.facture.devise or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'total_ht': Decimal('0'), 'total_tva': Decimal('0'), 'total_ttc': Decimal('0')}
+        totaux_par_devise[d]['total_ht'] += Decimal(str(l.montant_ht or 0))
+        totaux_par_devise[d]['total_tva'] += Decimal(str(l.montant_tva or 0))
+        totaux_par_devise[d]['total_ttc'] += Decimal(str(l.montant_ttc or 0))
 
     return render(request, 'rapports/cout_stock.html', {
         **ctx_commun(f, societe),
         'lignes': ll,
         'nb': len(ll),
-        'total_ht': total_ht,
-        'total_tva': total_tva,
-        'total_ttc': total_ttc,
-        'totaux_par_devise': dict(totaux_par_devise),
-        'totaux': {'nb_avoirs': sum(1 for l in ll if getattr(l.facture, 'type_facture', None) == 'FA')},
-        'titre': format_titre_avec_dates('Coût du Stock Vendu', f['date_debut'], f['date_fin']),
+        'total_ht': sum(l.montant_ht for l in ll),
+        'total_tva': sum(l.montant_tva for l in ll),
+        'total_ttc': sum(l.montant_ttc for l in ll),
+        'totaux_par_devise': totaux_par_devise,
+        'titre': 'Coût du Stock Vendu',
         'rapport': 'cout_stock',
         'rapport_icone': 'bi-calculator',
         'rapport_clr': '#b45309',
@@ -184,37 +148,39 @@ def rapport_sorties(request):
     f = get_filtres(request)
 
     qs = SortieStock.objects.filter(societe=societe).select_related(
-        'entree_stock', 'entree_stock__produit'
+        'entree_stock', 'entree_stock__produit', 'entree_stock__produit__categorie'
     ).order_by('-date_sortie')
 
-    if f['date_debut']: qs = qs.filter(date_sortie__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_sortie__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(entree_stock__produit__id=f['produit_id'])
+    if f['date_debut']:
+        qs = qs.filter(date_sortie__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_sortie__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(entree_stock__produit__id=f['produit_id'])
 
-    # Calcul par devise
-    totaux_par_devise = defaultdict(lambda: {
-        'nb': 0,
-        'total_qte': Decimal('0'),
-        'total_valeur': Decimal('0')
-    })
+    totaux = qs.aggregate(nb=Count('id'), total_qte=Sum('quantite'))
+    totaux['total_valeur'] = sum(s.montant_total for s in qs)
 
+    totaux_par_devise = {}
     for s in qs:
-        produit = s.entree_stock.produit if s.entree_stock else None
-        devise = getattr(produit, 'devise', 'BIF') if produit else 'BIF'
-        d = totaux_par_devise[devise]
-        d['nb'] += 1
-        d['total_qte'] += quantize_3dec(s.quantite or 0)
-        d['total_valeur'] += quantize_3dec(s.montant_total or 0)
+        d = s.entree_stock.produit.devise or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'nb': 0, 'total_qte': Decimal('0'), 'total_valeur': Decimal('0')}
+        totaux_par_devise[d]['nb'] += 1
+        totaux_par_devise[d]['total_qte'] += Decimal(str(s.quantite or 0))
+        totaux_par_devise[d]['total_valeur'] += Decimal(str(s.montant_total or 0))
 
     return render(request, 'rapports/sorties.html', {
         **ctx_commun(f, societe),
         'lignes': qs,
-        'totaux_par_devise': dict(totaux_par_devise),
-        'titre': format_titre_avec_dates('Sorties', f['date_debut'], f['date_fin']),
+        'totaux': totaux,
+        'totaux_par_devise': totaux_par_devise,
+        'titre': 'Sorties',
         'rapport': 'sorties',
         'rapport_icone': 'bi-box-arrow-up',
         'rapport_clr': '#9333ea',
     })
+
 
 @login_required
 def rapport_stock_actuel(request):
@@ -233,64 +199,50 @@ def rapport_stock_actuel(request):
 
     lignes = []
 
-    # ✅ Totaux par devise au lieu d'un total global sans devise
-    totaux_par_devise = defaultdict(lambda: {
-        'nb': 0,
-        'total_valeur': Decimal('0.000'),
-    })
-
     for p in produits_qs:
         qte_entree = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
         qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_vente  = LigneFacture.objects.filter(facture__societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
 
-        stock = qte_entree - qte_sortie - qte_vente
+        stock = qte_entree - qte_sortie
 
         agg = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
 
-        # ✅ quantize_3dec appliqué avant la multiplication, pas seulement après
-        prix_moyen = quantize_3dec(
-            (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1))
-            if agg.get('total_qte')
-            else Decimal(getattr(p, 'prix_vente', 0) or 0)
-        )
-
-        valeur_stock = quantize_3dec(Decimal(max(stock, 0)) * prix_moyen)
-
-        # ✅ Devise réelle du produit, sans fallback BIF automatique
-        devise = (p.devise or 'BIF').strip()
+        prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
+        valeur_stock = max(stock, 0) * prix_moyen
 
         lignes.append({
             'produit': p,
             'qte_entree': qte_entree,
             'qte_sortie': qte_sortie,
-            'qte_vente': qte_vente,
             'stock': stock,
             'prix_moyen': prix_moyen,
             'valeur_stock': valeur_stock,
-            'devise': devise,
             'alerte': stock <= 0,
+            'devise': p.devise,
         })
 
-        # ✅ Accumulation par devise, pas dans un total global
-        totaux_par_devise[devise]['nb'] += 1
-        totaux_par_devise[devise]['total_valeur'] += valeur_stock
-
     lignes.sort(key=lambda x: x['alerte'], reverse=True)
+
+    totaux_par_devise = {}
+    for l in lignes:
+        d = l['devise'] or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'total_valeur': Decimal('0')}
+        totaux_par_devise[d]['total_valeur'] += l['valeur_stock']
 
     return render(request, 'rapports/stock_actuel.html', {
         **ctx_commun(f, societe),
         'lignes': lignes,
         'nb': len(lignes),
-        # ✅ total_valeur supprimé — remplacé par totaux_par_devise
-        'totaux_par_devise': dict(totaux_par_devise),
+        'totaux_par_devise': totaux_par_devise,
         'titre': 'Stock Actuel',
         'rapport': 'stock_actuel',
         'rapport_icone': 'bi-archive',
         'rapport_clr': 'var(--primary)',
     })
+
 
 @login_required
 def rapport_facturation(request):
@@ -303,55 +255,68 @@ def rapport_facturation(request):
 
     qs = Facture.objects.filter(societe=societe).select_related('client').order_by('-date_facture')
 
-    if f['date_debut']: qs = qs.filter(date_facture__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_facture__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
-    if f['service_id']: qs = qs.filter(lignes__service__id=f['service_id']).distinct()
+    if f['date_debut']:
+        qs = qs.filter(date_facture__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_facture__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
+    if f['service_id']:
+        qs = qs.filter(lignes__service__id=f['service_id']).distinct()
 
-    totaux_par_devise = defaultdict(lambda: {
-        'nb': 0, 'total_ht': Decimal('0'), 'total_tva': Decimal('0'), 'total_ttc': Decimal('0'), 'nb_clients': 0
-    })
+    qs_totaux = qs.exclude(statut_obr='ANNULE')
+    factures_fn = qs_totaux.filter(type_facture='FN')
+    factures_fa = qs_totaux.filter(type_facture='FA')
 
-    for facture in qs.filter(type_facture='FN'):
-        devise = getattr(facture, 'devise', 'BIF') or 'BIF'
-        d = totaux_par_devise[devise]
-        d['nb'] += 1
-        d['total_ht']  += quantize_3dec(facture.total_ht or 0)
-        d['total_tva'] += quantize_3dec(facture.total_tva or 0)
-        d['total_ttc'] += quantize_3dec(facture.total_ttc or 0)
-        if facture.client:
-            d['nb_clients'] += 1
+    totaux_fn = factures_fn.aggregate(
+        nb=Count('id'),
+        total_ht=Sum('total_ht'),
+        total_tva=Sum('total_tva'),
+        total_ttc=Sum('total_ttc'),
+        nb_clients=Count('client', distinct=True),
+    )
 
-    for facture in qs.filter(type_facture='FA'):
-        devise = getattr(facture, 'devise', 'BIF') or 'BIF'
-        d = totaux_par_devise[devise]
-        d['total_ht']  -= quantize_3dec(facture.total_ht or 0)
-        d['total_tva'] -= quantize_3dec(facture.total_tva or 0)
-        d['total_ttc'] -= quantize_3dec(facture.total_ttc or 0)
+    totaux_fa = factures_fa.aggregate(
+        total_ht=Sum('total_ht'),
+        total_tva=Sum('total_tva'),
+        total_ttc=Sum('total_ttc'),
+    )
 
     totaux = {
-        'par_devise': dict(totaux_par_devise),
-        'total_ht': sum(d['total_ht'] for d in totaux_par_devise.values()),
-        'total_tva': sum(d['total_tva'] for d in totaux_par_devise.values()),
-        'total_ttc': sum(d['total_ttc'] for d in totaux_par_devise.values()),
-        'nb': sum(d['nb'] for d in totaux_par_devise.values()),
-        'nb_clients': sum(d['nb_clients'] for d in totaux_par_devise.values()),
-        'nb_avoirs': qs.filter(type_facture='FA').count(),
+        'nb': totaux_fn.get('nb') or 0,
+        'total_ht': (totaux_fn.get('total_ht') or 0) - (totaux_fa.get('total_ht') or 0),
+        'total_tva': (totaux_fn.get('total_tva') or 0) - (totaux_fa.get('total_tva') or 0),
+        'total_ttc': (totaux_fn.get('total_ttc') or 0) - (totaux_fa.get('total_ttc') or 0),
+        'nb_clients': totaux_fn.get('nb_clients') or 0,
+        'nb_avoirs': factures_fa.count(),
+        'total_ht_avoirs': totaux_fa.get('total_ht') or 0,
+        'total_tva_avoirs': totaux_fa.get('total_tva') or 0,
+        'total_ttc_avoirs': totaux_fa.get('total_ttc') or 0,
+        'par_devise': {},
     }
+
+    for fact in qs_totaux:
+        d = fact.devise or 'BIF'
+        if d not in totaux['par_devise']:
+            totaux['par_devise'][d] = {'total_ht': Decimal('0'), 'total_tva': Decimal('0'), 'total_ttc': Decimal('0')}
+        if fact.type_facture == 'FN':
+            totaux['par_devise'][d]['total_ht'] += fact.total_ht or 0
+            totaux['par_devise'][d]['total_tva'] += fact.total_tva or 0
+            totaux['par_devise'][d]['total_ttc'] += fact.total_ttc or 0
+        elif fact.type_facture == 'FA':
+            totaux['par_devise'][d]['total_ht'] -= fact.total_ht or 0
+            totaux['par_devise'][d]['total_tva'] -= fact.total_tva or 0
+            totaux['par_devise'][d]['total_ttc'] -= fact.total_ttc or 0
 
     return render(request, 'rapports/facturation.html', {
         **ctx_commun(f, societe),
         'factures': qs,
         'totaux': totaux,
-        'titre': format_titre_avec_dates('Ventes / Facturation', f['date_debut'], f['date_fin']),
+        'titre': 'Ventes / Facturation',
         'rapport': 'facturation',
         'rapport_icone': 'bi-receipt',
         'rapport_clr': 'var(--primary)',
     })
-
-# ══════════════════════════════════════════════
-#  EXPORTS
-# ══════════════════════════════════════════════
 
 @login_required
 def export_stock_excel(request):
@@ -360,6 +325,8 @@ def export_stock_excel(request):
         messages.error(request, erreur)
         return redirect('rapports:stock_actuel')
 
+    # On récupère les mêmes données que la vue principale
+    # (on duplique un peu le code pour l'instant - on pourra factoriser plus tard)
     f = get_filtres(request)
     produits_qs = Produit.objects.filter(societe=societe, statut='ACTIF')
 
@@ -370,29 +337,24 @@ def export_stock_excel(request):
     for p in produits_qs:
         qte_entree = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
         qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_vente  = LigneFacture.objects.filter(facture__societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        stock = qte_entree - qte_sortie - qte_vente
+        stock = qte_entree - qte_sortie
 
         agg = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
-        prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg.get('total_qte') else Decimal(p.prix_vente or 0)
-        valeur_stock = Decimal(max(stock, 0)) * prix_moyen
+        prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
+        valeur_stock = max(stock, 0) * prix_moyen
 
         lignes.append({
             'produit': p,
             'qte_entree': qte_entree,
             'qte_sortie': qte_sortie,
-            'qte_vente': qte_vente,
             'stock': stock,
-            'prix_moyen': quantize_3dec(prix_moyen),
-            'valeur_stock': quantize_3dec(valeur_stock),
-            'devise': p.devise,
+            'prix_moyen': round(float(prix_moyen), 2),
+            'valeur_stock': round(float(valeur_stock), 2),
         })
 
-    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Vendu', 'Stock', 
-                'PMP', 'Valeur Stock', 'Devise']
-    
+    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Stock', 'PMP (BIF)', 'Valeur Stock (BIF)']
     data_export = []
     for l in lignes:
         data_export.append([
@@ -402,16 +364,13 @@ def export_stock_excel(request):
             l['produit'].unite or '—',
             l['qte_entree'],
             l['qte_sortie'],
-            l['qte_vente'],
             l['stock'],
             l['prix_moyen'],
             l['valeur_stock'],
-            l['devise'],
         ])
 
-    titre = format_titre_avec_dates("Stock Actuel", f['date_debut'], f['date_fin'])
-    chemin = generer_excel(titre, colonnes, data_export, "stock_actuel",date_debut=f['date_debut'],   # ← Ajout important
-        date_fin=f['date_fin'] )
+    chemin = generer_excel("Stock Actuel", colonnes, data_export, "stock_actuel")
+
     return redirect(f"/media/{chemin}")
 
 
@@ -423,6 +382,7 @@ def export_stock_pdf(request):
         return redirect('rapports:stock_actuel')
 
     f = get_filtres(request)
+
     produits_qs = Produit.objects.filter(societe=societe, statut='ACTIF')
 
     if f['produit_id']:
@@ -432,29 +392,25 @@ def export_stock_pdf(request):
     for p in produits_qs:
         qte_entree = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
         qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_vente  = LigneFacture.objects.filter(facture__societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        stock = qte_entree - qte_sortie - qte_vente
+        stock = qte_entree - qte_sortie
 
         agg = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
-        prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg.get('total_qte') else Decimal(p.prix_vente or 0)
-        valeur_stock = Decimal(max(stock, 0)) * prix_moyen
+        prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
+        valeur_stock = max(stock, 0) * prix_moyen
 
         lignes.append({
             'produit': p,
             'qte_entree': qte_entree,
             'qte_sortie': qte_sortie,
-            'qte_vente': qte_vente,
             'stock': stock,
-            'prix_moyen': quantize_3dec(prix_moyen),
-            'valeur_stock': quantize_3dec(valeur_stock),
-            'devise': p.devise,
+            'prix_moyen': round(float(prix_moyen), 2),
+            'valeur_stock': round(float(valeur_stock), 2),
         })
 
-    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Vendu', 'Stock', 
-                'PMP', 'Valeur Stock', 'Devise']
-    
+    # Préparation des données
+    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Stock', 'PMP (BIF)', 'Valeur Stock (BIF)']
     data = []
     for l in lignes:
         data.append([
@@ -464,26 +420,24 @@ def export_stock_pdf(request):
             l['produit'].unite or '—',
             l['qte_entree'],
             l['qte_sortie'],
-            l['qte_vente'],
             l['stock'],
             l['prix_moyen'],
             l['valeur_stock'],
-            l['devise'],
         ])
 
-    titre = format_titre_avec_dates("Rapport Stock Actuel", f['date_debut'], f['date_fin'])
+    # Important : orientation paysage
     chemin = generer_pdf(
-        titre=titre, 
+        titre="Rapport Stock Actuel", 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="stock_actuel",
-        orientation="landscape",
-        date_debut=f['date_debut'],   # ← Ajout important
-        date_fin=f['date_fin'] 
+        orientation="landscape"      # ← Correction principale
     )
     return redirect(f"/media/{chemin}")
 
 
+
+    # ====================== EXPORT ENTRÉES ======================
 @login_required
 def export_entrees_excel(request):
     societe, erreur = _check_droit(request)
@@ -497,13 +451,14 @@ def export_entrees_excel(request):
         'produit', 'produit__categorie', 'fournisseur'
     ).order_by('-date_entree')
 
-    if f['date_debut']: qs = qs.filter(date_entree__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_entree__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(produit__id=f['produit_id'])
+    if f['date_debut']:
+        qs = qs.filter(date_entree__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_entree__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(produit__id=f['produit_id'])
 
-    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Catégorie', 'Fournisseur', 'Quantité', 
-                'Prix Revient', 'Montant Total', 'Devise', 'OBR']
-    
+    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Catégorie', 'Fournisseur', 'Quantité', 'Prix Revient', 'Montant Total', 'OBR']
     data = []
     for e in qs:
         data.append([
@@ -514,23 +469,13 @@ def export_entrees_excel(request):
             getattr(e.produit.categorie, 'nom', '—'),
             getattr(e.fournisseur, 'nom', '—'),
             e.quantite,
-            quantize_3dec(e.prix_revient or 0),
-            quantize_3dec(e.montant_total or 0),
-            getattr(e.produit, 'devise', 'BIF'),
+            float(e.prix_revient or 0),
+            float(e.montant_total or 0),
             e.statut_obr or '—',
         ])
 
-        titre = format_titre_avec_dates("Entrées Stock", f['date_debut'], f['date_fin'])
-    
-        chemin = generer_excel(
-            titre, 
-            colonnes, 
-            data, 
-            "entrees",
-            date_debut=f['date_debut'],
-            date_fin=f['date_fin']
-        )
-        return redirect(f"/media/{chemin}")
+    chemin = generer_excel("Entrées Stock", colonnes, data, "entrees")
+    return redirect(f"/media/{chemin}")
 
 
 @login_required
@@ -546,13 +491,14 @@ def export_entrees_pdf(request):
         'produit', 'produit__categorie', 'fournisseur'
     ).order_by('-date_entree')
 
-    if f['date_debut']: qs = qs.filter(date_entree__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_entree__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(produit__id=f['produit_id'])
+    if f['date_debut']:
+        qs = qs.filter(date_entree__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_entree__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(produit__id=f['produit_id'])
 
-    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Catégorie', 'Fournisseur', 'Quantité', 
-                'Prix Revient', 'Montant Total', 'Devise', 'OBR']
-    
+    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Catégorie', 'Fournisseur', 'Quantité', 'Prix Revient', 'Montant Total', 'OBR']
     data = []
     for e in qs:
         data.append([
@@ -563,24 +509,24 @@ def export_entrees_pdf(request):
             getattr(e.produit.categorie, 'nom', '—'),
             getattr(e.fournisseur, 'nom', '—'),
             e.quantite,
-            quantize_3dec(e.prix_revient or 0),
-            quantize_3dec(e.montant_total or 0),
-            getattr(e.produit, 'devise', 'BIF'),
+            float(e.prix_revient or 0),
+            float(e.montant_total or 0),
             e.statut_obr or '—',
         ])
 
-    titre = format_titre_avec_dates("Rapport Entrées Stock", f['date_debut'], f['date_fin'])
+    # Correction : passage en mode paysage + titre clair
     chemin = generer_pdf(
-        titre=titre, 
+        titre="Rapport Entrées Stock", 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="entrees",
-        orientation="landscape",
-        date_debut=f['date_debut'],   # ← Ajout important
-        date_fin=f['date_fin']
+        orientation="landscape"      # ← Important pour 10 colonnes
     )
     return redirect(f"/media/{chemin}")
 
+# ══════════════════════════════════════════════
+#  EXPORT SORTIES
+# ══════════════════════════════════════════════
 
 @login_required
 def export_sorties_excel(request):
@@ -595,31 +541,29 @@ def export_sorties_excel(request):
         'entree_stock', 'entree_stock__produit', 'entree_stock__produit__categorie'
     ).order_by('-date_sortie')
 
-    if f['date_debut']: qs = qs.filter(date_sortie__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_sortie__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(entree_stock__produit__id=f['produit_id'])
+    if f['date_debut']:
+        qs = qs.filter(date_sortie__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_sortie__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(entree_stock__produit__id=f['produit_id'])
 
-    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Quantité', 'Prix Unitaire', 'Montant Total', 'Commentaire', 'Devise', 'OBR']
-    
+    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Quantité', 'Prix Unitaire', 'Montant Total', 'Commentaire', 'OBR']
     data = []
     for s in qs:
-        produit = s.entree_stock.produit if s.entree_stock else None
         data.append([
-            s.date_sortie.strftime('%d/%m/%Y') if s.date_sortie else '—',
+            s.date_sortie.strftime('%d/%m/%Y'),
             s.type_sortie or '—',
-            produit.designation if produit else '—',
-            produit.code if produit else '—',
+            s.entree_stock.produit.designation if s.entree_stock and s.entree_stock.produit else '—',
+            s.entree_stock.produit.code if s.entree_stock and s.entree_stock.produit else '—',
             s.quantite,
-            quantize_3dec(s.prix or 0),
-            quantize_3dec(s.montant_total or 0),
+            float(s.prix or 0),
+            float(s.montant_total or 0),
             s.commentaire or '—',
-            getattr(produit, 'devise', 'BIF') if produit else 'BIF',
             s.statut_obr or '—',
         ])
 
-    titre = format_titre_avec_dates("Sorties Stock", f['date_debut'], f['date_fin'])
-    chemin = generer_excel(titre, colonnes, data, "sorties",date_debut=f['date_debut'],
-        date_fin=f['date_fin'])
+    chemin = generer_excel("Sorties Stock", colonnes, data, "sorties")
     return redirect(f"/media/{chemin}")
 
 
@@ -636,38 +580,48 @@ def export_sorties_pdf(request):
         'entree_stock', 'entree_stock__produit', 'entree_stock__produit__categorie'
     ).order_by('-date_sortie')
 
-    if f['date_debut']: qs = qs.filter(date_sortie__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_sortie__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(entree_stock__produit__id=f['produit_id'])
+    if f['date_debut']:
+        qs = qs.filter(date_sortie__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_sortie__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(entree_stock__produit__id=f['produit_id'])
 
-    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Quantité', 'Prix Unitaire', 'Montant Total', 'Commentaire', 'Devise', 'OBR']
+    colonnes = ['Date', 'Type', 'Produit', 'Code', 'Quantité', 'Prix Unitaire', 'Montant Total', 'Commentaire', 'OBR']
     
     data = []
     for s in qs:
-        produit = s.entree_stock.produit if s.entree_stock else None
         data.append([
-            s.date_sortie.strftime('%d/%m/%Y') if s.date_sortie else '—',
+            s.date_sortie.strftime('%d/%m/%Y') if s.date_sortie else '—',  # ✅ sécurité ajoutée
             s.type_sortie or '—',
-            produit.designation if produit else '—',
-            produit.code if produit else '—',
+            s.entree_stock.produit.designation if s.entree_stock and s.entree_stock.produit else '—',
+            s.entree_stock.produit.code if s.entree_stock and s.entree_stock.produit else '—',
             s.quantite,
-            quantize_3dec(s.prix or 0),
-            quantize_3dec(s.montant_total or 0),
+            float(s.prix or 0),
+            float(s.montant_total or 0),
             s.commentaire or '—',
-            getattr(produit, 'devise', 'BIF') if produit else 'BIF',
             s.statut_obr or '—',
         ])
 
-    titre = format_titre_avec_dates("Rapport Sorties Stock", f['date_debut'], f['date_fin'])
+    # ✅ CORRECTION ICI
     chemin = generer_pdf(
-        titre=titre,
+        titre="Rapport Sorties Stock",
         colonnes=colonnes,
         lignes=data,
         type_rapport="sorties",
-        orientation="landscape"
+        orientation="landscape"   # ← AJOUT IMPORTANT
     )
+
     return redirect(f"/media/{chemin}")
 
+
+    # ══════════════════════════════════════════════
+#  EXPORT FACTURATION
+# ══════════════════════════════════════════════
+
+# ══════════════════════════════════════════════
+#  EXPORT FACTURATION
+# ══════════════════════════════════════════════
 
 @login_required
 def export_facturation_excel(request):
@@ -680,12 +634,16 @@ def export_facturation_excel(request):
 
     qs = Facture.objects.filter(societe=societe).select_related('client').order_by('-date_facture')
 
-    if f['date_debut']: qs = qs.filter(date_facture__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_facture__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
-    if f['service_id']: qs = qs.filter(lignes__service__id=f['service_id']).distinct()
+    if f['date_debut']:
+        qs = qs.filter(date_facture__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_facture__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
+    if f['service_id']:
+        qs = qs.filter(lignes__service__id=f['service_id']).distinct()
 
-    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'Devise', 'OBR']
+    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'OBR']
     data = []
     for facture in qs:
         data.append([
@@ -693,17 +651,14 @@ def export_facturation_excel(request):
             facture.date_facture.strftime('%d/%m/%Y') if facture.date_facture else '—',
             getattr(facture.client, 'nom', '—'),
             facture.get_type_facture_display() or facture.type_facture or '—',
-            getattr(facture, 'statut', '—') or '—',
-            quantize_3dec(getattr(facture, 'total_ht', 0)),
-            quantize_3dec(getattr(facture, 'total_tva', 0)),
-            quantize_3dec(getattr(facture, 'total_ttc', 0)),
-            getattr(facture, 'devise', 'BIF'),
+            getattr(facture, 'statut', '—') or '—',                    # ← Correction ici
+            float(getattr(facture, 'total_ht', 0) or 0),
+            float(getattr(facture, 'total_tva', 0) or 0),
+            float(getattr(facture, 'total_ttc', 0) or 0),
             getattr(facture, 'statut_obr', '—') or '—',
         ])
 
-    titre = format_titre_avec_dates("Facturation", f['date_debut'], f['date_fin'])
-    chemin = generer_excel(titre, colonnes, data, "facturation",date_debut=f['date_debut'],   # ← Ajout important
-        date_fin=f['date_fin'] )
+    chemin = generer_excel("Facturation", colonnes, data, "facturation")
     return redirect(f"/media/{chemin}")
 
 
@@ -718,12 +673,16 @@ def export_facturation_pdf(request):
 
     qs = Facture.objects.filter(societe=societe).select_related('client').order_by('-date_facture')
 
-    if f['date_debut']: qs = qs.filter(date_facture__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(date_facture__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
-    if f['service_id']: qs = qs.filter(lignes__service__id=f['service_id']).distinct()
+    if f['date_debut']:
+        qs = qs.filter(date_facture__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(date_facture__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
+    if f['service_id']:
+        qs = qs.filter(lignes__service__id=f['service_id']).distinct()
 
-    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'Devise', 'OBR']
+    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'OBR']
     data = []
     for facture in qs:
         data.append([
@@ -732,25 +691,34 @@ def export_facturation_pdf(request):
             getattr(facture.client, 'nom', '—'),
             facture.get_type_facture_display() or facture.type_facture or '—',
             getattr(facture, 'statut', '—') or '—',
-            quantize_3dec(getattr(facture, 'total_ht', 0)),
-            quantize_3dec(getattr(facture, 'total_tva', 0)),
-            quantize_3dec(getattr(facture, 'total_ttc', 0)),
-            getattr(facture, 'devise', 'BIF'),
+            float(getattr(facture, 'total_ht', 0) or 0),
+            float(getattr(facture, 'total_tva', 0) or 0),
+            float(getattr(facture, 'total_ttc', 0) or 0),
             getattr(facture, 'statut_obr', '—') or '—',
         ])
 
-    titre = format_titre_avec_dates("Rapport Facturation", f['date_debut'], f['date_fin'])
+    # Important : on passe orientation="landscape"
     chemin = generer_pdf(
-        titre=titre, 
+        titre="Rapport Facturation", 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="facturation",
-        orientation="landscape",
-        date_debut=f['date_debut'],   # ← Ajout important
-        date_fin=f['date_fin'] 
+        orientation="landscape"      # ← Ici le changement
     )
     return redirect(f"/media/{chemin}")
 
+
+
+# ══════════════════════════════════════════════
+#  EXPORT COÛT DU STOCK VENDU
+# ══════════════════════════════════════════════
+
+# ══════════════════════════════════════════════
+#  EXPORT COÛT DU STOCK VENDU
+# ══════════════════════════════════════════════
+# ══════════════════════════════════════════════
+#  EXPORT COÛT DU STOCK VENDU
+# ══════════════════════════════════════════════
 
 @login_required
 def export_cout_stock_excel(request):
@@ -765,20 +733,23 @@ def export_cout_stock_excel(request):
         .select_related('facture', 'facture__client', 'produit', 'service')\
         .order_by('-facture__date_facture')
 
-    if f['date_debut']: qs = qs.filter(facture__date_facture__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(facture__date_facture__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(produit__id=f['produit_id'])
-    if f['service_id']: qs = qs.filter(service__id=f['service_id'])
+    if f['date_debut']:
+        qs = qs.filter(facture__date_facture__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(facture__date_facture__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(produit__id=f['produit_id'])
+    if f['service_id']:
+        qs = qs.filter(service__id=f['service_id'])
 
-    colonnes = ['Facture', 'Date', 'Client', 'Désignation', 'Type', 'Qté', 'PU HT', 'TVA %', 
-                'Montant HT', 'Montant TTC', 'Devise']
-    
+    colonnes = ['Facture', 'Date', 'Client', 'Désignation', 'Type', 'Qté', 'PU HT', 'TVA %', 'Montant HT', 'Montant TTC']
     data = []
     for l in qs:
         designation = (l.produit.designation if l.produit else 
                       (l.service.designation if l.service else getattr(l, 'designation', '—')))
+
+        # Correction du champ prix
         prix_unitaire = getattr(l, 'prix_unitaire_ht', None) or getattr(l, 'prix_unitaire', None) or getattr(l, 'prix_ht', 0)
-        devise = getattr(l.facture, 'devise', 'BIF')
 
         data.append([
             l.facture.numero or '—',
@@ -787,16 +758,13 @@ def export_cout_stock_excel(request):
             designation,
             'Avoir (FA)' if getattr(l.facture, 'type_facture', None) == 'FA' else ('Produit' if l.produit else 'Service'),
             l.quantite or 0,
-            quantize_3dec(prix_unitaire),
+            float(prix_unitaire or 0),
             l.taux_tva or 0,
-            quantize_3dec(getattr(l, 'montant_ht', 0)),
-            quantize_3dec(getattr(l, 'montant_ttc', 0)),
-            devise,
+            float(getattr(l, 'montant_ht', 0) or 0),
+            float(getattr(l, 'montant_ttc', 0) or 0),
         ])
 
-    titre = format_titre_avec_dates("Coût du Stock Vendu", f['date_debut'], f['date_fin'])
-    chemin = generer_excel(titre, colonnes, data, "cout_stock",date_debut=f['date_debut'],   # ← Ajout important
-        date_fin=f['date_fin']  )
+    chemin = generer_excel("Coût du Stock Vendu", colonnes, data, "cout_stock")
     return redirect(f"/media/{chemin}")
 
 
@@ -813,20 +781,22 @@ def export_cout_stock_pdf(request):
         .select_related('facture', 'facture__client', 'produit', 'service')\
         .order_by('-facture__date_facture')
 
-    if f['date_debut']: qs = qs.filter(facture__date_facture__gte=f['date_debut'])
-    if f['date_fin']:   qs = qs.filter(facture__date_facture__lte=f['date_fin'])
-    if f['produit_id']: qs = qs.filter(produit__id=f['produit_id'])
-    if f['service_id']: qs = qs.filter(service__id=f['service_id'])
+    if f['date_debut']:
+        qs = qs.filter(facture__date_facture__gte=f['date_debut'])
+    if f['date_fin']:
+        qs = qs.filter(facture__date_facture__lte=f['date_fin'])
+    if f['produit_id']:
+        qs = qs.filter(produit__id=f['produit_id'])
+    if f['service_id']:
+        qs = qs.filter(service__id=f['service_id'])
 
-    colonnes = ['Facture', 'Date', 'Client', 'Désignation', 'Type', 'Qté', 'PU HT', 'TVA %', 
-                'Montant HT', 'Montant TTC', 'Devise']
-    
+    colonnes = ['Facture', 'Date', 'Client', 'Désignation', 'Type', 'Qté', 'PU HT', 'TVA %', 'Montant HT', 'Montant TTC']
     data = []
     for l in qs:
         designation = (l.produit.designation if l.produit else 
                       (l.service.designation if l.service else getattr(l, 'designation', '—')))
+
         prix_unitaire = getattr(l, 'prix_unitaire_ht', None) or getattr(l, 'prix_unitaire', None) or getattr(l, 'prix_ht', 0)
-        devise = getattr(l.facture, 'devise', 'BIF')
 
         data.append([
             l.facture.numero or '—',
@@ -835,21 +805,17 @@ def export_cout_stock_pdf(request):
             designation,
             'Avoir (FA)' if getattr(l.facture, 'type_facture', None) == 'FA' else ('Produit' if l.produit else 'Service'),
             l.quantite or 0,
-            quantize_3dec(prix_unitaire),
+            float(prix_unitaire or 0),
             l.taux_tva or 0,
-            quantize_3dec(getattr(l, 'montant_ht', 0)),
-            quantize_3dec(getattr(l, 'montant_ttc', 0)),
-            devise,
+            float(getattr(l, 'montant_ht', 0) or 0),
+            float(getattr(l, 'montant_ttc', 0) or 0),
         ])
 
-    titre = format_titre_avec_dates("Rapport Coût du Stock Vendu", f['date_debut'], f['date_fin'])
     chemin = generer_pdf(
-        titre=titre, 
+        titre="Rapport Coût du Stock Vendu", 
         colonnes=colonnes, 
         lignes=data, 
         type_rapport="cout_stock",
-        orientation="landscape",
-        date_debut=f['date_debut'],   # ← Ajout important
-        date_fin=f['date_fin'] 
+        orientation="landscape"      # Paysage recommandé pour ce rapport
     )
     return redirect(f"/media/{chemin}")

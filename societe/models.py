@@ -53,7 +53,12 @@ class Societe(models.Model):
 
     # Champs métier
     secteur = models.CharField(max_length=250, blank=True, default='', verbose_name="Secteur d'activité")
-    forme   = models.CharField(max_length=50,  blank=True, default='', verbose_name="Forme juridique")
+    forme = models.CharField(
+    max_length=120,                    # ← Augmenté
+    blank=True, 
+    default='', 
+    verbose_name="Forme juridique"
+    )
 
     # Adresse
     province = models.CharField(max_length=100, blank=True, default='', verbose_name="Province")
@@ -125,11 +130,13 @@ class Societe(models.Model):
         return ', '.join(parts)
 
     # ── Licence ─────────────────────────────────────────────────────────
+    # APRÈS
     @property
     def cle_active(self):
         today = timezone.localdate()
         return self.cles_activation.filter(
-            statut__in=['ACTIVE', 'DISPONIBLE'],
+            statut='ACTIVE',          # ← uniquement les clés déjà saisies par le chef
+            utilisee=True,            # ← double vérification : le chef a bien activé
             active=True,
             date_fin__date__gte=today,
         ).order_by('-date_creation').first()
