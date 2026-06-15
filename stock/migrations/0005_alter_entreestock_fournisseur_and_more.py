@@ -7,8 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('facturer', '0012_alter_lignefacture_taux_tva_and_more'),
-        ('fournisseurs', '0001_initial'),
+        ('facturer', '0012_alter_facturependingobr_options_and_more'),
         ('stock', '0004_alter_entreestock_unique_together_and_more'),
     ]
 

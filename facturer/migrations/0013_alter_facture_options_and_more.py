@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('clients', '0005_typeclient_est_defaut_alter_client_assujeti_tva_and_more'),
-        ('facturer', '0012_alter_lignefacture_taux_tva_and_more'),
+        ('facturer', '0012_alter_facturependingobr_options_and_more'),
         ('societe', '0011_societe_facture_logo_societe_facture_pied_page_and_more'),
     ]
 

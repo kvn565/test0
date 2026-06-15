@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
         ('categories', '0001_initial'),
         ('produits', '0007_alter_produit_options_alter_produit_code'),
         ('societe', '0011_societe_facture_logo_societe_facture_pied_page_and_more'),
-        ('taux', '0003_delete_taux_tauxtva_unique_taux_valeur_par_societe_and_more'),
+        ('taux', '0003_delete_taux_alter_tauxtva_valeur_and_more'),
     ]
 
     operations = [

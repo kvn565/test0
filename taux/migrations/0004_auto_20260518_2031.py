@@ -33,7 +33,7 @@ def create_default_tva_rates(apps, schema_editor):
 class Migration(migrations.Migration):
     
     dependencies = [
-        ('taux', '0003_delete_taux_alter_tauxtva_valeur_and_more'),
+        ('taux', '0005_alter_tauxtva_valeur'),
     ]
 
     operations = [

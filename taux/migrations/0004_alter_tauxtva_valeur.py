@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('taux', '0003_delete_taux_tauxtva_unique_taux_valeur_par_societe_and_more'),
+        ('taux', '0003_delete_taux_alter_tauxtva_valeur_and_more'),
     ]
 
     operations = [

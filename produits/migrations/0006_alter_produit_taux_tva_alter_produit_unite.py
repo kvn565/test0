@@ -7,8 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('produits', '0005_remove_produit_produits_pr_societe_c64d9a_idx_and_more'),
-        ('taux', '0002_alter_taux_unique_together_remove_taux_societe_and_more'),
+        ('produits', '0005_alter_produit_options_alter_produit_code_and_more'),
+        ('taux', '0005_alter_tauxtva_valeur'),
     ]
 
     operations = [
