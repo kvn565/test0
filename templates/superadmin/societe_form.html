@@ -47,19 +47,6 @@
                 <form method="post">
                     {% csrf_token %}
 
-                    {# ── Nom ── #}
-                    <div class="mb-4">
-                        <label class="form-label" for="{{ form.nom.id_for_label }}">
-                            Nom de la société <span style="color:#e74c3c;">*</span>
-                        </label>
-                        {{ form.nom }}
-                        {% if form.nom.errors %}
-                        <div style="color:#e74c3c;font-size:0.8rem;margin-top:5px;">
-                            <i class="bi bi-x-circle me-1"></i>{{ form.nom.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-
                     {# ── NIF ── #}
                     <div class="mb-4">
                         <label class="form-label" for="{{ form.nif.id_for_label }}">
@@ -78,6 +65,19 @@
                         {% if form.nif.errors %}
                         <div style="color:#e74c3c;font-size:0.8rem;margin-top:5px;">
                             <i class="bi bi-x-circle me-1"></i>{{ form.nif.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# ── Nom ── #}
+                    <div class="mb-4">
+                        <label class="form-label" for="{{ form.nom.id_for_label }}">
+                            Nom de la société <span style="color:#e74c3c;">*</span>
+                        </label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}
+                        <div style="color:#e74c3c;font-size:0.8rem;margin-top:5px;">
+                            <i class="bi bi-x-circle me-1"></i>{{ form.nom.errors.0 }}
                         </div>
                         {% endif %}
                     </div>

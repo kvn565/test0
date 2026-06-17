@@ -13,17 +13,17 @@ from societe.models import Societe
 class SocieteForm(forms.ModelForm):
     class Meta:
         model = Societe
-        fields = ['nom', 'nif']
+        fields = ['nif', 'nom']
         widgets = {
-            'nom': forms.TextInput(attrs={
-                'class': 'form-control form-control-lg',
-                'placeholder': 'Ex: SODECO SARL',
-                'autofocus': 'autofocus',
-            }),
             'nif': forms.TextInput(attrs={
                 'class': 'form-control form-control-lg',
                 'placeholder': 'Ex: 4000123456',
                 'style': 'font-family: monospace; font-weight: bold;',
+                'autofocus': 'autofocus',
+            }),
+            'nom': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Ex: SODECO SARL',
             }),
         }
         labels = {
@@ -400,12 +400,25 @@ class SocieteGeranceForm(forms.ModelForm):
     """
     Formulaire réservé au superadmin pour gérer les informations de gestion de la société.
     """
+    smtp_password = forms.CharField(
+        label="Mot de passe d'application SMTP",
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Laisser vide pour ne pas changer',
+            'autocomplete': 'off'
+        }),
+        help_text="Mot de passe d'application Google (16 caractères). Laissez vide pour conserver l'actuel."
+    )
+
     class Meta:
         model = Societe
         fields = [
             'nom_complet_gerant',
             'email_societe',
             'numero_depart',
+            'smtp_email',
+            'smtp_password',
         ]
         widgets = {
             'nom_complet_gerant': forms.TextInput(attrs={
@@ -420,17 +433,34 @@ class SocieteGeranceForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': '1000'
             }),
+            'smtp_email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'votre.societe@gmail.com'
+            }),
         }
         labels = {
             'nom_complet_gerant': "Nom complet du gérant",
             'email_societe': "Email officiel de la société",
             'numero_depart': "Numéro de départ des factures",
+            'smtp_email': "Email SMTP (expéditeur)",
+            'smtp_password': "Mot de passe d'application SMTP",
         }
         help_texts = {
             'nom_complet_gerant': "Apparaîtra sur les factures et documents officiels.",
             'email_societe': "Email principal utilisé pour les notifications.",
             'numero_depart': "Valeur de départ pour la numérotation automatique des factures (ex: FN-2026-0001).",
+            'smtp_email': "Adresse Gmail utilisée pour envoyer les emails.",
+            'smtp_password': "Mot de passe d'application Google (16 caractères). Laissez vide pour conserver l'actuel.",
         }
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        password = self.cleaned_data.get('smtp_password')
+        if not password and self.instance.pk:
+            instance.smtp_password = Societe.objects.get(pk=self.instance.pk).smtp_password
+        if commit:
+            instance.save()
+        return instance
 
 
 # ──────────────────────────────────────────────
