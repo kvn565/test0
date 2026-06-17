@@ -294,7 +294,7 @@ def societe_creer(request):
         form = SocieteForm()
     return render(request, 'superadmin/societe_form.html', {
         'form':  form,
-        'titre': 'Enregistrer une nouvelle socie',
+        'titre': 'Enregistrer une nouvelle société',
     })
 
 
