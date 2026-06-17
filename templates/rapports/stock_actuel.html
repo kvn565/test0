@@ -5,128 +5,140 @@
 
 {% block content %}
 
+<!-- Page Header -->
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <div class="page-title">
+        <h1 class="page-title mb-1">
             <i class="bi {{ rapport_icone }}" style="color:{{ rapport_clr }};"></i> {{ titre }}
-        </div>
-        <div class="page-subtitle">Inventaire en temps réel — quantités disponibles par produit</div>
+        </h1>
+        <p class="text-muted mb-0">
+            Inventaire en temps réel — quantités disponibles par produit
+        </p>
     </div>
 
-    <!-- Boutons d'export + Navigation -->
-    <div style="display:flex; gap:10px; align-items:center;">
+    <!-- Boutons Export + Navigation -->
+    <div class="d-flex gap-2 align-items-center">
         {% if lignes %}
-        <a href="{% url 'rapports:export_stock_excel' %}" class="btn btn-success btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-excel"></i> Excel
-        </a>
-        <a href="{% url 'rapports:export_stock_pdf' %}" class="btn btn-danger btn-sm" target="_blank">
-            <i class="bi bi-file-earmark-pdf"></i> PDF
-        </a>
+            {% with request.GET.urlencode as querystring %}
+                <button type="button" class="btn btn-success"
+                    onclick="window.open('{% url 'rapports:export_stock_excel' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </button>
+                <button type="button" class="btn btn-danger"
+                    onclick="window.open('{% url 'rapports:export_stock_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </button>
+            {% endwith %}
         {% endif %}
 
-        <a href="{% url 'rapports:entrees' %}" class="btn-outline-custom">
+        <button type="button" class="btn btn-outline-secondary"
+            onclick="window.location.href='{% url 'rapports:entrees' %}'">
             <i class="bi bi-box-arrow-in-down"></i> Entrées
-        </a>
-        <a href="{% url 'rapports:facturation' %}" class="btn-outline-custom">
+        </button>
+        <button type="button" class="btn btn-outline-secondary"
+            onclick="window.location.href='{% url 'rapports:facturation' %}'">
             <i class="bi bi-receipt"></i> Facturation
-        </a>
+        </button>
     </div>
 </div>
 
 {% include 'rapports/_filtres.html' %}
 
-<!-- Totaux -->
+<!-- TOTAUX PAR DEVISE -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value">{{ nb|default:0 }}</div>
-            <div class="stat-label">Produits</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value" style="color:#ef4444;">
-                {{ lignes|length|default:0 }}
+    <div class="col">
+        <div class="card shadow-sm border-0 text-center py-2">
+            <div class="card-body py-1">
+                <span class="fs-6 fw-bold text-primary">{{ nb|default:0 }}</span>
+                <span class="text-muted small"> Produits</span>
+                <span class="mx-1 text-muted">|</span>
+                <span class="fs-6 fw-bold" style="color:#ef4444;">{{ lignes|length|default:0 }}</span>
+                <span class="text-muted small"> en rupture</span>
             </div>
-            <div class="stat-label">dont en rupture</div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
-        <div class="stat-card">
-            <div class="stat-value" style="color:var(--primary);">
-                {{ total_valeur|floatformat:0|default:0 }} BIF
+    {% for devise, totaux in totaux_par_devise.items %}
+    <div class="col">
+        <div class="card shadow-sm border-0 text-center py-2">
+            <div class="card-body py-1">
+                <span class="fs-6 fw-bold" style="color:var(--primary);">{{ totaux.total_valeur|floatformat:3|default:0 }} {{ devise }}</span>
+                <span class="text-muted small"> Valeur totale (PMP)</span>
             </div>
-            <div class="stat-label">Valeur totale (PMP)</div>
         </div>
     </div>
+    {% endfor %}
 </div>
 
-<div class="card">
+<!-- Tableau -->
+<div class="card shadow-sm border-0">
     {% if lignes %}
-    <div style="overflow-x:auto;">
-        <table class="table table-custom mb-0">
-            <thead>
-                <tr>
-                    <th>Produit</th>
-                    <th>Catégorie</th>
-                    <th>Unité</th>
-                    <th>Entré</th>
-                    <th>Sorti</th>
-                    <th>Vendu</th>
-                    <th>Stock dispo</th>
-                    <th>PMP</th>
-                    <th>Valeur stock</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for l in lignes %}
-                <tr {% if l.alerte %}style="background:#fff5f5;"{% endif %}>
-                    <td>
-                        <div style="font-weight:600; font-size:13px;">{{ l.produit.designation }}</div>
-                        <div style="font-size:11px; color:var(--text-muted);">{{ l.produit.code }}</div>
-                    </td>
-                    <td style="font-size:12.5px; color:var(--text-muted);">
-                        {{ l.produit.categorie.nom|default:"—" }}
-                    </td>
-                    <td style="font-size:12.5px;">{{ l.produit.unite|default:"—" }}</td>
-                    <td style="font-size:12.5px; color:#10b981; font-weight:600;">+{{ l.qte_entree|default:0 }}</td>
-                    <td style="font-size:12.5px; color:#f59e0b;">-{{ l.qte_sortie|default:0 }}</td>
-                    <td style="font-size:12.5px; color:#8b5cf6;">-{{ l.qte_vente|default:0 }}</td>
-                    <td>
-                        {% if l.alerte %}
-                            <span class="badge-inactive" style="font-size:13px; font-weight:700;">⚠ {{ l.stock|default:0 }}</span>
-                        {% else %}
-                            <span style="font-weight:700; color:#10b981; font-size:13px;">{{ l.stock|default:0 }}</span>
-                        {% endif %}
-                    </td>
-                    <td style="font-size:12.5px;">{{ l.prix_moyen|floatformat:0|default:0 }} BIF</td>
-                    <td style="font-weight:600; font-size:13px;">{{ l.valeur_stock|floatformat:0|default:0 }} BIF</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr style="background:#f8fafc; font-weight:700;">
-                    <td colspan="8" style="text-align:right; padding:12px 16px;">Total valeur stock :</td>
-                    <td style="padding:12px 16px; color:var(--primary); font-size:14px;">
-                        {{ total_valeur|floatformat:0|default:0 }} BIF
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Produit</th>
+                        <th>Catégorie</th>
+                        <th>Unité</th>
+                        <th class="text-end">Entré</th>
+                        <th class="text-end">Sorti</th>
+                        <th class="text-end">Stock dispo</th>
+                        <th class="text-end">PMP</th>
+                        <th class="text-end">Valeur stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in lignes %}
+                    <tr {% if l.alerte %}style="background:#fff5f5;"{% endif %}>
+                        <td>
+                            <span class="fw-medium" style="font-size:13px;">{{ l.produit.designation }}</span>
+                            <small class="text-muted ms-1">{{ l.produit.code }}</small>
+                        </td>
+                        <td class="text-muted small">
+                            {{ l.produit.categorie.nom|default:"—" }}
+                        </td>
+                        <td class="small">{{ l.produit.unite|default:"—" }}</td>
+                        <td class="text-end fw-medium" style="color:#10b981;">+{{ l.qte_entree|floatformat:"-3" }}</td>
+                        <td class="text-end" style="color:#f59e0b;">-{{ l.qte_sortie|floatformat:"-3" }}</td>
+                        <td class="text-end">
+                            {% if l.alerte %}
+                                <span class="badge bg-danger">⚠ {{ l.stock|floatformat:"-3" }}</span>
+                            {% else %}
+                                <span class="fw-bold" style="color:#10b981;">{{ l.stock|floatformat:"-3" }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end small">{{ l.prix_moyen|floatformat:3|default:0 }} {{ l.devise }}</td>
+                        <td class="text-end fw-semibold" style="font-size:13px;">{{ l.valeur_stock|floatformat:3|default:0 }} {{ l.devise }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    {% for devise, totaux in totaux_par_devise.items %}
+                    <tr class="table-light fw-bold">
+                        <td colspan="7" class="text-end py-3">
+                            Valeur totale du stock (PMP)
+                            {% if totaux_par_devise|length > 1 %} — {{ devise }}{% endif %} :
+                        </td>
+                        <td class="py-3" style="color:var(--primary); font-size:14px;">
+                            {{ totaux.total_valeur|floatformat:3|default:0 }} {{ devise }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tfoot>
+            </table>
+        </div>
     {% else %}
-    <div style="text-align:center; padding:80px 20px; color:#64748b;">
-        <i class="bi bi-archive" style="font-size:48px; color:#cbd5e1; margin-bottom:16px;"></i>
-        <div style="font-size:15px; font-weight:600;">Aucun produit trouvé</div>
-        <div style="font-size:13px; margin-top:8px;">Modifiez les filtres pour afficher les résultats</div>
-    </div>
+        <div class="text-center py-5 my-5">
+            <i class="bi bi-archive display-1 text-muted opacity-50 mb-3 d-block"></i>
+            <h5 class="text-muted mb-2">Aucun produit trouvé</h5>
+            <p class="text-muted">Modifiez les filtres pour afficher les résultats</p>
+        </div>
     {% endif %}
 </div>
 
 <!-- Note explicative -->
-<div style="margin-top:16px; font-size:12.5px; color:var(--text-muted); padding:0 4px;">
+<div class="mt-3 text-muted small">
     <i class="bi bi-info-circle"></i>
-    Stock disponible = Entrées − Sorties hors vente − Lignes facturées.<br>
+    Stock disponible = Total entrées − Total sorties.<br>
     PMP = Prix Moyen Pondéré calculé sur toutes les entrées.
 </div>
 

@@ -16,12 +16,13 @@ urlpatterns = [
     # ⚠️  /setup/ est défini dans facturation/urls.py (URLs racine) — PAS ici.
     #    Raison : RateLimitMiddleware protège /setup/ par chemin exact.
     #    Si /setup/ est ici → URL = /superadmin/setup/ → middleware ne le reconnaît PAS.
-    path('saisir-cle/',        views.saisir_cle_payante,  name='saisir_cle'),
+    path('saisir-cle-payante/', views.saisir_cle_payante, name='saisir_cle_payante'),
     path('licence-expiree/',   views.licence_expiree,     name='licence_expiree'),
 
     # ── Sociétés ──────────────────────────────────────────────────
     path('societes/',                           views.societes_liste,    name='societes_liste'),
     path('societes/creer/',                     views.societe_creer,     name='societe_creer'),
+    path('ajax/verifier-nif/',                  views.ajax_verifier_nif, name='verifier_nif'),
     path('societes/<int:pk>/',                  views.societe_detail,    name='societe_detail'),
     path('societes/<int:pk>/modifier/',         views.societe_modifier,  name='societe_modifier'),
     path('societes/<int:pk>/toggle/',           views.societe_toggle,    name='societe_toggle'),
@@ -54,4 +55,8 @@ urlpatterns = [
     # ── Réinitialisation ──────────────────────────────────────────
     path('reinitialisation/',                   views.reinitialisation_page,      name='reinitialisation'),
     path('reinitialisation/confirmer/',         views.reinitialisation_confirmer, name='reinitialisation_confirmer'),
+
+    # ── Suivi Stock Global ────────────────────────────────────────
+    path('transactions/entrees/',               views.stock_entrees,      name='stock_entrees'),
+    path('transactions/sorties/',               views.stock_sorties,      name='stock_sorties'),
 ]

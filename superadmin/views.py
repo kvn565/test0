@@ -18,11 +18,15 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.paginator import Paginator
 from datetime import date, timedelta
-import calendar, os
+import calendar, os, requests
+from facturer.models import Facture
+from django.db.models import Sum
+from collections import defaultdict
 
 
 from .models import Utilisateur, HistoriqueConnexion, Backup, CleActivation, AuditCle
 from societe.models import Societe
+from stock.models import EntreeStock, SortieStock
 from .forms import (
     SocieteForm, CleActivationForm, RevoquerCleForm,
     InscriptionChefForm, ClePayanteForm,
@@ -55,54 +59,46 @@ def est_superadmin(user):
 #     Aligné sur index.php de WIBABI
 # ═══════════════════════════════════════════════════════════════
 
+
 @superadmin_required
 def dashboard(request):
-    today    = date.today()
-    societes = Societe.objects.all()
+    today = date.today()
 
-    # Sociétés avec licence active (non-essai)
-    societes_actives = Societe.objects.filter(
-        cles_activation__statut='ACTIVE',
-        cles_activation__date_debut__lte=today,
-        cles_activation__date_fin__gte=today,
-    ).distinct().count()
+    # Liste des sociétés pour le sélecteur
+    all_societes = Societe.objects.all().order_by('nom')
 
-    # ✅ AJOUT : sociétés en période d'essai (type_plan=ESSAI, statut=ACTIVE)
-    societes_essai = Societe.objects.filter(
-        cles_activation__statut='ACTIVE',
-        cles_activation__type_plan='ESSAI',
-        cles_activation__date_fin__gte=today,
-    ).distinct().count()
+    # Récupération de la société sélectionnée (par défaut = première société)
+    selected_societe_id = request.GET.get('societe')
+    if selected_societe_id:
+        selected_societe = get_object_or_404(Societe, pk=selected_societe_id)
+    else:
+        selected_societe = all_societes.first() if all_societes.exists() else None
 
-    # ✅ AJOUT : clés disponibles (non encore attribuées) — comme PHP
-    cles_disponibles = CleActivation.objects.filter(statut='DISPONIBLE').count()
-
+    # ==================== STATISTIQUES GLOBALES ====================
     stats = {
-        'total_societes':   societes.count(),
-        'societes_actives': societes_actives,
-        'societes_essai':   societes_essai,           # ✅ AJOUT
-        'cles_disponibles': cles_disponibles,         # ✅ AJOUT
-        'cles_actives':     CleActivation.objects.filter(
-                                statut='ACTIVE', date_debut__lte=today, date_fin__gte=today
-                            ).count(),
-        'cles_expirant':    CleActivation.objects.filter(
-                                statut='ACTIVE',
-                                date_fin__range=(today, today + timedelta(days=7))
-                            ).count(),
-        'total_users':      Utilisateur.objects.count(),
+        'total_societes': all_societes.count(),
+        'societes_actives': Societe.objects.filter(
+            cles_activation__statut='ACTIVE',
+            cles_activation__date_debut__lte=today,
+            cles_activation__date_fin__gte=today,
+        ).distinct().count(),
+        'essais_actifs': Societe.objects.filter(
+            cles_activation__statut='ACTIVE',
+            cles_activation__type_plan='ESSAI',
+            cles_activation__date_fin__gte=today,
+        ).distinct().count(),
+        'cles_disponibles': CleActivation.objects.filter(statut='DISPONIBLE').count(),
+        'total_utilisateurs': Utilisateur.objects.count(),
     }
 
+    # ==================== ALERTES ====================
     expiration_proche = CleActivation.objects.filter(
         statut='ACTIVE', date_fin__range=(today, today + timedelta(days=7))
     ).select_related('societe').order_by('date_fin')
 
-    derniers_audits = AuditCle.objects.select_related('societe', 'cle').order_by('-date_action')[:10]
-
-    # ✅ AJOUT : sociétés en essai expirant dans 3 jours (alerte)
     essai_expirant = CleActivation.objects.filter(
-        statut='ACTIVE',
-        type_plan='ESSAI',
-        date_fin__range=(today, today + timedelta(days=3)),
+        statut='ACTIVE', type_plan='ESSAI',
+        date_fin__range=(today, today + timedelta(days=3))
     ).select_related('societe').order_by('date_fin')
 
     societes_sans_cle = Societe.objects.exclude(
@@ -111,15 +107,51 @@ def dashboard(request):
         cles_activation__date_fin__gte=today,
     ).distinct()[:5]
 
-    return render(request, 'superadmin/dashboard.html', {
+    derniers_audits = AuditCle.objects.select_related('societe').order_by('-date_action')[:10]
+
+    # ==================== GRAPHique PAR SOCIÉTÉ ====================
+    labels = []
+    ca_data = []
+
+    if selected_societe:
+        start_date = today - timedelta(days=30)
+
+        from facturer.models import Facture
+        from django.db.models import Sum
+        from collections import defaultdict
+
+        factures = Facture.objects.filter(
+            societe=selected_societe,
+            date_facture__gte=start_date,
+            statut_obr='ENVOYE'
+        ).values('date_facture').annotate(
+            total_ca=Sum('total_ttc')
+        ).order_by('date_facture')
+
+        ca_dict = defaultdict(int)
+        for f in factures:
+            ca_dict[f['date_facture']] = float(f['total_ca'] or 0)
+
+        for i in range(30, -1, -1):
+            current_date = today - timedelta(days=i)
+            labels.append(current_date.strftime("%d %b"))
+            ca_data.append(ca_dict[current_date])
+
+    context = {
         'stats': stats,
         'expiration_proche': expiration_proche,
-        'derniers_audits': derniers_audits,
+        'essai_expirant': essai_expirant,
         'societes_sans_cle': societes_sans_cle,
-        'essai_expirant': essai_expirant,     # ✅ AJOUT
-    })
+        'derniers_audits': derniers_audits,
+        'all_societes': all_societes,
+        'selected_societe': selected_societe,
 
+        # Graphique
+        'labels': labels,
+        'ca_data': ca_data,
+    }
 
+    return render(request, 'superadmin/dashboard.html', context)
 # ═══════════════════════════════════════════════════════════════
 #  GESTION DES SOCIÉTÉS
 # ═══════════════════════════════════════════════════════════════
@@ -170,6 +202,42 @@ def societes_liste(request):
         'PLANS': CleActivation.TYPE_PLAN,
         'paginator': paginator,
     })
+
+
+@superadmin_required
+@require_POST
+def ajax_verifier_nif(request):
+    nif = request.POST.get('nif', '').strip()
+    if not nif:
+        return JsonResponse({'ok': False, 'error': 'NIF requis'})
+
+    url = "https://obr.bi/index.php/component/odvc/?option=com_odvc&view=odvc&id=1"
+    payload = {
+        "option": "com_odvc",
+        "view": "odvc",
+        "id": "1",
+        "type_doc": "4",
+        "nif": nif,
+        "Rechercher": "Vérifier",
+    }
+
+    try:
+        resp = requests.post(url, data=payload, timeout=15)
+        resp.encoding = 'utf-8'
+        html = resp.text
+
+        search_str = "appartient à <b>"
+        start = html.find(search_str)
+        if start != -1:
+            start += len(search_str)
+            end = html.find("</b>", start)
+            nom = html[start:end].strip()
+            if nom:
+                return JsonResponse({'ok': True, 'nom': nom})
+
+        return JsonResponse({'ok': False, 'error': 'NIF non trouvé sur OBR'})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
 
 
 @superadmin_required
@@ -226,7 +294,7 @@ def societe_creer(request):
         form = SocieteForm()
     return render(request, 'superadmin/societe_form.html', {
         'form':  form,
-        'titre': 'Enregistrer une nouvelle société',
+        'titre': 'Enregistrer une nouvelle socie',
     })
 
 
@@ -267,7 +335,7 @@ def societe_detail(request, pk):
     audits       = societe.audits.all()[:20]
     utilisateurs = Utilisateur.objects.filter(societe=societe).order_by('-date_creation')
 
-    # ── Licence active ────────────────────────────────────────────
+    # ── Licence active ─────────────────────────────────────────────────────
     licence_active = societe.cle_active   # utilise @property du modèle
 
     if licence_active:
@@ -286,13 +354,13 @@ def societe_detail(request, pk):
             statut_affichage = "Aucune licence active"
             statut_classe    = "secondary"
 
-    # ── Infos du chef (pour comparaison superadmin) ───────────────
+    # ── Infos du chef (pour comparaison superadmin) ────────────────────────
     chef                 = societe.chef              # @property — DIRECTEUR lié à la société
     inscription_complete = societe.inscription_complete  # @property — chef inscrit ou non
     infos_completes      = societe.infos_completes   # @property — champs remplis par chef
 
     # ── Tableau comparatif : ce que le superadmin a enregistré
-    #    vs ce que le chef a fourni à l'inscription ───────────────
+    #    vs ce que le chef a fourni à l'inscription ────────────────────────
     infos_superadmin = [
         ('NIF enregistré',        societe.nif,  'bi-fingerprint'),
         ('Date d\'enregistrement', societe.date_creation.strftime('%d/%m/%Y %H:%M'), 'bi-calendar'),
@@ -316,7 +384,7 @@ def societe_detail(request, pk):
             ('Adresse complète',     societe.adresse_complete or '—', 'bi-house'),
         ]
 
-    # ── Infos du compte chef ──────────────────────────────────────
+    # ── Infos du compte chef ───────────────────────────────────────────────
     infos_compte_chef = []
     if chef:
         infos_compte_chef = [
@@ -328,7 +396,7 @@ def societe_detail(request, pk):
             ('Compte actif',      'Oui' if chef.actif else 'Non',                  'bi-toggle-on'),
         ]
 
-    # ── Stats métier (si modules disponibles) ─────────────────────
+    # ── Stats métier (si modules disponibles) ──────────────────────────────
     stats_societe = {}
     try:
         from clients.models import Client
@@ -352,7 +420,7 @@ def societe_detail(request, pk):
         'statut_classe':        statut_classe,
         'stats_societe':        stats_societe,
 
-        # ── Infos chef & comparaison ──────────────────────────────
+        # ── Infos chef & comparaison ───────────────────────────────────────
         'chef':                 chef,
         'inscription_complete': inscription_complete,
         'infos_completes':      infos_completes,
@@ -360,7 +428,6 @@ def societe_detail(request, pk):
         'infos_chef_societe':   infos_chef_societe,
         'infos_compte_chef':    infos_compte_chef,
     })
-
 
 @superadmin_required
 @require_POST
@@ -426,15 +493,17 @@ def societe_toggle(request, pk):
 def societe_supprimer(request, pk):
     """
     ✅ AJOUT : suppression complète d'une société avec toutes ses données.
-    Équivalent de l'action supprimer_entreprise dans entreprises.php (PHP WIBABI).
-
-    Sécurité : nécessite la saisie de "SUPPRIMER" en confirmation.
+    Sécurité : nécessite le mot de passe du superadmin en confirmation.
     """
     societe = get_object_or_404(Societe, pk=pk)
-    confirmation = request.POST.get('confirmation', '')
+    password = request.POST.get('password', '')
 
-    if confirmation != 'SUPPRIMER':
-        messages.error(request, "Confirmation incorrecte. Tapez « SUPPRIMER » en majuscules.")
+    # Vérification du mot de passe superadmin
+    if not request.user.check_password(password):
+        messages.error(request, "Mot de passe incorrect. Suppression annulée.")
+        # Redirection selon la page d'origine
+        if request.META.get('HTTP_REFERER') and 'societes' in request.META.get('HTTP_REFERER'):
+            return redirect('superadmin:societes_liste')
         return redirect('superadmin:societe_detail', pk=pk)
 
     nom_societe = societe.nom
@@ -515,10 +584,27 @@ def cle_generer(request, pk):
             cle.societe = societe
             cle.cree_par = request.user.username
             # Si type_plan est ESSAI → activer immédiatement (chef n'a pas besoin de saisir la clé)
+            # APRÈS — ajouter un avertissement si clé DISPONIBLE déjà présente
             if cle.type_plan == 'ESSAI':
+                # L'essai est activé automatiquement (pas de saisie requise)
                 cle.utilisee         = True
                 cle.date_utilisation = timezone.now()
+            # Les clés payantes (STARTER, BUSINESS, ENTERPRISE) restent en DISPONIBLE
+            # jusqu'à ce que le chef les saisisse dans l'application → cle.activer()
             cle.save()
+
+            # ── Avertir si une clé DISPONIBLE existe déjà pour cette société ──
+            cle_existante = societe.cles_activation.filter(
+                statut='DISPONIBLE', active=True
+            ).exclude(pk=cle.pk).first()
+
+            if cle_existante:
+                messages.warning(
+                    request,
+                    f"⚠️ Attention : une clé '{cle_existante.cle_visible}' est déjà "
+                    f"disponible et non saisie pour cette société. "
+                    f"Pensez à la révoquer si elle n'est plus valable."
+                )
             AuditCle.objects.create(
                 societe=societe, cle=cle, action='CREEE',
                 message=(
@@ -758,7 +844,7 @@ def inscription_chef(request):
                     if 'logo' in cd and cd['logo']:
                         societe.logo = cd['logo']
 
-                    societe.statut = 'essai'   # Important pour éviter le modal licence
+                    #societe.statut = 'essai'   # Important pour éviter le modal licence
                     societe.save()
 
                     # Création du compte chef
@@ -794,7 +880,7 @@ def inscription_chef(request):
                         societe=societe,
                         cle=cle_active,
                         action='ACTIVEE',
-                        message=f"Inscription du chef {chef.nom_complet} pour la société {societe.nom}.",
+                        message=f"Inscription du contribuable {chef.nom_complet} pour la société {societe.nom}.",
                         ip_address=request.META.get('REMOTE_ADDR'),
                     )
 
@@ -835,74 +921,64 @@ def inscription_chef(request):
 #    4. Il la saisit ici → licence prolongée → retour à l'accueil
 # ═══════════════════════════════════════════════════════════════
 
+# APRÈS
 @login_required
 def saisir_cle_payante(request):
-    """
-    Permet au chef de saisir une clé de licence payante.
-
-    Supporte deux modes :
-      - AJAX (X-Requested-With: XMLHttpRequest) → réponse JSON
-        Utilisé par le modal dans base.html
-      - Normal → redirect après succès
-        Utilisé depuis la page licence_expiree.html
-    """
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-
-    if request.user.is_superuser:
-        if is_ajax:
-            return JsonResponse({'ok': False, 'error': 'Non autorisé pour le superadmin.'}, status=403)
-        return redirect('superadmin:dashboard')
-
     societe = getattr(request.user, 'societe', None)
     if not societe:
-        if is_ajax:
-            return JsonResponse({'ok': False, 'error': 'Compte non lié à une société.'}, status=400)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'ok': False, 'error': "Compte non lié à une société."}, status=400)
         messages.error(request, "Votre compte n'est pas lié à une société.")
-        return redirect(settings.LOGIN_URL)
+        return redirect('accueil')
+
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if request.method == 'POST':
         form = ClePayanteForm(request.POST)
+
         if form.is_valid():
             success, message, cle_obj = form.verifier_pour_societe(societe)
-            if success:
-                try:
-                    with transaction.atomic():
-                        cle_obj.activer()
-                        AuditCle.objects.create(
-                            societe    = societe,
-                            cle        = cle_obj,
-                            action     = 'ACTIVEE',
-                            message    = (
-                                f"Licence '{cle_obj.label_plan}' activée par "
-                                f"'{request.user.username}' pour '{societe.nom}'. "
-                                f"Valide jusqu'au {cle_obj.date_fin.strftime('%d/%m/%Y')}."
-                            ),
-                            ip_address = request.META.get('REMOTE_ADDR'),
-                        )
-                        success_msg = (
-                            f"Licence {cle_obj.label_plan} activée ! "
-                            f"Accès valide jusqu'au {cle_obj.date_fin.strftime('%d/%m/%Y')} "
-                            f"({cle_obj.jours_restants} jours)."
-                        )
-                        if is_ajax:
-                            return JsonResponse({'ok': True, 'message': success_msg})
-                        messages.success(request, f"✅ {success_msg}")
-                        return redirect('accueil')
 
-                except Exception as e:
-                    if is_ajax:
-                        return JsonResponse({'ok': False, 'error': f'Erreur : {str(e)}'}, status=500)
-                    messages.error(request, f"❌ Erreur lors de l'activation : {str(e)}")
+            if success and cle_obj:
+                cle_obj.activer()
+
+                # ── Journaliser l'activation ──────────────────────
+                AuditCle.objects.create(
+                    societe=societe,
+                    cle=cle_obj,
+                    action='ACTIVEE',
+                    message=(
+                        f"Licence {cle_obj.label_plan} activée par "
+                        f"{request.user.username} — expire le "
+                        f"{cle_obj.date_fin.strftime('%d/%m/%Y')}."
+                    ),
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                )
+
+                if is_ajax:
+                    return JsonResponse({
+                        'ok': True,
+                        'message': (
+                            f"Licence {cle_obj.label_plan} activée ! "
+                            f"Valide jusqu'au {cle_obj.date_fin.strftime('%d/%m/%Y')}."
+                        ),
+                    })
+
+                messages.success(request, "✅ Licence activée avec succès !")
+                return redirect('accueil')
+
             else:
                 if is_ajax:
-                    return JsonResponse({'ok': False, 'error': message})
-                messages.error(request, f"❌ {message}")
+                    return JsonResponse({'ok': False, 'error': message or "Clé invalide."})
+                messages.error(request, message or "Clé invalide.")
+
         else:
-            # Erreur de validation du formulaire
-            first_error = next(iter(form.errors.values()))[0] if form.errors else 'Clé invalide.'
+            # Erreur de formulaire (champ vide, etc.)
+            erreur = next(iter(form.errors.values()))[0] if form.errors else "Clé invalide."
             if is_ajax:
-                return JsonResponse({'ok': False, 'error': first_error})
-            messages.error(request, first_error)
+                return JsonResponse({'ok': False, 'error': erreur})
+            messages.error(request, erreur)
+
     else:
         form = ClePayanteForm()
 
@@ -910,7 +986,6 @@ def saisir_cle_payante(request):
         'form':    form,
         'societe': societe,
     })
-
 
 def licence_expiree(request):
     """
@@ -1046,9 +1121,9 @@ def ajax_info_utilisateur(request, pk):
     })
 
 
-# ═══════════════════════════════════════════════════════════════
+# ————————————————————————————————————————————————————————————————————————————————————————————————————
 #  BACKUP & RÉINITIALISATION
-# ═══════════════════════════════════════════════════════════════
+# ————————————————————————————————————————————————————————————————————————————————————————————————————
 
 @login_required
 @user_passes_test(est_superadmin)
@@ -1137,7 +1212,6 @@ def reinitialisation_confirmer(request):
         messages.error(request, f"❌ Erreur : {e}")
         return redirect('superadmin:reinitialisation')
 
-# ═══════════════════════════════════════════════════════════════
 #  GESTION DES SOCIÉTÉS (Superadmin) — Nouveau menu regroupé
 # ═══════════════════════════════════════════════════════════════
 
@@ -1164,39 +1238,170 @@ def societe_gestion_liste(request):
 
 @superadmin_required
 def societe_gestion_modifier(request, pk):
-    """
-    Modifier les paramètres importants d'une société :
-    - Nom complet du gérant
-    - Email de la société
-    - Numéro de départ des factures
-    - Configuration OBR (username, password, system_id, actif)
-    """
     societe = get_object_or_404(Societe, pk=pk)
 
     if request.method == 'POST':
+        print("=== POST brut ===")
+        print("obr_password reçu:", repr(request.POST.get('obr_password')))
+
         form     = SocieteGeranceForm(request.POST, instance=societe)
         obr_form = SocieteAdminConfigForm(request.POST, instance=societe)
 
+        print("obr_form valid:", obr_form.is_valid())
+        print("obr_form errors:", obr_form.errors)
+        if obr_form.is_valid():
+            print("obr_password cleaned:", repr(obr_form.cleaned_data.get('obr_password')))
+
         if form.is_valid() and obr_form.is_valid():
-            form.save()
-            obr_form.save()
-            messages.success(
-                request, 
-                f"✅ Paramètres de la société « {societe.nom} » mis à jour avec succès."
-            )
+            with transaction.atomic():
+                gerance = form.save(commit=False)
+                obr     = obr_form.save(commit=False)
+
+                societe.nom_complet_gerant = gerance.nom_complet_gerant
+                societe.email_societe      = gerance.email_societe
+                societe.numero_depart      = gerance.numero_depart
+                societe.smtp_email         = gerance.smtp_email
+                societe.smtp_password      = gerance.smtp_password
+                societe.obr_actif          = obr.obr_actif
+                societe.obr_username       = obr.obr_username
+                societe.obr_system_id      = obr.obr_system_id
+                societe.obr_base_url       = obr.obr_base_url
+                societe.obr_password       = obr.obr_password
+
+                print("=== AVANT SAVE ===")
+                print("societe.obr_password:", repr(societe.obr_password))
+
+                societe.save()
+
+                print("=== APRÈS SAVE ===")
+                societe.refresh_from_db()
+                print("obr_password en base:", repr(societe.obr_password))
+
+            messages.success(request, f"✅ Paramètres de « {societe.nom} » mis à jour.")
             return redirect('superadmin:societe_gestion_liste')
-        
-        # Si une des deux formes a des erreurs, on les affiche
         else:
-            messages.error(request, "Veuillez corriger les erreurs dans le formulaire.")
+            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
 
     else:
         form     = SocieteGeranceForm(instance=societe)
         obr_form = SocieteAdminConfigForm(instance=societe)
-
     return render(request, 'superadmin/societe_gestion_form.html', {
         'form': form,
         'obr_form': obr_form,
         'societe': societe,
-        'page_title': f"Modifier {societe.nom}",
+        'page_title': f"Modifier les paramètres de {societe.nom}",
+    })
+
+
+# ═══════════════════════════════════════════════════════════════
+#  SUIVI GLOBAL DES STOCKS (Transactions)
+# ═══════════════════════════════════════════════════════════════
+
+@superadmin_required
+def stock_entrees(request):
+    """Liste globale des entrées stock, groupée par société."""
+    q        = request.GET.get('q', '')
+    statut   = request.GET.get('statut', '')
+    type_mvt = request.GET.get('type', '')
+    societe_id = request.GET.get('societe', '')
+    page_num = request.GET.get('page', 1)
+
+    entrees_all = EntreeStock.objects.all().select_related('produit', 'societe')
+
+    if q:
+        entrees_all = entrees_all.filter(
+            Q(produit__designation__icontains=q) |
+            Q(produit__code__icontains=q) |
+            Q(numero_ref__icontains=q)
+        )
+    if statut:
+        entrees_all = entrees_all.filter(statut_obr=statut)
+    if type_mvt:
+        entrees_all = entrees_all.filter(type_entree=type_mvt)
+    if societe_id:
+        entrees_all = entrees_all.filter(societe_id=societe_id)
+
+    stats = {
+        'total': entrees_all.count(),
+        'en_attente': entrees_all.filter(statut_obr='EN_ATTENTE').count(),
+        'envoyes': entrees_all.filter(statut_obr='ENVOYE').count(),
+    }
+
+    societes_list = Societe.objects.filter(entrees_stock__in=entrees_all).distinct().order_by('nom')
+    paginator = Paginator(societes_list, 10)
+    page_obj = paginator.get_page(page_num)
+
+    grouped_data = []
+    for s in page_obj:
+        grouped_data.append({
+            'societe': s,
+            'entrees': entrees_all.filter(societe=s).order_by('-date_creation')
+        })
+
+    return render(request, 'superadmin/stock_entrees.html', {
+        'grouped_data': grouped_data,
+        'page_obj': page_obj,
+        'stats': stats,
+        'q': q,
+        'statut': statut,
+        'type_mvt': type_mvt,
+        'societe_id': societe_id,
+        'societes': Societe.objects.all().order_by('nom'),
+        'types': EntreeStock.TYPE_ENTREE_CHOICES,
+        'statuts': EntreeStock.STATUT_OBR_CHOICES,
+    })
+
+
+@superadmin_required
+def stock_sorties(request):
+    """Liste globale des sorties stock, groupée par société."""
+    q        = request.GET.get('q', '')
+    statut   = request.GET.get('statut', '')
+    type_mvt = request.GET.get('type', '')
+    societe_id = request.GET.get('societe', '')
+    page_num = request.GET.get('page', 1)
+
+    sorties_all = SortieStock.objects.all().select_related('entree_stock__produit', 'societe')
+
+    if q:
+        sorties_all = sorties_all.filter(
+            Q(entree_stock__produit__designation__icontains=q) |
+            Q(entree_stock__produit__code__icontains=q) |
+            Q(code__icontains=q)
+        )
+    if statut:
+        sorties_all = sorties_all.filter(statut_obr=statut)
+    if type_mvt:
+        sorties_all = sorties_all.filter(type_sortie=type_mvt)
+    if societe_id:
+        sorties_all = sorties_all.filter(societe_id=societe_id)
+
+    stats = {
+        'total': sorties_all.count(),
+        'en_attente': sorties_all.filter(statut_obr='EN_ATTENTE').count(),
+        'envoyes': sorties_all.filter(statut_obr='ENVOYE').count(),
+    }
+
+    societes_list = Societe.objects.filter(sorties_stock__in=sorties_all).distinct().order_by('nom')
+    paginator = Paginator(societes_list, 10)
+    page_obj = paginator.get_page(page_num)
+
+    grouped_data = []
+    for s in page_obj:
+        grouped_data.append({
+            'societe': s,
+            'sorties': sorties_all.filter(societe=s).order_by('-date_creation')
+        })
+
+    return render(request, 'superadmin/stock_sorties.html', {
+        'grouped_data': grouped_data,
+        'page_obj': page_obj,
+        'stats': stats,
+        'q': q,
+        'statut': statut,
+        'type_mvt': type_mvt,
+        'societe_id': societe_id,
+        'societes': Societe.objects.all().order_by('nom'),
+        'types': SortieStock.TYPE_SORTIE_CHOICES,
+        'statuts': SortieStock.STATUT_OBR_CHOICES,
     })
