@@ -17,15 +17,15 @@
 {% block content %}
 <div class="row g-4">
 
-    {# ── Alerte chef non inscrit ── #}
+    {# ── Alerte contribuable non inscrit ── #}
     {% if not inscription_complete %}
     <div class="col-12">
         <div class="alert alert-warning" style="border-left:4px solid #f39c12;">
             <div class="d-flex align-items-center gap-3">
                 <i class="bi bi-hourglass-split fs-5"></i>
                 <div>
-                    <strong>Le chef ne s'est pas encore inscrit.</strong>
-                    Le chef doit se rendre sur <code>/setup/</code> et utiliser le NIF
+                    <strong>Le contribuable ne s'est pas encore inscrit.</strong>
+                    Le contribuable doit se rendre sur <code>/setup/</code> et utiliser le NIF
                     <strong>{{ societe.nif }}</strong> pour créer son compte.
                 </div>
             </div>
@@ -38,7 +38,7 @@
                 <i class="bi bi-info-circle fs-5"></i>
                 <div>
                     <strong>Informations incomplètes.</strong>
-                    Le chef s'est inscrit mais n'a pas encore complété tous les champs de la société.
+                    Le contribuable s'est inscrit mais n'a pas encore complété tous les champs de la société.
                 </div>
             </div>
         </div>
@@ -69,10 +69,10 @@
             </div>
         </div>
 
-        {# ── Section 2 : Ce que le chef a fourni ── #}
+        {# ── Section 2 : Ce que le contribuable a fourni ── #}
         <div class="card mb-4">
             <div class="card-header">
-                <span><i class="bi bi-person-badge me-2" style="color:var(--or);"></i>Informations fournies par le chef</span>
+                <span><i class="bi bi-person-badge me-2" style="color:var(--or);"></i>Informations fournies par le contribuable</span>
                 {% if inscription_complete %}
                 <span class="badge-active" style="font-size:0.7rem;">Inscrit</span>
                 {% else %}
@@ -97,17 +97,17 @@
                 {% else %}
                 <div class="p-4 text-center" style="color:#8a9aaa;font-size:0.85rem;">
                     <i class="bi bi-hourglass fs-3 d-block mb-2" style="opacity:0.4;"></i>
-                    En attente de l'inscription du chef.
+                    En attente de l'inscription du contribuable.
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        {# ── Section 3 : Compte du chef ── #}
+        {# ── Section 3 : Compte du contribuable ── #}
         {% if infos_compte_chef %}
         <div class="card">
             <div class="card-header">
-                <span><i class="bi bi-person-circle me-2" style="color:var(--or);"></i>Compte du chef</span>
+                <span><i class="bi bi-person-circle me-2" style="color:var(--or);"></i>Compte du contribuable</span>
             </div>
             <div class="card-body p-0">
                 {% for label, valeur, icone in infos_compte_chef %}
@@ -260,12 +260,11 @@
                         {% if licence_active %}Suspendre la licence{% else %}Réactiver la licence{% endif %}
                     </button>
                 </form>
-                <a href="{% url 'superadmin:societe_supprimer' societe.pk %}"
-                   class="btn btn-sm w-100"
-                   style="background:#fff;color:#e74c3c;border:1px solid #f5c6cb;"
-                   onclick="return confirm('⚠️ Supprimer définitivement {{ societe.nom }} ? Cette action est irréversible.')">
+                <button type="button" class="btn btn-sm w-100"
+                        style="background:#fff;color:#e74c3c;border:1px solid #f5c6cb;"
+                        onclick="openDeleteModal('{{ societe.pk }}', '{{ societe.nom|escapejs }}')">
                     <i class="bi bi-trash me-1"></i>Supprimer la société
-                </a>
+                </button>
             </div>
         </div>
 
@@ -299,4 +298,56 @@
     {% endif %}
 
 </div>
+<!-- Modal Suppression Société -->
+<div class="modal fade" id="deleteSocieteModal" tabindex="-1" aria-labelledby="deleteSocieteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:12px; overflow:hidden;">
+      <div class="modal-header" style="background:var(--danger); color:#fff; border-bottom:none;">
+        <h5 class="modal-title" id="deleteSocieteModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Suppression définitive</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <form method="post" id="deleteSocieteForm">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+            <p style="font-size:0.95rem; color:var(--texte);">
+                Vous êtes sur le point de supprimer la société <strong id="deleteSocieteName" style="color:var(--bleu);"></strong>.
+            </p>
+            <div class="alert alert-warning" style="border-left:4px solid #f39c12; font-size:0.85rem;">
+                <strong>Attention :</strong> Cette action est irréversible. Elle supprimera également :
+                <ul class="mb-0 mt-1 ps-3">
+                    <li>Tous les utilisateurs (contribuables, gérants) de cette société.</li>
+                    <li>Toutes les factures, devis, produits et mouvements de stock.</li>
+                    <li>Toutes les licences associées.</li>
+                </ul>
+            </div>
+            
+            <div class="mt-4">
+                <label for="admin_password" class="form-label fw-bold">Votre mot de passe Superadmin <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="admin_password" name="password" required 
+                       placeholder="Confirmez avec votre mot de passe">
+            </div>
+        </div>
+        <div class="modal-footer bg-light" style="border-top:1px solid #f0f2f5;">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-2"></i>Confirmer la suppression</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function openDeleteModal(pk, nom) {
+        document.getElementById('deleteSocieteName').textContent = nom;
+        const form = document.getElementById('deleteSocieteForm');
+        let baseUrl = "{% url 'superadmin:societe_supprimer' 0 %}";
+        form.action = baseUrl.replace('/0/', '/' + pk + '/');
+        document.getElementById('admin_password').value = '';
+        const modal = new bootstrap.Modal(document.getElementById('deleteSocieteModal'));
+        modal.show();
+    }
+</script>
+{% endblock extra_js %}
+
 {% endblock %}

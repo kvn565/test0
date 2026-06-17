@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription – WIBABI</title>
+    <title>Inscription – {{ app_config.app_name }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -28,6 +28,7 @@
             font-size:0.88rem; 
             color:#495057; 
         }
+        .password-wrapper input { padding-right: 40px !important; }
         .btn-setup { background:var(--or); border:none; color:var(--bleu); border-radius:10px; padding:14px 28px; font-weight:700; font-size:0.95rem; cursor:pointer; width:100%; transition:background 0.2s; }
         .btn-setup:hover { background:#e8c97a; }
         .step-badge { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; background:rgba(201,168,76,0.3); border-radius:50%; font-size:0.72rem; font-weight:700; color:var(--or); margin-right:8px; }
@@ -39,13 +40,28 @@
 <div class="setup-card">
     <div class="setup-header">
         <div style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;">
-            WIBABI – Inscription Chef
+            {{ app_config.app_name }} – Inscription Contribuable
         </div>
         <h1 style="font-family:'Playfair Display',serif;color:#fff;font-size:1.5rem;margin:0;">
             Complétez votre inscription
         </h1>
         <p style="color:rgba(255,255,255,0.55);font-size:0.85rem;margin:6px 0 0;">
-            Votre société a déjà été créée par l'administrateur. Saisissez votre NIF pour la retrouver et complétez les informations manquantes.
+            Avant de Commencer de Créer un Compte sociète d'Abord Veuiller contacter l'Administrateur
+            pour lui renseigner votre NIF<br>
+            <!-- Téléphone -->
+            <spam>Telephone:</spam>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="tel:71142483" class="text-decoration-none">
+                <i class="bi bi-telephone-fill me-2 text-success"></i>
+                71 14 24 83
+            </a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <spam>Email:</spam>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="mailto:contact@burundijobs.bi" class="text-decoration-none">
+                <i class="bi bi-envelope-fill me-2 text-primary"></i>
+                admin@facturation.bi
+            </a>
+        </p>
+        <p style="color:rgba(255,255,255,0.55);font-size:0.85rem;margin:6px 0 0;">
+            Une fois que vous avez terminé de contacter l'Administrateur ,votre société a déjà été créée par l'administrateur. Saisissez votre NIF pour la retrouver et complétez les informations manquantes.
         </p>
     </div>
 
@@ -183,14 +199,11 @@
                     {% if form.secteur.errors %}<div class="field-error">{{ form.secteur.errors.0 }}</div>{% endif %}
                 </div>
 
-                <div class="col-12">
-                    <label class="form-label">Nom complet du gérant</label>
-                    {{ form.nom_complet_gerant }}
-                </div>
+                
 
             </div>
 
-            {# ── Section 2 : Identité du chef ── #}
+            {# ── Section 2 : Identité du contribuable ── #}
             <div class="section-label"><span class="step-badge">2</span>Vos informations personnelles</div>
             <div class="row g-3 mb-2">
 
@@ -235,14 +248,24 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Mot de passe <span style="color:#e74c3c;">*</span></label>
-                    {{ form.chef_password1 }}
+                    <div class="position-relative password-wrapper">
+                        {{ form.chef_password1 }}
+                        <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary" onclick="togglePassword(this, 'chef_password1')" style="z-index:5; padding:0 12px; border:0; background:none; text-decoration:none;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                     <div class="field-help">Minimum 8 caractères.</div>
                     {% if form.chef_password1.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ form.chef_password1.errors.0 }}</div>{% endif %}
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label">Confirmer le mot de passe <span style="color:#e74c3c;">*</span></label>
-                    {{ form.chef_password2 }}
+                    <div class="position-relative password-wrapper">
+                        {{ form.chef_password2 }}
+                        <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-secondary" onclick="togglePassword(this, 'chef_password2')" style="z-index:5; padding:0 12px; border:0; background:none; text-decoration:none;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                     {% if form.chef_password2.errors %}<div class="field-error"><i class="bi bi-x-circle me-1"></i>{{ form.chef_password2.errors.0 }}</div>{% endif %}
                 </div>
 
@@ -257,5 +280,17 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+function togglePassword(btn, fieldName) {
+    var input = btn.closest('.position-relative').querySelector('input');
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+    } else {
+        input.type = 'password';
+        btn.innerHTML = '<i class="bi bi-eye"></i>';
+    }
+}
+</script>
 </body>
 </html>

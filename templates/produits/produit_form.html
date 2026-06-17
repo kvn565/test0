@@ -8,7 +8,10 @@
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="page-title mb-1">
-            {% if produit %}✏️ Modifier un produit{% elif origine == 'IMPORTE' %}➕ Nouveau produit importé{% else %}➕ Nouveau produit local{% endif %}
+            {% if produit %}✏️ Modifier un produit
+            {% elif origine == 'IMPORTE' %}➕ Nouveau produit importé
+            {% else %}➕ Nouveau produit local
+            {% endif %}
         </h1>
         <div class="text-muted small">
             {% if produit %}
@@ -38,21 +41,29 @@
                     <div>
                         <h5 class="mb-1">{{ titre }}</h5>
                         <div class="text-muted small">
-                            Origine : 
-                            {% if est_importe or origine == 'IMPORTE' %}
-                                <span class="badge bg-info-subtle text-info">Importé</span>
-                            {% else %}
-                                <span class="badge bg-success-subtle text-success">Local</span>
-                            {% endif %}
+                            Origine :
+                            <span class="badge {% if origine == 'IMPORTE' or est_importe %}bg-info-subtle text-info{% else %}bg-success-subtle text-success{% endif %}">
+                                {{ origine|default:'LOCAL' }}
+                            </span>
                         </div>
                     </div>
                 </div>
 
+                <!-- ✅ FIX 1 : Erreurs globales du formulaire stylées -->
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
+
+                <!-- ✅ FIX 5 : Zone de succès OBR (remplace alert() bloquant) -->
+                <div id="obr-success" class="alert alert-success d-none mb-3">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span id="obr-success-msg"></span>
+                </div>
 
                 <form method="post" novalidate>
                     {% csrf_token %}
@@ -63,62 +74,99 @@
                         <div class="col-md-6">
                             <label class="form-label">Catégorie <span class="text-danger">*</span></label>
                             {{ form.categorie }}
-                            {{ form.categorie.errors }}
+                            <!-- ✅ FIX 2 : Erreurs champ stylées -->
+                            {% if form.categorie.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.categorie.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Code produit -->
                         <div class="col-md-6">
                             <label class="form-label">Code produit <span class="text-danger">*</span></label>
                             {{ form.code }}
-                            {{ form.code.errors }}
+                            {% if form.code.help_text %}
+                                <div class="form-text text-muted">{{ form.code.help_text }}</div>
+                            {% endif %}
+                            {% if form.code.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.code.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Désignation -->
                         <div class="col-12">
                             <label class="form-label">Désignation <span class="text-danger">*</span></label>
                             {{ form.designation }}
-                            {{ form.designation.errors }}
+                            {% if form.designation.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.designation.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Unité -->
                         <div class="col-md-6">
                             <label class="form-label">Unité <span class="text-danger">*</span></label>
                             {{ form.unite }}
-                            {{ form.unite.errors }}
+                            {% if form.unite.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.unite.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Prix de vente -->
                         <div class="col-md-6">
                             <label class="form-label">Prix de vente <span class="text-danger">*</span></label>
                             {{ form.prix_vente }}
-                            {{ form.prix_vente.errors }}
+                            {% if form.prix_vente.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.prix_vente.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Devise -->
                         <div class="col-md-6">
                             <label class="form-label">Devise <span class="text-danger">*</span></label>
                             {{ form.devise }}
-                            {{ form.devise.errors }}
+                            {% if form.devise.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.devise.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Taux TVA -->
                         <div class="col-md-6">
                             <label class="form-label">Taux TVA (%)</label>
                             {{ form.taux_tva }}
-                            {{ form.taux_tva.errors }}
+                            {% if form.taux_tva.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.taux_tva.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
-                        <!-- Statut - AJOUTÉ -->
+                        <!-- Statut -->
                         <div class="col-md-6">
                             <label class="form-label">Statut <span class="text-danger">*</span></label>
                             {{ form.statut }}
-                            {{ form.statut.errors }}
+                            {% if form.statut.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.statut.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
-                        <!-- === CHAMPS SPÉCIFIQUES IMPORTÉS === -->
-                        {% if est_importe or origine == 'IMPORTE' %}
+                        <!-- ✅ FIX 3 : est_importe doit être passé par la vue -->
+                        <!-- Champs spécifiques aux produits IMPORTÉS -->
+                        {% if origine == 'IMPORTE' or est_importe %}
 
-                        <!-- Référence DMC + Bouton Importer -->
+                        <!-- Référence DMC + bouton OBR -->
                         <div class="col-12">
                             <label class="form-label">Référence DMC <span class="text-danger">*</span></label>
                             <div class="input-group">
@@ -127,40 +175,59 @@
                                     <i class="bi bi-cloud-download me-1"></i> Importer depuis OBR
                                 </button>
                             </div>
-                            {{ form.reference_dmc.errors }}
+                            {% if form.reference_dmc.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.reference_dmc.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <!-- Spinner chargement OBR -->
                             <div id="obr-loading" class="d-none mt-2 text-muted small">
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 Recherche en cours sur OBR...
                             </div>
-                            <div id="obr-error" class="d-none mt-2 alert alert-danger small"></div>
+                            <!-- Zone erreur OBR -->
+                            <div id="obr-error" class="d-none mt-2 alert alert-danger small py-2"></div>
                         </div>
 
                         <!-- Rubrique tarifaire -->
                         <div class="col-md-6">
                             <label class="form-label">Rubrique tarifaire <span class="text-danger">*</span></label>
                             {{ form.rubrique_tarifaire }}
-                            {{ form.rubrique_tarifaire.errors }}
+                            {% if form.rubrique_tarifaire.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.rubrique_tarifaire.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Nombre par paquet -->
                         <div class="col-md-6">
                             <label class="form-label">Nombre par paquet <span class="text-danger">*</span></label>
                             {{ form.nombre_par_paquet }}
-                            {{ form.nombre_par_paquet.errors }}
+                            {% if form.nombre_par_paquet.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.nombre_par_paquet.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <!-- Description paquet -->
                         <div class="col-12">
                             <label class="form-label">Description paquet <span class="text-danger">*</span></label>
                             {{ form.description_paquet }}
-                            {{ form.description_paquet.errors }}
+                            {% if form.description_paquet.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.description_paquet.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
 
                         {% endif %}
+                        <!-- Fin champs importés -->
 
                     </div>
 
-                    <!-- Boutons -->
+                    <!-- Boutons d'action -->
                     <div class="d-flex gap-3 mt-5">
                         <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary flex-fill">
                             <i class="bi bi-x-lg"></i> Annuler
@@ -178,75 +245,176 @@
 
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
     const btnImporter = document.getElementById('btn-importer-obr');
     if (!btnImporter) return;
 
-    const loadingDiv  = document.getElementById('obr-loading');
-    const errorDiv    = document.getElementById('obr-error');
-    const dmcInput    = document.getElementById('id_reference_dmc');
+    const loadingDiv = document.getElementById('obr-loading');
+    const errorDiv   = document.getElementById('obr-error');
+    const successDiv = document.getElementById('obr-success');
+    const successMsg = document.getElementById('obr-success-msg');
+    const dmcInput   = document.getElementById('id_reference_dmc');
 
+    // ── Helpers UI ──────────────────────────────────────────────────────────
+    function showError(msg) {
+        errorDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + msg;
+        errorDiv.classList.remove('d-none');
+        successDiv.classList.add('d-none');
+    }
+
+    function showSuccess(msg) {
+        successMsg.textContent = msg;
+        successDiv.classList.remove('d-none');
+        errorDiv.classList.add('d-none');
+        setTimeout(() => successDiv.classList.add('d-none'), 5000);
+    }
+
+    function setLoading(isLoading) {
+        btnImporter.disabled = isLoading;
+        btnImporter.innerHTML = isLoading
+            ? `<span class="spinner-border spinner-border-sm me-2"></span> Importation...`
+            : `<i class="bi bi-cloud-download me-1"></i> Importer depuis OBR`;
+        loadingDiv.classList.toggle('d-none', !isLoading);
+    }
+
+    function setField(id, value) {
+        const el = document.getElementById(id);
+        if (el && value !== undefined && value !== null && value !== '') {
+            el.value = value;
+        }
+    }
+
+    function setTauxTva(tauxPk) {
+        const select = document.getElementById('id_taux_tva');
+        if (!select || tauxPk === undefined || tauxPk === null) return;
+        const optionExiste = [...select.options].some(o => String(o.value) === String(tauxPk));
+        if (optionExiste) {
+            select.value = tauxPk;
+        } else {
+            console.warn('[OBR] Taux TVA PK', tauxPk, 'absent du <select>.');
+        }
+    }
+
+    // ── Lecture sécurisée du cookie CSRF ───────────────────────────────────
+    // Plus fiable que {{ csrf_token }} dans un block JS séparé
+    function getCsrfToken() {
+        // Priorité 1 : cookie csrftoken (toujours présent si middleware CSRF actif)
+        const cookie = document.cookie.split(';')
+            .map(c => c.trim())
+            .find(c => c.startsWith('csrftoken='));
+        if (cookie) return cookie.split('=')[1];
+
+        // Priorité 2 : meta tag (si présent dans le base.html)
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) return meta.getAttribute('content');
+
+        // Priorité 3 : valeur Django injectée (fallback)
+        return '{{ csrf_token }}';
+    }
+
+    // ── Gestionnaire principal ──────────────────────────────────────────────
     btnImporter.addEventListener('click', async function () {
-        const dmc = dmcInput.value.trim();
+        const dmc = dmcInput ? dmcInput.value.trim() : '';
+
         if (!dmc) {
-            alert("Veuillez entrer une référence DMC avant d'importer.");
-            dmcInput.focus();
+            dmcInput && dmcInput.focus();
+            showError("Veuillez entrer une référence DMC avant d'importer.");
             return;
         }
 
-        btnImporter.disabled = true;
-        btnImporter.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Importation...`;
-        loadingDiv.classList.remove('d-none');
+        setLoading(true);
         errorDiv.classList.add('d-none');
-        errorDiv.textContent = '';
+        successDiv.classList.add('d-none');
+
+        let response;   // déclaré ici pour être accessible dans le catch
 
         try {
-            const response = await fetch("{% url 'produits:ajax_importer_dmc' %}", {
+            const csrfToken = getCsrfToken();
+            const url       = "{% url 'produits:ajax_importer_dmc' %}";
+
+            console.log('[OBR] Envoi vers :', url);
+            console.log('[OBR] CSRF token :', csrfToken ? csrfToken.substring(0, 10) + '...' : 'ABSENT ⚠️');
+            console.log('[OBR] DMC :', dmc);
+
+            response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken':  csrfToken,
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: new URLSearchParams({ 'reference_dmc': dmc })
+                body: new URLSearchParams({ 'reference_dmc': dmc }),
             });
 
-            const result = await response.json();
+            console.log('[OBR] Status HTTP :', response.status);
 
-            if (result.success) {
-                const data = result.data;
+            // Lire le body UNE seule fois en texte brut
+            const rawText = await response.text();
+            console.log('[OBR] Réponse brute :', rawText.substring(0, 500));
 
-                document.getElementById('id_reference_dmc').value = dmc;
-                document.getElementById('id_code').value = dmc;
-                document.getElementById('id_designation').value = data.designation || '';
-                document.getElementById('id_rubrique_tarifaire').value = data.rubrique_tarifaire || '';
-                document.getElementById('id_nombre_par_paquet').value = data.nombre_par_paquet || '';
-                document.getElementById('id_description_paquet').value = data.description_paquet || '';
-                document.getElementById('id_unite').value = data.unite || 'Pièce';
+            // Parser le JSON
+            let result;
+            try {
+                result = JSON.parse(rawText);
+            } catch (parseErr) {
+                // Le serveur a retourné du HTML (page d'erreur Django 403/404/500)
+                console.error('[OBR] Réponse non-JSON. Contenu :', rawText.substring(0, 300));
 
-                if (data.taux_tva !== undefined) {
-                    const tvaSelect = document.getElementById('id_taux_tva');
-                    if (tvaSelect) tvaSelect.value = data.taux_tva;
+                if (response.status === 403) {
+                    showError("Accès refusé (403). Vérifiez que vous êtes bien connecté et que le token CSRF est valide.");
+                } else if (response.status === 404) {
+                    showError("URL introuvable (404). Vérifiez que l'URL 'produits:ajax_importer_dmc' est bien déclarée dans urls.py.");
+                } else if (response.status === 500) {
+                    showError("Erreur serveur (500). Consultez les logs Django dans le terminal.");
+                } else {
+                    showError(`Erreur HTTP ${response.status}. Réponse inattendue du serveur.`);
                 }
+                return;   // finally s'exécute quand même
+            }
 
-                alert("✅ Importation réussie depuis OBR !\nCode produit = Référence DMC");
+            console.log('[OBR] Résultat parsé :', result);
+
+            // Traitement de la réponse JSON
+            if (result.success) {
+                const data = result.data || {};
+
+                setField('id_code',              data.code               || dmc);
+                setField('id_designation',        data.designation        || '');
+                setField('id_rubrique_tarifaire', data.rubrique_tarifaire || '');
+                setField('id_nombre_par_paquet',  data.nombre_par_paquet  || '');
+                setField('id_description_paquet', data.description_paquet || '');
+                setField('id_unite',              data.unite              || 'Pièce');
+                setField('id_reference_dmc',      dmc);
+                setTauxTva(data.taux_tva);
+
+                showSuccess("✅ Importation réussie depuis OBR ! Vérifiez les champs et enregistrez.");
 
             } else {
-                const errorMessage = result.error || result.msg || "Erreur inconnue lors de l'importation.";
-                errorDiv.textContent = errorMessage;
-                errorDiv.classList.remove('d-none');
+                // success = false → afficher le message OBR
+                const errMsg = result.error || result.msg || "Erreur inconnue lors de l'importation.";
+                console.warn('[OBR] Échec métier :', errMsg);
+                showError(errMsg);
             }
-        } 
-        catch (err) {
-            errorDiv.textContent = err.message || "Erreur de connexion au serveur.";
-            errorDiv.classList.remove('d-none');
-        } 
-        finally {
-            btnImporter.disabled = false;
-            btnImporter.innerHTML = '<i class="bi bi-cloud-download me-1"></i> Importer depuis OBR';
-            loadingDiv.classList.add('d-none');
+
+        } catch (err) {
+            // Ici : uniquement les erreurs réseau (pas de connexion, timeout, etc.)
+            console.error('[OBR] Erreur réseau ou inattendue :', err);
+            console.error('[OBR] Type :', err.name);
+            console.error('[OBR] Message :', err.message);
+
+            if (err.name === 'TypeError' && err.message.includes('fetch')) {
+                showError("Impossible de contacter le serveur. Vérifiez votre connexion réseau.");
+            } else {
+                showError("Erreur inattendue : " + err.message);
+            }
+        } finally {
+            setLoading(false);
         }
     });
+
 });
 </script>
 {% endblock %}

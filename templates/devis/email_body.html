@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { border-bottom: 2px solid #1a73e8; padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { color: #1a73e8; font-size: 22px; margin: 0; }
+        .details { background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; }
+        .details strong { color: #555; }
+        .message-box { background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 6px; margin: 15px 0; }
+        .btn { display: inline-block; background: #1a73e8; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; margin: 15px 0; }
+        .footer { border-top: 1px solid #ddd; padding-top: 15px; margin-top: 20px; font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Proforma {{ devis.display_numero }}</h1>
+        </div>
+
+        <p>Bonjour <strong>{{ devis.client.nom }}</strong>,</p>
+
+        <p>Veuillez trouver ci-joint notre proforma <strong>{{ devis.display_numero }}</strong>.</p>
+
+        <div class="details">
+            <p><strong>Montant TTC :</strong> {{ devis.total_ttc|floatformat:3 }} {{ devis.devise }}</p>
+            <p><strong>Date de validité :</strong> {{ devis.date_validite|date:"d/m/Y" }}</p>
+        </div>
+
+        {% if message_perso %}
+        <div class="message-box">
+            <strong>Message :</strong><br>
+            {{ message_perso|linebreaks }}
+        </div>
+        {% endif %}
+
+        <p style="text-align:center;">
+            <a href="{{ url_public }}" class="btn">Voir mon proforma en ligne</a>
+        </p>
+
+        <p>Cordialement,<br><strong>{{ societe.nom }}</strong></p>
+
+        <div class="footer">
+            <p>{{ societe.adresse|default:"" }} | Tel : {{ societe.telephone|default:"" }}</p>
+            <p>Ce proforma est valable jusqu'au {{ devis.date_validite|date:"d/m/Y" }}.</p>
+        </div>
+    </div>
+</body>
+</html>

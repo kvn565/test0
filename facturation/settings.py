@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'stock',
     'facturer',
     'rapports',
+    'devis',
     'equipe',
 ]
 
@@ -114,6 +115,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'superadmin.context_processors.app_config',
             ],
         },
     },
@@ -210,7 +212,7 @@ LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE = 'Africa/Bujumbura'
 
 USE_I18N = True
-USE_L10N = True          # ← Important pour les formats français
+USE_L10N = False          # ← Important pour les formats français
 USE_TZ = True            # ← Très important (ne pas commenter !)
 
 # Devise par défaut pour le Burundi
@@ -244,10 +246,29 @@ SHORT_DATETIME_FORMAT = 'd/m/Y H:i'
 # ═══════════════════════════════════════════════════════════════
 
 STATIC_URL  = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL   = '/media/'
 MEDIA_ROOT  = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  EMAIL (Gmail SMTP)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Pour Gmail :
+#   1. Active 2FA sur ton compte Google
+#   2. Crée un "Mot de passe d'application" :
+#      https://myaccount.google.com/apppasswords
+#   3. Utilise ce mot de passe ci-dessous
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'votre.email@gmail.com'       # ← À CHANGER
+EMAIL_HOST_PASSWORD = 'votre-mot-de-passe-app'  # ← À CHANGER (mot de passe d'application)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -52,6 +52,9 @@ urlpatterns = [
     path('backup/creer/',                       views.backup_creer,       name='backup_creer'),
     path('backup/<int:pk>/telecharger/',        views.backup_telecharger, name='backup_telecharger'),
 
+    # ── Configuration générale ────────────────────────────────────
+    path('configuration/',                      views.app_config,                name='app_config'),
+
     # ── Réinitialisation ──────────────────────────────────────────
     path('reinitialisation/',                   views.reinitialisation_page,      name='reinitialisation'),
     path('reinitialisation/confirmer/',         views.reinitialisation_confirmer, name='reinitialisation_confirmer'),

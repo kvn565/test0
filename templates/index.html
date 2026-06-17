@@ -1,0 +1,854 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturation OBR - Logiciel de Facturation Électronique au Burundi</title>
+    <meta name="description" content="Logiciel de facturation électronique conforme OBR/EBMS au Burundi.">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- ✅ BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bleu-nav:      #2b80b6;
+            --bleu-nav-dark: #1f6090;
+            --bleu-fonce:    #0d2d4a;
+            --bleu-mid:      #1a4f7a;
+            --bleu-pale:     #e8f4fc;
+            --or:            #C9A84C;
+            --or-clair:      #E8C97A;
+            --gris-clair:    #F4F7FA;
+            --gris-texte:    #5a6a7a;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: #1a2a3a;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--bleu-fonce);
+        }
+
+        .navbar { background: var(--bleu-nav); padding: 0.85rem 0; }
+        .btn-gold { background: linear-gradient(135deg, var(--or), var(--or-clair)); color: var(--bleu-fonce); }
+
+        /* ==================== Le reste de ton CSS (inchangé) ==================== */
+        .navbar {
+            background: var(--bleu-nav);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0.85rem 0;
+            transition: box-shadow 0.3s;
+        }
+        .navbar-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem; font-weight: 700;
+            color: white !important;
+        }
+        .navbar-brand span { color: var(--or-clair); }
+        .nav-link {
+            font-size: 0.92rem; font-weight: 500;
+            color: rgba(255,255,255,0.88) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .nav-link:hover { color: white !important; background: rgba(255,255,255,0.12); }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--or), var(--or-clair));
+            color: var(--bleu-fonce); font-weight: 600; font-size: 0.9rem;
+            padding: 11px 28px; border-radius: 50px; border: none;
+            transition: all 0.3s; box-shadow: 0 4px 18px rgba(201,168,76,0.35);
+        }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(201,168,76,0.5); }
+
+        .btn-bleu {
+            background: var(--bleu-nav); color: white; font-weight: 600; font-size: 0.9rem;
+            padding: 11px 28px; border-radius: 50px; border: none;
+            transition: all 0.3s;
+        }
+        .btn-bleu:hover { background: var(--bleu-nav-dark); }
+
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #071e33 0%, var(--bleu-fonce) 50%, var(--bleu-mid) 100%);
+            display: flex; align-items: center; position: relative;
+            overflow: hidden; padding: 120px 0 80px;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -200px; right: -200px;
+            width: 700px; height: 700px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(43,128,182,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero::after {
+            content: ''; position: absolute; bottom: -100px; left: -100px;
+            width: 500px; height: 500px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(43,128,182,0.18); border: 1px solid rgba(43,128,182,0.45);
+            color: #90cef4; font-size: 0.82rem; font-weight: 500;
+            padding: 7px 18px; border-radius: 50px;
+            letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1.8rem;
+        }
+        .hero h1 { font-size: clamp(2.8rem, 6vw, 4.5rem); font-weight: 700; color: white; line-height: 1.1; margin-bottom: 1.5rem; }
+        .hero h1 span { color: var(--or-clair); }
+        .hero p.lead { color: rgba(255,255,255,0.7); font-size: 1.05rem; line-height: 1.75; max-width: 530px; margin-bottom: 2.5rem; }
+        .hero-stats { display: flex; gap: 2.5rem; margin-top: 3rem; padding-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .hero-stat-number { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; color: var(--or-clair); }
+        .hero-stat-label { font-size: 0.82rem; color: rgba(255,255,255,0.42); margin-top: -4px; }
+
+        .hero-card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(43,128,182,0.28);
+            border-radius: 20px; padding: 2rem; backdrop-filter: blur(10px);
+        }
+        .hero-card-item {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.82); font-size: 0.95rem;
+        }
+        .hero-card-item:last-child { border-bottom: none; }
+        .hero-card-icon {
+            width: 40px; height: 40px; background: rgba(43,128,182,0.22);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            color: #90cef4; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .floating-badge {
+            position: absolute; background: white; border-radius: 14px;
+            padding: 12px 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.28);
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.85rem; font-weight: 600; color: var(--bleu-fonce);
+            animation: float 3s ease-in-out infinite;
+        }
+        .floating-badge.one { top: -20px; right: -10px; animation-delay: 0s; }
+        .floating-badge.two { bottom: -20px; left: -10px; animation-delay: 1.5s; }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+        /* SECTION LABELS */
+        .section-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bleu-nav); margin-bottom: 0.8rem; }
+        .section-heading { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 700; color: var(--bleu-fonce); line-height: 1.2; }
+
+        /* ATOUTS */
+        .atout-card {
+            padding: 2rem; border-radius: 18px;
+            border: 1px solid rgba(43,128,182,0.13); background: white;
+            transition: all 0.3s; height: 100%;
+        }
+        .atout-card:hover { border-color: var(--bleu-nav); transform: translateY(-5px); box-shadow: 0 20px 50px rgba(43,128,182,0.11); }
+        .atout-icon { width: 56px; height: 56px; background: var(--bleu-pale); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.2rem; }
+        .atout-card h5 { font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--bleu-fonce); }
+        .atout-card p { font-size: 0.9rem; color: var(--gris-texte); line-height: 1.6; margin: 0; }
+
+        /* FEATURE IMG */
+        #fonctionnalites { background: var(--gris-clair); }
+        .feature-img-block { border-radius: 24px; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(13,45,74,0.18); }
+        .feature-img-block img { width: 100%; height: 420px; object-fit: cover; display: block; }
+        .feature-img-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(13,45,74,0.9), transparent); padding: 2rem; color: white; }
+
+        /* MODULE LIST */
+        .module-list { list-style: none; padding: 0; margin: 0; }
+        .module-list li { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(43,128,182,0.1); font-size: 0.95rem; color: #2d3d4a; }
+        .module-list li:last-child { border-bottom: none; }
+        .module-check { width: 28px; height: 28px; background: var(--bleu-nav); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; flex-shrink: 0; margin-top: 1px; }
+        .module-list li span { font-weight: 600; }
+
+        /* POUR QUI */
+        .pourqui-card { border-radius: 20px; overflow: hidden; border: 1px solid rgba(43,128,182,0.12); transition: all 0.3s; background: white; height: 100%; }
+        .pourqui-card:hover { transform: translateY(-6px); box-shadow: 0 25px 60px rgba(43,128,182,0.14); border-color: var(--bleu-nav); }
+        .pourqui-card-top { background: linear-gradient(135deg, var(--bleu-fonce), var(--bleu-nav)); padding: 2.2rem 2rem; text-align: center; }
+        .pourqui-card-top i { font-size: 2.5rem; color: var(--or-clair); }
+        .pourqui-card-body { padding: 1.5rem 1.8rem; }
+        .pourqui-card-body h5 { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 1rem; color: var(--bleu-fonce); margin-bottom: 0.5rem; }
+        .pourqui-card-body p { font-size: 0.88rem; color: var(--gris-texte); margin: 0; line-height: 1.6; }
+
+        /* CTA BAND */
+        .cta-band { background: linear-gradient(135deg, var(--bleu-fonce) 0%, var(--bleu-nav) 100%); position: relative; overflow: hidden; }
+        .cta-band::before { content: ''; position: absolute; top: -150px; right: -100px; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%); }
+
+        /* CONTACT */
+        .contact-card { background: white; border-radius: 20px; padding: 2.2rem; border: 1px solid rgba(43,128,182,0.14); height: 100%; transition: all 0.3s; }
+        .contact-card:hover { border-color: var(--bleu-nav); box-shadow: 0 20px 50px rgba(43,128,182,0.11); }
+        .contact-icon-wrap { width: 60px; height: 60px; background: var(--bleu-pale); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem; }
+        .contact-icon-wrap i { font-size: 1.5rem; color: var(--bleu-nav); }
+        .contact-card h6 { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bleu-nav); margin-bottom: 0.8rem; }
+        .contact-card p, .contact-card a { font-size: 0.96rem; color: var(--bleu-fonce); font-weight: 500; text-decoration: none; line-height: 1.65; }
+        .contact-card a:hover { color: var(--bleu-nav); }
+        .map-placeholder { background: var(--bleu-pale); border-radius: 20px; height: 280px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(43,128,182,0.18); flex-direction: column; gap: 12px; }
+
+        /* FOOTER */
+        footer { background: #2b80b6; color: white; padding: 60px 0 40px; }
+        footer .brand { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 700; color: white; }
+        footer .brand span { color: var(--or-clair); }
+        footer a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+        footer a:hover { color: var(--or-clair); }
+
+        /* ANIMATIONS */
+        .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+    </style>
+</head>
+
+<body>
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="ico-login" viewBox="0 0 16 16"><path d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"/><path d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/></symbol>
+  <symbol id="ico-shield" viewBox="0 0 16 16"><path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524z"/></symbol>
+  <symbol id="ico-lightning" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .443.267L13.443 6H15a.5.5 0 0 1 .39.812l-8.5 10.5a.5.5 0 0 1-.888-.43L7.5 9H6a.5.5 0 0 1-.443-.732z"/></symbol>
+  <symbol id="ico-people" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/></symbol>
+  <symbol id="ico-graph" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/></symbol>
+  <symbol id="ico-check" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></symbol>
+  <symbol id="ico-boxes" viewBox="0 0 16 16"><path d="M7.752.066a.5.5 0 0 1 .496 0l3.75 2.143a.5.5 0 0 1 .252.434v3.995l3.498 2A.5.5 0 0 1 16 9.07v4.286a.5.5 0 0 1-.252.434l-3.75 2.143a.5.5 0 0 1-.496 0l-3.502-2-3.502 2.001a.5.5 0 0 1-.496 0l-3.75-2.143A.5.5 0 0 1 0 13.357V9.071a.5.5 0 0 1 .252-.434L3.75 6.638V2.643a.5.5 0 0 1 .252-.434z"/></symbol>
+  <symbol id="ico-gear" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/></symbol>
+  <symbol id="ico-receipt" viewBox="0 0 16 16"><path d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27"/></symbol>
+  <symbol id="ico-phone" viewBox="0 0 16 16"><path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/></symbol>
+  <symbol id="ico-envelope" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/></symbol>
+  <symbol id="ico-map" viewBox="0 0 16 16"><path d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.5.5 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103M10 1.91l-4-.8v12.98l4 .8zm1 12.98 4-.8V1.11l-4 .8zm-6-.8V1.11l-4 .8v12.98z"/></symbol>
+  <symbol id="ico-shop" viewBox="0 0 16 16"><path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.37v.255a2.375 2.375 0 0 1-4.25 1.458A2.37 2.37 0 0 1 9.875 8 2.37 2.37 0 0 1 8 7.083 2.37 2.37 0 0 1 6.125 8a2.37 2.37 0 0 1-1.875-.917A2.375 2.375 0 0 1 0 5.625V5.37a1.5 1.5 0 0 1 .361-.976zm1.78 4.275a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 1 0 2.75 0V5.37a.5.5 0 0 0-.12-.325L12.27 2H3.73L1.12 5.045A.5.5 0 0 0 1 5.37v.255a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0M1.5 8.5A.5.5 0 0 1 2 9v6h1v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5h6V9a.5.5 0 0 1 1 0v6h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V9a.5.5 0 0 1 .5-.5M4 15h3v-5H4zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zm3 0h-2v3h2z"/></symbol>
+  
+  <!-- Ajoute d'autres symboles si besoin -->
+</svg>
+
+  <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <div>
+                    <spam style="color:white">Adresse: Immeuble Premium House(Ecobank siege), Bureau 111</spam>
+                </div>
+            </div>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-1">
+                    <li class="nav-item"><a class="nav-link" href="#faq">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#apropos">À propos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#fonctionnalites">Fonctionnalités</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pourqui">Pour qui ?</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    <li class="nav-item ms-3">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-gold px-4 py-2">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Accéder à l'application
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="hero-badge">
+                    <i class="bi bi-patch-check-fill"></i>
+                    Conforme OBR / EBMS — Burundi
+                </div>
+                <h1>Facturation<br>Électronique<br><span>Conforme  OBR</span></h1>
+                <p class="lead">
+                    Le logiciel burundais professionnel conçu pour les entreprises exigeantes.
+                    Connecté à l'EBMS, simple à utiliser et déjà adopté par plusieurs entreprises au Burundi.
+                </p>
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-gold btn-lg">
+                        Commencer maintenant
+                    </a>
+                    <a href="#fonctionnalites" class="btn btn-outline-white btn-lg" style="color:white" >
+                        Voir les fonctionnalités
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div>
+                        <div class="hero-stat-number">100%</div>
+                        <div class="hero-stat-label">Conforme OBR</div>
+                    </div>
+                    <div>
+                        <div class="hero-stat-number">5</div>
+                        <div class="hero-stat-label">Modules intégrés</div>
+                    </div>
+                    <div>
+                        <div class="hero-stat-number">24/7</div>
+                        <div class="hero-stat-label">Disponible</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="position-relative">
+                    <div class="floating-badge one">
+                        <i class="bi bi-shield-check text-success"></i> EBMS Connecté
+                    </div>
+                    <div class="hero-card">
+                        <p style="color:rgba(255,255,255,0.38); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1rem;">Modules disponibles</p>
+                        <ul class="m-0 p-0" style="list-style:none;">
+                            <li class="hero-card-item">
+                                <div class="hero-card-icon"><i class="bi bi-boxes"></i></div>
+                                <div>
+                                    <div style="font-weight:600;">Gestion de Stock</div>
+                                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.38);">Entrées, sorties, inventaires</div>
+                                </div>
+                            </li>
+                            <li class="hero-card-item">
+                                <div class="hero-card-icon"><i class="bi bi-gear"></i></div>
+                                <div>
+                                    <div style="font-weight:600;">Gestion des Services</div>
+                                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.38);">Catalogue &amp; tarification</div>
+                                </div>
+                            </li>
+                            <li class="hero-card-item">
+                                <div class="hero-card-icon"><i class="bi bi-receipt"></i></div>
+                                <div>
+                                    <div style="font-weight:600;">Facturation EBMS</div>
+                                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.38);">FN/FA transmises à l'OBR</div>
+                                </div>
+                            </li>
+                            <li class="hero-card-item">
+                                <div class="hero-card-icon"><i class="bi bi-people"></i></div>
+                                <div>
+                                    <div style="font-weight:600;">Clients &amp; Fournisseurs</div>
+                                    <div style="font-size:0.8rem;color:rgba(255,255,255,0.38);">Base de données centralisée</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="floating-badge two">
+                        <i class="bi bi-lightning-charge-fill text-warning"></i> Facture en 30 sec
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Accueil -->
+
+
+<section id="faq" class="py-5">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            
+            <!-- Image -->
+            <div class="col-lg-5 fade-up">
+                <div class="feature-img-block">
+                    <img src="{% static 'media/image1.png' %}" alt="Burundi Jobs"
+                         onerror="this.src='https://picsum.photos/id/20/600/420';">
+                    <div class="feature-img-overlay">
+                        <p style="font-size:0.85rem;margin:0;color:rgba(255,255,255,0.62);">Développé par</p>
+                        <p style="font-size:1.1rem;font-weight:600;margin:4px 0 0;color:white;">Burundi Jobs</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="col-lg-7 fade-up delay-1">
+                <div class="section-label">Questions Fréquentes</div>
+                <h2 class="section-heading mb-5">Foire Aux Questions (FAQ)</h2>
+                
+                <div class="accordion custom-accordion" id="faqAccordion">
+
+                    <!-- Question 1 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq1" aria-expanded="true">
+                                Quels sont les procédures pour commencer à utiliser le logiciel de facturation ?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Pour commencer à utiliser le logiciel de facturation, voici la procédure à suivre :</p>
+                                <ol>
+                                    <li>Rédiger une lettre de demande d’identifiants adressée à Monsieur le Commissaire Général de l’OBR, puis la déposer au VIRAGO.</li>
+                                    <li>Remplir, faire notarier, signer et cacheter la procuration que nous vous avons fournie.</li>
+                                    <li>Après le dépôt, l’OBR vous remettra un accusé de réception. Merci de nous transmettre une copie de cet accusé de réception, ainsi que la procuration notariée.</li>
+                                    <li>Après quelques jours, l’OBR vous enverra les identifiants de test sur l’e-mail mentionné dans votre lettre.</li>
+                                    <li>En cas de retard ou d’urgence, vous pouvez vous rendre directement à l’OBR (Emmaüs ou Virago) pour demander le suivi de votre lettre ou la remise des clés de test.</li>
+                                    <li>Une fois les identifiants de test reçus, vous nous les communiquez afin que nous puissions les intégrer dans votre logiciel.</li>
+                                    <li>Après validation des tests, l’OBR vous enverra les identifiants de production.</li>
+                                    <li>Vous pourrez alors commencer à facturer officiellement.</li>
+                                    <li>Vous passerez chez nous pour une formation sur l’utilisation du logiciel.</li>
+                                </ol>
+                                <p class="mt-3 mb-0"><strong>Pour toute information complémentaire, vous pouvez me joindre sur WhatsApp au 71 14 24 83.</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq2">
+                                Avantage de l'abonnement annuel ?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Si vous choisissez d’acheter un abonnement annuel, vous aurez les avantages suivants :</p>
+                                <ul>
+                                    <li>Le prix est moins cher</li>
+                                    <li>Les données sont stockées sur le serveur en ligne, pas de perte de vos données</li>
+                                    <li>Maintenance et mises à jour du logiciel sont gratuits si l’OBR met à jour son système EBMS</li>
+                                    <li>Vous pouvez facturer n’importe où que vous soyez</li>
+                                    <li>Archivage des factures bien sécurisé</li>
+                                    <li>Suivi de stock en temps réel à distance</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 3 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq3">
+                                Que se passe-t-il si j'annule mon abonnement ?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Si vous voulez annuler votre abonnement :</p>
+                                <ul>
+                                    <li>Vous exportez vos données y compris vos factures en PDF.</li>
+                                    <li>Nous supprimons votre logiciel sur nos serveurs.</li>
+                                </ul>
+                                <p><strong>Il n’y aura pas de coûts supplémentaires.</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 4 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq4">
+                                Foire Aux Questions FAQs sur la Facturation Electronique
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p class="mb-3">Téléchargez ici la FAQs sur la Facturation Electronique au Burundi :</p>
+                                <a href="#" class="btn btn-primary">
+                                    <i class="bi bi-download me-2"></i> Télécharger le document FAQ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 5 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq5">
+                                Découvrez nos tarifs et services
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <h6><strong>Abonnement Annuel</strong></h6>
+                                <ul>
+                                    <li><strong>450 000 FBU</strong> pour les petits et moyens contribuables (Hébergement inclus)</li>
+                                    <li><strong>800 000 FBU</strong> pour les grands contribuables</li>
+                                </ul>
+
+                                <p><strong>Avantages :</strong></p>
+                                <ul>
+                                    <li>Maintenance et mises à jour gratuites</li>
+                                    <li>Facturation partout</li>
+                                    <li>Archivage sécurisé</li>
+                                    <li>Suivi de stock en temps réel</li>
+                                    <li>Formation et assistance gratuite</li>
+                                </ul>
+
+                                <h6 class="mt-4"><strong>Achat définitif du logiciel</strong></h6>
+                                <p><strong>4 500 000 FBU</strong></p>
+                                <ul>
+                                    <li>Installation et configuration</li>
+                                    <li>Formation du personnel</li>
+                                    <li>Garantie maintenance 5 mois</li>
+                                </ul>
+
+                                <p class="mt-3"><strong>Quel est le meilleur choix ?</strong><br>
+                                Si vous n’avez pas d’informaticien permanent, nous vous recommandons l’<strong>abonnement annuel</strong> car l’OBR met régulièrement à jour son système.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 6 -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq6">
+                                Je ne veux pas utiliser un logiciel, il y a un autre moyen disponible ?
+                            </button>
+                        </h2>
+                        <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p><strong>Absolument oui.</strong></p>
+                                <p>Vous pouvez utiliser la machine électronique vendue chez l’OBR.</p>
+                                <p>Nous vous recommandons de contacter votre conseil fiscal pour vous orienter sur la procédure d’obtention de la machine de facturation électronique auprès de l’OBR.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- À PROPOS -->
+<section id="apropos" class="py-5">
+    <div class="container py-5">
+        <div class="row align-items-center g-5 mb-5 pb-5" style="border-bottom:1px solid rgba(43,128,182,0.12);">
+            <div class="col-lg-5 fade-up">
+                <div class="feature-img-block">
+                    <img src="{% static 'media/image2.png' %}" alt="Burundi Jobs"
+                         onerror="this.src='https://picsum.photos/id/20/600/420';">
+                    <div class="feature-img-overlay">
+                        <p style="font-size:0.85rem;margin:0;color:rgba(255,255,255,0.62);">Développé par</p>
+                        <p style="font-size:1.1rem;font-weight:600;margin:4px 0 0;color:white;">Burundi Jobs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 fade-up delay-1">
+                <div class="section-label">Qui sommes-nous ?</div>
+                <h2 class="section-heading mb-4">La Solution Burundaise<br>Pensée Pour Vos Besoins</h2>
+                <p style="color:var(--gris-texte);font-size:1rem;line-height:1.8;margin-bottom:1rem;">
+                    Le site <a href="http://www.app.facturation.bi" style="color:var(--bleu-nav);font-weight:600;text-decoration:none;">www.facturation.bi</a> est une solution développée par l'entreprise <strong>Burundi Jobs</strong>.
+                </p>
+                <p style="color:var(--gris-texte);font-size:1rem;line-height:1.8;margin-bottom:2rem;">
+                    En réponse aux besoins exprimés par nos clients, nous avons conçu un logiciel de facturation électronique spécialement destiné aux PME. Cet outil vise à les accompagner dans leur <strong style="color:var(--bleu-fonce);">digitalisation</strong> et à leur permettre de se conformer efficacement aux exigences réglementaires de l'OBR en matière de facturation.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <span style="display:flex;align-items:center;gap:8px;font-size:0.9rem;font-weight:500;color:var(--bleu-fonce);">
+                        <i class="bi bi-check-circle-fill" style="color:var(--bleu-nav);"></i> Solution locale burundaise
+                    </span>
+                    <span style="display:flex;align-items:center;gap:8px;font-size:0.9rem;font-weight:500;color:var(--bleu-fonce);">
+                        <i class="bi bi-check-circle-fill" style="color:var(--bleu-nav);"></i> Conforme OBR / EBMS
+                    </span>
+                    <span style="display:flex;align-items:center;gap:8px;font-size:0.9rem;font-weight:500;color:var(--bleu-fonce);">
+                        <i class="bi bi-check-circle-fill" style="color:var(--bleu-nav);"></i> Support dédié aux PME
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-5 mt-2">
+            <div class="section-label">Pourquoi nous choisir</div>
+            <h2 class="section-heading">Un logiciel pensé<br>pour le Burundi</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3 fade-up">
+                <div class="atout-card">
+                    <div class="atout-icon"><i class="bi bi-shield-check" style="color:#22c55e;"></i></div>
+                    <h5>100% Conforme OBR</h5>
+                    <p>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li>✅ Conforme aux exigences de l’OBR</li>
+                            <li>✅ Simple et facile à utiliser</li>
+                            <li>✅ Accessible partout via internet</li>
+                            <li>✅ Sécurisé et rapide</li>
+                            <li>✅ Idéal pour PME, boutiques et grandes entreprises</li>
+                            <li>✅ Support technique local et réactif</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 fade-up delay-1">
+                <div class="atout-card">
+                    <div class="atout-icon"><i class="bi bi-lightning-charge" style="color:var(--or);"></i></div>
+                    <h5>Ultra Rapide</h5>
+                    <p>Créez et envoyez une facture complète en moins de 30 secondes, même en déplacement.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 fade-up delay-2">
+                <div class="atout-card">
+                    <div class="atout-icon"><i class="bi bi-people-fill" style="color:var(--bleu-nav);"></i></div>
+                    <h5>Multi-utilisateurs</h5>
+                    <p>Gestion des rôles et droits granulaires par employé. Chaque collaborateur à sa place.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 fade-up delay-3">
+                <div class="atout-card">
+                    <div class="atout-icon"><i class="bi bi-graph-up-arrow" style="color:#ef4444;"></i></div>
+                    <h5>Tableau de Bord</h5>
+                    <p>Suivez vos ventes, stocks et performances en temps réel grâce à des rapports clairs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FONCTIONNALITÉS -->
+<section id="fonctionnalites" class="py-5">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5 fade-up">
+                <div class="feature-img-block">
+                    <img src="{% static 'media/image3.png' %}" alt="Logiciel Facturation OBR"
+                         onerror="this.src='https://picsum.photos/id/1/600/420';">
+                    <div class="feature-img-overlay">
+                        <p style="font-size:0.85rem;margin:0;color:rgba(255,255,255,0.62);">Déjà utilisé par</p>
+                        <p style="font-size:1.1rem;font-weight:600;margin:4px 0 0;color:white;">plusieurs entreprises au Burundi</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 fade-up delay-1">
+                <div class="section-label">Nos fonctionnalités</div>
+                <h2 class="section-heading mb-3">Tout ce dont votre<br>entreprise a besoin</h2>
+                <p style="color:var(--gris-texte);font-size:1rem;line-height:1.7;margin-bottom:2rem;">
+                    Notre logiciel de facturation électronique — demandé par l'OBR — est déjà utilisé par plusieurs entreprises. Il centralise tous vos outils de gestion en une seule plateforme intuitive.
+                </p>
+                <ul class="module-list">
+                    <li>
+                        <div class="module-check"><i class="bi bi-check-lg"></i></div>
+                        <div><span>Gestion de Stock</span>
+                        <div style="font-size:0.85rem;color:var(--gris-texte);margin-top:2px;">Suivi des entrées, sorties et niveaux d'inventaire en temps réel</div></div>
+                    </li>
+                    <li>
+                        <div class="module-check"><i class="bi bi-check-lg"></i></div>
+                        <div><span>Gestion des Services</span>
+                        <div style="font-size:0.85rem;color:var(--gris-texte);margin-top:2px;">Catalogue de services avec tarification personnalisable</div></div>
+                    </li>
+                    <li>
+                        <div class="module-check"><i class="bi bi-check-lg"></i></div>
+                        <div><span>Gestion des Fournisseurs</span>
+                        <div style="font-size:0.85rem;color:var(--gris-texte);margin-top:2px;">Base de données fournisseurs centralisée et historique des achats</div></div>
+                    </li>
+                    <li>
+                        <div class="module-check"><i class="bi bi-check-lg"></i></div>
+                        <div><span>Gestion des Clients</span>
+                        <div style="font-size:0.85rem;color:var(--gris-texte);margin-top:2px;">Fiches clients complètes, historique des factures et paiements</div></div>
+                    </li>
+                    <li>
+                        <div class="module-check"><i class="bi bi-check-lg"></i></div>
+                        <div><span>Facturation connectée à l'EBMS de l'OBR</span>
+                        <div style="font-size:0.85rem;color:var(--gris-texte);margin-top:2px;">Émission de factures FN/FA et transmission automatique sécurisée</div></div>
+                    </li>
+                </ul>
+                <div class="mt-4">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-bleu">
+                        <i class="bi bi-play-circle me-2"></i>Essayer le logiciel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- POUR QUI ? -->
+<section id="pourqui" class="py-5" style="background:var(--gris-clair);">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <div class="section-label">Nos clients</div>
+            <h2 class="section-heading">Pour qui est fait<br>ce logiciel ?</h2>
+            <p style="color:var(--gris-texte);max-width:560px;margin:1rem auto 0;font-size:1rem;line-height:1.7;">
+                Toute entreprise ou organisation enregistrée auprès de l'OBR et soumise à l'obligation de facturation électronique.
+            </p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3 fade-up">
+                <div class="pourqui-card">
+                    <div class="pourqui-card-top"><i class="bi bi-shop-window"></i></div>
+                    <div class="pourqui-card-body">
+                        <h5>PME &amp; Commerçants</h5>
+                        <p>Petites et moyennes entreprises soumises à l'obligation OBR — boutiques, supermarchés, restaurants, hôtels, pharmacies, et bien d'autres.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 fade-up delay-1">
+                <div class="pourqui-card">
+                    <div class="pourqui-card-top"><i class="bi bi-person-workspace"></i></div>
+                    <div class="pourqui-card-body">
+                        <h5>Entreprises individuelles &amp; Indépendants</h5>
+                        <p>Artisans, consultants et prestataires de services qui souhaitent gérer leurs factures de manière simple et conforme.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 fade-up delay-2">
+                <div class="pourqui-card">
+                    <div class="pourqui-card-top"><i class="bi bi-building-fill"></i></div>
+                    <div class="pourqui-card-body">
+                        <h5>Grandes Entreprises Locales</h5>
+                        <p>Les grandes structures peuvent aussi adopter notre logiciel pour harmoniser et centraliser leur système de facturation.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 fade-up delay-3">
+                <div class="pourqui-card">
+                    <div class="pourqui-card-top"><i class="bi bi-calculator-fill"></i></div>
+                    <div class="pourqui-card-body">
+                        <h5>Cabinets de Comptabilité</h5>
+                        <p>Cabinets et comptables indépendants gérant la facturation de plusieurs clients et souhaitant centraliser leurs opérations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="fade-up mt-5 p-4 p-md-5 rounded-4 d-flex flex-md-row flex-column align-items-center gap-4"
+             style="background:linear-gradient(135deg,var(--bleu-fonce),var(--bleu-nav));color:white;">
+            <div style="flex-shrink:0;width:64px;height:64px;background:rgba(255,255,255,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-info-circle-fill" style="font-size:1.8rem;color:var(--or-clair);"></i>
+            </div>
+            <div>
+                <h5 style="font-family:'DM Sans',sans-serif;font-weight:600;color:white;margin-bottom:0.4rem;">En résumé</h5>
+                <p style="margin:0;color:rgba(255,255,255,0.7);font-size:0.97rem;line-height:1.7;">
+                    Notre logiciel cible <strong style="color:var(--or-clair);">toute entreprise ou organisation</strong> enregistrée auprès de l'OBR et soumise à l'obligation de facturation électronique, avec un accent particulier sur les PME qui ont besoin d'une solution <strong style="color:var(--or-clair);">simple, abordable et conforme</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA BAND -->
+<section class="cta-band py-5">
+    <div class="container py-4 text-center text-white position-relative">
+        <div class="section-label" style="color:var(--or-clair);">Commencer dès aujourd'hui</div>
+        <h2 style="color:white;font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:700;margin-bottom:1rem;">
+            Prêt à moderniser<br>votre facturation ?
+        </h2>
+        <p style="color:rgba(255,255,255,0.6);max-width:480px;margin:0 auto 2rem;font-size:1rem;line-height:1.7;">
+            Rejoignez les entreprises burundaises qui font confiance à Facturation OBR pour leur conformité fiscale.
+        </p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="{% url 'accounts:login' %}" class="btn btn-gold btn-lg">
+                <i class="bi bi-rocket-takeoff me-2"></i>Accéder à l'application
+            </a>
+            <a href="#contact" class="btn btn-outline-white btn-lg">
+                <i class="bi bi-telephone me-2"></i>Nous contacter
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <div class="section-label">Contactez-nous</div>
+            <h2 class="section-heading">Nous sommes à votre<br>disposition</h2>
+        </div>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4 fade-up">
+                <div class="contact-card">
+                    <div class="contact-icon-wrap"><i class="bi bi-telephone-fill"></i></div>
+                    <h6>Téléphone &amp; WhatsApp</h6>
+                    <p>
+                        +257 22 28 12 73<br>
+                        <a href="https://wa.me/25771142483">
+                            +257 71 14 24 83
+                            <span style="background:var(--bleu-pale);color:var(--bleu-nav);font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:4px;">WhatsApp</span>
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up delay-1">
+                <div class="contact-card">
+                    <div class="contact-icon-wrap"><i class="bi bi-envelope-fill"></i></div>
+                    <h6>Email</h6>
+                    <p><a href="mailto:info@burundijobs.bi">info@burundijobs.bi</a></p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up delay-2">
+                <div class="contact-card">
+                    <div class="contact-icon-wrap"><i class="bi bi-geo-alt-fill"></i></div>
+                    <h6>Adresse</h6>
+                    <p>Avenue de la Science<br>Immeuble Premium House<br>(Ecobank siège) — 1<sup>er</sup> étage, Bureau 111</p>
+                </div>
+            </div>
+        </div>
+        <div class="map-placeholder fade-up">
+            <i class="bi bi-map" style="font-size:2.5rem;color:var(--bleu-nav);"></i>
+            <p style="font-weight:600;margin:0;color:var(--bleu-fonce);">Avenue de la Science, Immeuble Premium House</p>
+            <p style="font-size:0.85rem;color:var(--gris-texte);margin:0;">Ecobank siège — 1er étage, Bureau 111 — Bujumbura, Burundi</p>
+            <a href="https://maps.google.com/?q=Bujumbura+Burundi+Avenue+de+la+Science" target="_blank" class="btn btn-bleu mt-2">
+                <i class="bi bi-map-fill me-2"></i>Voir sur Google Maps
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="brand mb-2">Facturation <span>OBR</span></div>
+                <p style="font-size:0.9rem; line-height:1.7; opacity:0.9;">
+                    Logiciel de facturation électronique<br>conforme OBR/EBMS au Burundi.
+                </p>
+                <div class="mt-3" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);padding:8px 16px;border-radius:50px;font-size:0.85rem;">
+                    <i class="bi bi-shield-check"></i> Certifié conforme EBMS
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;margin-bottom:1rem;">Navigation</p>
+                <ul class="list-unstyled m-0" style="line-height:2.3;">
+                     <li><a href="#faq">Accueil</a></li>
+                    <li><a href="#apropos">À propos</a></li>
+                    <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+                    <li><a href="#pourqui">Pour qui ?</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <p style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;margin-bottom:1rem;">Contact</p>
+                <ul class="list-unstyled m-0" style="line-height:2.4;font-size:0.95rem;">
+                    <li class="mb-2"><i class="bi bi-telephone me-2"></i>+257 22 28 12 73</li>
+                    <li class="mb-2"><i class="bi bi-whatsapp me-2" style="color:#25d366;"></i>+257 71 14 24 83</li>
+                    <li><i class="bi bi-envelope me-2"></i><a href="mailto:info@burundijobs.bi">info@burundijobs.bi</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr style="border-color:rgba(255,255,255,0.15);">
+        <div class="d-flex flex-wrap justify-content-between align-items-center pt-3">
+            <p class="mb-0" style="font-size:0.9rem;">Powered by <strong>Burundi Jobs</strong> &copy; 2026 — Tous droits réservés</p>
+            <p class="mb-0" style="font-size:0.85rem;opacity:0.7;">Immeuble Premium House, Bureau 111 — Bujumbura</p>
+        </div>
+    </div>
+</footer>
+
+
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Script d'animation (conservé)
+        document.addEventListener("DOMContentLoaded", function() {
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(e => { 
+                    if (e.isIntersecting) e.target.classList.add('visible'); 
+                });
+            }, { threshold: 0.12 });
+
+            document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+            // Navbar shadow
+            window.addEventListener('scroll', () => {
+                document.querySelector('.navbar').style.boxShadow = 
+                    window.scrollY > 50 ? '0 4px 30px rgba(7,24,40,0.28)' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

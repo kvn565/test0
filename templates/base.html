@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}WIBABI{% endblock %}</title>
+    <title>{% block title %}{{ app_config.app_name }}{% endblock %}</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -405,7 +405,7 @@
 <!-- ╔═ SIDEBAR ════════════════════════════════════════════════════ -->
 <div class="sidebar">
     <div class="sidebar-logo">
-        <div class="logo-title">WIBABI</div>
+        <div class="logo-title">{{ app_config.app_name }}</div>
         {% if user.societe %}
         <div class="logo-sub">{{ user.societe.nom|truncatechars:22 }}</div>
         {% endif %}
@@ -440,7 +440,7 @@
         <span class="nav-link-item blocked"><i class="bi bi-archive"></i> Mouvements</span>
         <span class="nav-link-item blocked"><i class="bi bi-people"></i> Clients</span>
         <span class="nav-link-item blocked"><i class="bi bi-receipt"></i> Factures</span>
-        <span class="nav-link-item blocked"><i class="bi bi-file-earmark-text"></i> Devis</span>
+        <span class="nav-link-item blocked"><i class="bi bi-file-earmark-text"></i> Proforma</span>
         <span class="nav-link-item blocked"><i class="bi bi-bar-chart"></i> Rapports</span>
 
         <div class="nav-section">Ma société</div>
@@ -507,8 +507,8 @@
             <i class="bi bi-receipt"></i> Factures
         </a>
         {% if user.droit_devis or user.is_superuser %}
-        {% url 'facturer:liste' as url_devis %}<a href="{{ url_devis|default:'#' }}" class="nav-link-item {% block nav_devis %}{% endblock %}">
-            <i class="bi bi-file-earmark-text"></i> Devis
+        {% url 'devis:liste' as url_devis %}<a href="{{ url_devis|default:'#' }}" class="nav-link-item {% block nav_devis %}{% endblock %}">
+            <i class="bi bi-file-earmark-text"></i> Proforma
         </a>
         {% endif %}
         {% endif %}
@@ -537,7 +537,7 @@
             Expire dans {{ cle.jours_restants }}j
         </a>
         {% else %}
-        <a href="{% url 'superadmin:saisir_cle' %}" 
+        <a href="{% url 'superadmin:saisir_cle_payante' %}" 
            onclick="ouvrirModalLicence(); return false;" 
            class="nav-link-item {% block nav_renouveler %}{% endblock %}">
             <i class="bi bi-key"></i> Renouveler licence
@@ -586,12 +586,12 @@
             {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and user.societe %}
                 {% if cle %}
                     {% if cle.jours_restants <= 3 %}
-                    <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence expired text-decoration-none">
+                    <a href="{% url 'superadmin:saisir_cle_payante' %}" class="topbar-licence expired text-decoration-none">
                         <i class="bi bi-exclamation-octagon-fill"></i>
                         Licence expire dans {{ cle.jours_restants }}j
                     </a>
                     {% elif cle.jours_restants <= 7 %}
-                    <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence warning text-decoration-none">
+                    <a href="{% url 'superadmin:saisir_cle_payante' %}" class="topbar-licence warning text-decoration-none">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         {{ cle.jours_restants }} jours restants
                     </a>
@@ -602,7 +602,7 @@
                     </span>
                     {% endif %}
                 {% else %}
-                <a href="{% url 'superadmin:saisir_cle' %}" class="topbar-licence expired text-decoration-none">
+                <a href="{% url 'superadmin:saisir_cle_payante' %}" class="topbar-licence expired text-decoration-none">
                     <i class="bi bi-x-circle-fill"></i> Aucune licence
                 </a>
                 {% endif %}
@@ -737,12 +737,14 @@
         if (modal) modal.style.display = 'none';
     }
 
-    // Fermer en cliquant sur l'overlay (seulement si licence encore valide)
-    {% if cle %}
+    // Fermer en cliquant sur l'overlay
     document.getElementById('licenceModal')?.addEventListener('click', function(e) {
         if (e.target === this) fermerModalLicence();
     });
-    {% endif %}
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') fermerModalLicence();
+    });
 
     // Mise en forme automatique de la clé (majuscules)
     document.getElementById('licenceKeyInput')?.addEventListener('input', function() {
@@ -804,7 +806,7 @@
             formData.append('cle_activation', cle);
             formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
 
-            const response = await fetch('{% url "superadmin:saisir_cle" %}', {
+            const response = await fetch('{% url "superadmin:saisir_cle_payante" %}', {
                 method: 'POST',
                 body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }

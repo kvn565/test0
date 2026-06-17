@@ -1,0 +1,287 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Devis {{ devis.display_numero }} — WIBABI{% endblock %}
+{% block nav_devis %}active{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+
+    <div class="col-12 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <h4 class="mb-1" style="font-family:'Playfair Display',serif;color:var(--bleu);">
+                <a href="{% url 'devis:liste' %}" class="text-decoration-none text-reset"><i class="bi bi-arrow-left me-2"></i></a>
+                Proforma {{ devis.display_numero }}
+            </h4>
+            <p class="text-muted mb-0">{{ devis.client.nom }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if devis.statut == 'BROUILLON' and devis.lignes_devis.exists %}
+            <form method="post" action="{% url 'devis:valider' devis.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>Valider le proforma
+                </button>
+            </form>
+            {% endif %}
+            {% if devis.peut_etre_transformee %}
+            <form method="post" action="{% url 'devis:transformer' devis.pk %}" onsubmit="return confirm('Créer une facture à partir de ce devis ?')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-gold">
+                    <i class="bi bi-receipt me-1"></i>Transformer en facture
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'devis:imprimer' devis.pk %}" class="btn btn-outline-secondary" target="_blank">
+                <i class="bi bi-printer me-1"></i>Imprimer
+            </a>
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#emailForm">
+                <i class="bi bi-envelope me-1"></i>Envoyer
+            </button>
+            {% if devis.peut_etre_supprime %}
+            <form method="post" action="{% url 'devis:supprimer' devis.pk %}" class="d-inline" onsubmit="return confirm('Supprimer ce devis ?')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i>Supprimer
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="col-12">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% elif message.tags == 'error' %}bi-exclamation-triangle-fill{% else %}bi-info-circle{% endif %} me-2"></i>
+            {{ message|safe }}
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">Informations</h6>
+                <table class="table table-sm mb-0">
+                    <tr><td class="text-muted">Date</td><td class="fw-semibold">{{ devis.date_devis|date:'d/m/Y' }}</td></tr>
+                    <tr>
+                        <td class="text-muted">Valable jusqu'au</td>
+                        <td class="fw-semibold {% if devis.est_expire %}text-danger{% endif %}">
+                            {{ devis.date_validite|date:'d/m/Y' }}
+                            {% if devis.est_expire %}<span class="badge bg-warning text-dark ms-1">Expiré</span>{% endif %}
+                        </td>
+                    </tr>
+                    <tr><td class="text-muted">Client</td><td class="fw-semibold">{{ devis.client.nom }}</td></tr>
+                    <tr><td class="text-muted">Devise</td><td class="fw-semibold">{{ devis.devise }}</td></tr>
+                    <tr><td class="text-muted">Statut</td>
+                        <td>
+                            <span class="badge {% if devis.statut == 'BROUILLON' %}bg-secondary{% elif devis.statut == 'EN_ATTENTE' %}bg-info{% elif devis.statut == 'VALIDE' %}bg-success{% elif devis.statut == 'REFUSE' %}bg-danger{% elif devis.statut == 'EXPIRE' %}bg-warning text-dark{% elif devis.statut == 'TRANSFORME' %}bg-primary{% endif %}">
+                                {{ devis.get_statut_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% if devis.notes %}
+                    <tr><td class="text-muted">Notes</td><td>{{ devis.notes|linebreaks }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="collapse" id="emailForm">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3"><i class="bi bi-envelope me-2"></i>Envoyer le proforma par email</h6>
+                <form method="post" action="{% url 'devis:envoyer_email' devis.pk %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Email du client</label>
+                            {{ email_form.email_destinataire }}
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-send me-1"></i>Envoyer
+                            </button>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Message (optionnel)</label>
+                            {{ email_form.message }}
+                        </div>
+                    </div>
+                </form>
+                {% if devis.email_envoye %}
+                    <div class="mt-2 text-success small">
+                        <i class="bi bi-check-circle me-1"></i>Email envoyé le {{ devis.date_envoi_email|date:"d/m/Y H:i" }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="tableLignes">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Désignation</th>
+                                <th class="text-center" style="width:100px;">Qté</th>
+                                <th class="text-end" style="width:140px;">Prix unitaire TVAC</th>
+                                <th class="text-end" style="width:120px;">Total HT</th>
+                                <th class="text-center" style="width:80px;">TVA</th>
+                                <th class="text-end pe-3" style="width:140px;">Total TTC</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ligne in lignes %}
+                            <tr data-ligne-id="{{ ligne.pk }}">
+                                <td class="ps-3 designation">{{ ligne.designation }}</td>
+                                <td class="text-center quantite">{{ ligne.quantite|floatformat:3 }}</td>
+                                <td class="text-end prix-ttc">{{ ligne.prix_vente_tvac|floatformat:3 }}</td>
+                                <td class="text-end montant-ht">{{ ligne.montant_ht|floatformat:3 }}</td>
+                                <td class="text-center">
+                                    {% if ligne.taux_tva_valeur > 0 %}
+                                    <span class="badge bg-info">{{ ligne.taux_tva_valeur|floatformat:3 }}%</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">0%</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3 montant-ttc fw-semibold">{{ ligne.montant_ttc|floatformat:3 }}</td>
+                                <td>
+                                    {% if devis.statut == 'BROUILLON' %}
+                                    <button class="btn btn-sm btn-outline-danger btn-supp-ligne" data-ligne-id="{{ ligne.pk }}" title="Supprimer">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr id="rowEmpty">
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    Aucune ligne. Ajoutez des produits ou services.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white d-flex flex-column align-items-end gap-1">
+                <div class="d-flex justify-content-between" style="width:280px;">
+                    <span class="text-muted">Total HT</span>
+                    <span class="fw-semibold" id="totalHt">{{ devis.total_ht|floatformat:3 }} {{ devis.devise }}</span>
+                </div>
+                <div class="d-flex justify-content-between" style="width:280px;">
+                    <span class="text-muted">Total TVA</span>
+                    <span class="fw-semibold" id="totalTva">{{ devis.total_tva|floatformat:3 }} {{ devis.devise }}</span>
+                </div>
+                <div class="d-flex justify-content-between border-top pt-1" style="width:280px;">
+                    <span class="fw-bold">Total TTC</span>
+                    <span class="fw-bold fs-5" id="totalTtc" style="color:var(--bleu);">{{ devis.total_ttc|floatformat:3 }} {{ devis.devise }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if devis.statut == 'BROUILLON' %}
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-1"></i> Ajouter un produit / service</h6>
+                <div id="formAjoutLigne">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select id="selectProduit" class="form-select">
+                                <option value="">-- Produit --</option>
+                                {% for p in produits_qs %}
+                                <option value="{{ p.pk }}" data-prix="{{ p.prix_vente_tvac|default:0 }}" data-tva="{{ p.taux_tva_valeur|default:18 }}">{{ p.designation }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="selectService" class="form-select">
+                                <option value="">-- Service --</option>
+                                {% for s in services_qs %}
+                                <option value="{{ s.pk }}" data-prix="{{ s.prix|default:0 }}" data-tva="{{ s.taux_tva.valeur|default:18 }}">{{ s.designation }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" id="inputQuantite" class="form-control" value="1" step="0.001" min="0.001">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-gold w-100" id="btnAjouterLigne">
+                                <i class="bi bi-plus"></i> Ajouter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const DEVIS_ID = {{ devis.pk }};
+
+document.getElementById('btnAjouterLigne')?.addEventListener('click', async function() {
+    const produit = document.getElementById('selectProduit');
+    const service = document.getElementById('selectService');
+    const qte = document.getElementById('inputQuantite');
+
+    const produitId = produit.value;
+    const serviceId = service.value;
+    const quantite = parseFloat(qte.value) || 1;
+
+    if (!produitId && !serviceId) { alert('Choisissez un produit ou un service.'); return; }
+
+    try {
+        const resp = await fetch('{% url "devis:ajax-ajouter-ligne" %}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({ devis_id: DEVIS_ID, produit_id: produitId || null, service_id: serviceId || null, quantite }),
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            location.reload();
+        } else {
+            alert(data.error || JSON.stringify(data.errors) || 'Erreur ajout ligne');
+        }
+    } catch(e) {
+        alert('Erreur réseau');
+    }
+});
+
+document.querySelectorAll('.btn-supp-ligne').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        if (!confirm('Supprimer cette ligne ?')) return;
+        const ligneId = this.dataset.ligneId;
+        try {
+            const resp = await fetch('{% url "devis:ajax-supprimer-ligne" %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: JSON.stringify({ ligne_id: parseInt(ligneId) }),
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                location.reload();
+            } else {
+                alert(data.error || 'Erreur suppression');
+            }
+        } catch(e) {
+            alert('Erreur réseau');
+        }
+    });
+});
+</script>
+{% endblock %}

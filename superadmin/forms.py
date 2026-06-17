@@ -3,7 +3,7 @@ from datetime import timedelta
 from django import forms
 from django.utils import timezone
 from django.contrib.auth.forms import UserCreationForm
-from .models import CleActivation, Utilisateur
+from .models import CleActivation, Utilisateur, AppConfig
 from societe.models import Societe
 
 
@@ -498,3 +498,26 @@ class SocieteAdminConfigForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+# ══════════════════════════════════════════════════════════
+#  CONFIGURATION GÉNÉRALE DE L'APPLICATION
+# ══════════════════════════════════════════════════════════
+
+class AppConfigForm(forms.ModelForm):
+    class Meta:
+        model = AppConfig
+        fields = ['app_name', 'logo']
+        widgets = {
+            'app_name': forms.TextInput(attrs={
+                'class': 'form-control form-control-lg',
+                'placeholder': 'Ex: WIBABI',
+            }),
+        }
+        labels = {
+            'app_name': "Nom de l'application",
+            'logo': "Logo (page d'authentification)",
+        }
+        help_texts = {
+            'logo': 'Format recommandé : PNG, 200x200px max. Laisser vide pour garder l\'icône par défaut.',
+        }

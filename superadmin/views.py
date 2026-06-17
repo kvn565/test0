@@ -24,7 +24,7 @@ from django.db.models import Sum
 from collections import defaultdict
 
 
-from .models import Utilisateur, HistoriqueConnexion, Backup, CleActivation, AuditCle
+from .models import Utilisateur, HistoriqueConnexion, Backup, CleActivation, AuditCle, AppConfig
 from societe.models import Societe
 from stock.models import EntreeStock, SortieStock
 from .forms import (
@@ -33,6 +33,7 @@ from .forms import (
     UtilisateurCreationForm, UtilisateurModificationForm, ChangerMotDePasseForm,
     SocieteGeranceForm,          # ← Pour gérer gérant, email, numéro de départ
     SocieteAdminConfigForm,
+    AppConfigForm,
 )
 
 
@@ -1167,6 +1168,32 @@ def backup_telecharger(request, pk):
         return redirect('superadmin:backup')
     return FileResponse(open(backup.fichier.path, 'rb'), as_attachment=True,
                         filename=os.path.basename(backup.fichier.path))
+
+
+# ═══════════════════════════════════════════════════════════════
+#  CONFIGURATION GÉNÉRALE DE L'APPLICATION
+# ═══════════════════════════════════════════════════════════════
+
+@login_required
+@user_passes_test(est_superadmin)
+def app_config(request):
+    config = AppConfig.objects.first()
+    if not config:
+        config = AppConfig.objects.create(app_name='WIBABI')
+
+    if request.method == 'POST':
+        form = AppConfigForm(request.POST, request.FILES, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Configuration mise à jour.")
+            return redirect('superadmin:app_config')
+    else:
+        form = AppConfigForm(instance=config)
+
+    return render(request, 'superadmin/app_config.html', {
+        'form': form,
+        'config': config,
+    })
 
 
 @login_required

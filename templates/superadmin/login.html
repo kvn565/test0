@@ -1,19 +1,23 @@
-{% extends 'base_superadmin.html' %}   {# On hérite de ton base superadmin si tu veux garder la cohérence #}
-{% block title %}Connexion Superadmin — WIBABI{% endblock %}
+{% extends 'base_superadmin.html' %}
+{% block title %}Connexion Superadmin — {{ app_config.app_name }}{% endblock %}
 
 {% block content %}
 <div class="login-wrap" style="max-width:960px; margin:40px auto;">
 
     <!-- Panneau gauche -->
     <div class="login-left" style="background:linear-gradient(155deg, #0f2a4a 0%, #1a3f6f 100%); width:360px; padding:60px 40px; color:white; border-radius:18px 0 0 18px;">
-        <div style="width:80px;height:80px;background:rgba(201,168,76,0.2);border:3px solid rgba(201,168,76,0.4);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#c9a84c;margin-bottom:30px;">
+        <div style="width:80px;height:80px;background:rgba(201,168,76,0.2);border:3px solid rgba(201,168,76,0.4);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#c9a84c;margin-bottom:30px;overflow:hidden;">
+            {% if app_config.logo %}
+            <img src="{{ app_config.logo.url }}" alt="Logo" style="max-width:100%;max-height:100%;border-radius:14px;">
+            {% else %}
             <i class="bi bi-shield-lock"></i>
+            {% endif %}
         </div>
-        <h2 style="font-family:'Playfair Display',serif; color:white; margin-bottom:12px;">Superadmin</h2>
+        <h2 style="font-family:'Playfair Display',serif; color:white; margin-bottom:12px;">{{ app_config.app_name }}</h2>
         <p style="opacity:0.85; line-height:1.6;">Accès restreint à l'administration centrale du système Facturation OBR</p>
         
         <div style="margin-top:50px; background:rgba(255,255,255,0.1); padding:18px; border-radius:12px; text-align:center;">
-            <small style="display:block; color:rgba(255,255,255,0.6);">WIBABI v1.0</small>
+            <small style="display:block; color:rgba(255,255,255,0.6);">{{ app_config.app_name }} v1.0</small>
             <small style="color:#c9a84c;">Office Burundais des Recettes</small>
         </div>
     </div>

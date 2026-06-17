@@ -562,3 +562,26 @@ class AuditCle(models.Model):
         nom = self.societe.nom if self.societe else 'N/A'
         d   = self.date_action.strftime('%d/%m/%Y %H:%M')
         return f"{nom} | {self.action} | {d}"
+
+
+# ═══════════════════════════════════════════════════════════════
+#  CONFIGURATION GÉNÉRALE DE L'APPLICATION
+# ═══════════════════════════════════════════════════════════════
+
+class AppConfig(models.Model):
+    app_name = models.CharField(
+        "Nom de l'application", max_length=100, default='WIBABI'
+    )
+    logo = models.ImageField(
+        "Logo page d'authentification",
+        upload_to='config/',
+        blank=True, null=True,
+    )
+    date_modification = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Configuration générale"
+        verbose_name_plural = "Configuration générale"
+
+    def __str__(self):
+        return self.app_name

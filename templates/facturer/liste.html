@@ -70,11 +70,11 @@
         </div>
     </div>
 
-    {# Filtres #}
+        {# Filtres #}
     <div class="col-12">
         <form method="get" class="card shadow-sm border-0">
             <div class="card-body">
-                <div class="d-flex flex-wrap gap-3 align-items-end">
+                <div class="d-flex flex-nowrap gap-3 align-items-end overflow-auto pb-2">
                     <div class="flex-grow-1 position-relative" style="min-width: 240px;">
                         <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input type="text" name="q" value="{{ q }}" class="form-control ps-5" placeholder="N°, client, bon de commande...">
@@ -94,7 +94,7 @@
                         {% endfor %}
                     </select>
 
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-shrink-0">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search me-1"></i>Filtrer
                         </button>
@@ -152,7 +152,7 @@
                                 </td>
                                 <td class="small">{{ f.devise }}</td>
                                 <td class="text-end fw-bold text-primary">
-                                    {{ f.total_ttc|floatformat:0 }} {{ f.devise }}
+                                    {{ f.total_ttc|floatformat:3 }} {{ f.devise }}
                                 </td>
                                 <td class="text-center">
                                     {% if f.statut_obr == 'ENVOYE' %}
@@ -266,6 +266,9 @@
             <div class="modal-body">
                 <form id="formCreerFacture">
                     {% csrf_token %}
+                    {# Champs cachés pour date et heure — nécessaires car readonly ne soumet pas #}
+                    <input type="hidden" id="hidden_date_facture" name="date_facture">
+                    <input type="hidden" id="hidden_heure_facture" name="heure_facture">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Date <span class="text-danger">*</span></label>
@@ -370,6 +373,40 @@
 
 {% block extra_js %}
 <script>
+ // Synchronise les champs cachés avec les champs readonly
+function syncDateHeure() {
+    const dateVal  = document.getElementById('id_date_facture')?.value;
+    const heureVal = document.getElementById('id_heure_facture')?.value;
+
+    const hiddenDate  = document.getElementById('hidden_date_facture');
+    const hiddenHeure = document.getElementById('hidden_heure_facture');
+
+    if (hiddenDate && dateVal)   hiddenDate.value  = dateVal;
+    if (hiddenHeure && heureVal) hiddenHeure.value = heureVal;
+}
+
+// Initialisation au chargement du modal
+const modalCreerEl = document.getElementById('modalCreerFacture');
+if (modalCreerEl) {
+    modalCreerEl.addEventListener('shown.bs.modal', function () {
+        // Initialiser date et heure courantes
+        const now = new Date();
+        const dateStr  = now.toISOString().split('T')[0];
+        const heureStr = now.toTimeString().slice(0, 5);
+
+        const dateField  = document.getElementById('id_date_facture');
+        const heureField = document.getElementById('id_heure_facture');
+
+        if (dateField)  dateField.value  = dateStr;
+        if (heureField) heureField.value = heureStr;
+
+        syncDateHeure();
+
+        resetAvoirFields();
+        checkContinuerButton();
+        initAvoirDynamic();
+    });
+}   
 document.addEventListener('DOMContentLoaded', function () {
 
     console.log('✅ JS liste.html chargé');
@@ -539,6 +576,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function soumettreEntete() {
+        syncDateHeure();
         const btn = document.getElementById('btnSoumettreEntete');
         const err = document.getElementById('erreurCreer');
 
@@ -549,27 +587,46 @@ document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('formCreerFacture');
         const formData = new FormData(form);
 
+        console.log('📤 Données envoyées :');
+        for (let [key, value] of formData.entries()) {
+            console.log(`  ${key} = ${value}`);
+        }
+
         try {
             const response = await fetch('{% url "facturer:ajax-creer-facture" %}', {
                 method: 'POST',
-                body: formData,
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                body: formData
+                // PAS de headers X-CSRFToken ici — déjà dans le FormData via {% csrf_token %}
             });
 
             const data = await response.json();
+            console.log('📥 Réponse serveur :', JSON.stringify(data, null, 2));
 
             if (data.ok) {
                 window.location.href = `/facturer/${data.facture_id}/`;
             } else {
-                let msg = 'Erreur lors de la création.';
-                if (data.error) msg = data.error;
-                if (data.errors) msg = Object.values(data.errors).flat().join('<br>');
+                let lignes = [];
+
+                if (data.errors) {
+                    for (const [champ, errList] of Object.entries(data.errors)) {
+                        errList.forEach(e => {
+                            lignes.push(`<strong>${champ}</strong> : ${e.message || e}`);
+                        });
+                    }
+                } else if (data.error) {
+                    lignes.push(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+                } else {
+                    lignes.push('Erreur inconnue.');
+                }
+
                 if (err) {
-                    err.innerHTML = msg;
+                    err.innerHTML = lignes.join('<br>');
                     err.style.display = 'block';
                 }
+                console.error('❌ Erreur création détaillée :', JSON.stringify(data, null, 2));
             }
         } catch (error) {
+            console.error('❌ Exception :', error);
             if (err) {
                 err.innerHTML = 'Erreur réseau ou serveur.';
                 err.style.display = 'block';

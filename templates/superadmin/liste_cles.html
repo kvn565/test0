@@ -145,11 +145,15 @@
                                 </td>
                                 <td>
                                     {% if cle.statut == 'ACTIVE' %}
-                                        <span class="badge-active">Active</span>
+                                        <span class="badge bg-success">Active</span>
+                                    {% elif cle.statut == 'DISPONIBLE' %}
+                                        <span class="badge bg-primary">Disponible</span>
                                     {% elif cle.statut == 'REVOQUEE' %}
-                                        <span class="badge-revoked">Révoquée</span>
+                                        <span class="badge bg-danger">Révoquée</span>
+                                    {% elif cle.statut == 'EXPIREE' %}
+                                        <span class="badge bg-secondary">Expirée</span>
                                     {% else %}
-                                        <span class="badge-inactive">Expirée</span>
+                                        <span class="badge bg-warning">{{ cle.statut }}</span>
                                     {% endif %}
                                 </td>
                                 <td style="font-size:0.82rem;color:#8a9aaa;">{{ cle.date_debut|date:"d/m/Y" }}</td>
