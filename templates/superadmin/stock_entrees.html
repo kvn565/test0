@@ -198,6 +198,14 @@
                                            class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye"></i>
                                         </a>
+                                        {% if e.facture and e.facture.statut_obr == 'ANNULE' and e.facture.type_facture == 'FA' and e.statut_obr == 'ENVOYE' %}
+                                        <a href="{% url 'superadmin:entree_compenser_obr' e.pk %}" 
+                                           class="btn btn-sm btn-outline-warning"
+                                           title="Compenser OBR"
+                                           onclick="return confirm('Créer une sortie (SN) pour compenser cette entrée d\'avoir annulée vers OBR ?')">
+                                            <i class="bi bi-arrow-repeat"></i>
+                                        </a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}

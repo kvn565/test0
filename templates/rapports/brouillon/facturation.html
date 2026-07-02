@@ -41,7 +41,7 @@
 </div>
 
 <!-- Filtres -->
-{% with show_service_filter=True show_mode_filter=True %}
+{% with show_service_filter=True %}
     {% include 'rapports/_filtres.html' %}
 {% endwith %}
 
@@ -157,7 +157,6 @@
                         <th class="text-end">Total HT</th>
                         <th class="text-end">TVA</th>
                         <th class="text-end">Total TTC</th>
-                        <th>Mode</th>
                         <th>Statut OBR</th>
                     </tr>
                 </thead>
@@ -201,11 +200,6 @@
                             {% if f.type_facture == 'FA' %}<small class="text-danger"> (avoir)</small>{% endif %}
                         </td>
                         <td>
-                            <span class="badge {% if f.obr_mode_envoye %}bg-primary{% else %}bg-info text-dark{% endif %}">
-                                {% if f.obr_mode_envoye %}PRODUCTION{% else %}TEST{% endif %}
-                            </span>
-                        </td>
-                        <td>
                             {% if f.statut_obr == 'ENVOYE' %}<span class="badge bg-success">Envoyé</span>
                             {% elif f.statut_obr == 'ECHEC' %}<span class="badge bg-danger">Échec</span>
                             {% elif f.statut_obr == 'EN_ATTENTE' %}<span class="badge bg-warning text-dark">Attente</span>
@@ -223,7 +217,6 @@
                         <td class="text-end py-3" style="color:{{ rapport_clr }}">
                             {{ totaux.total_ttc|default:0|floatformat:3 }}
                         </td>
-                        <td></td>
                         <td></td>
                     </tr>
                 </tfoot>

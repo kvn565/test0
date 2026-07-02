@@ -407,52 +407,6 @@
         .toast-msg.warning { border-left-color: #f39c12; }
         .toast-msg.info    { border-left-color: #3498db; }
         @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
-        @keyframes slideDown { from { transform: translateY(-30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-
-        /* ── NOTIFICATION LICENCE 15 JOURS ── */
-        .licence-overlay {
-            position: fixed; inset: 0; z-index: 10000;
-            background: rgba(0,0,0,0.55);
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(2px);
-        }
-        .licence-modal {
-            background: #fff;
-            border-radius: 20px;
-            padding: 40px 36px 32px;
-            max-width: 460px; width: 90%;
-            text-align: center;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-            animation: modalIn 0.35s ease;
-        }
-        .licence-modal .icon {
-            width: 72px; height: 72px;
-            border-radius: 50%;
-            background: #fff3e0;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 2rem; color: #e67e22;
-        }
-        .licence-modal h4 { font-weight: 700; margin-bottom: 8px; }
-        .licence-modal p  { color: #64748b; font-size: 0.9rem; margin-bottom: 24px; }
-        .licence-modal .btn-ok {
-            background: #c9a84c; border: none; color: #fff;
-            padding: 10px 40px; border-radius: 10px;
-            font-weight: 600; cursor: pointer; transition: all 0.2s;
-        }
-        .licence-modal .btn-ok:hover { background: #e8c97a; transform: translateY(-1px); }
-        .licence-modal .jours {
-            font-size: 2.4rem; font-weight: 800; color: #e67e22;
-            line-height: 1;
-        }
-        .licence-modal .jours-label {
-            font-size: 0.85rem; color: #94a3b8; text-transform: uppercase;
-            letter-spacing: 1px; margin-bottom: 12px;
-        }
-        @keyframes modalIn {
-            from { transform: scale(0.92) translateY(15px); opacity: 0; }
-            to   { transform: scale(1) translateY(0); opacity: 1; }
-        }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -636,8 +590,8 @@
                     <i class="bi bi-grid-fill" style="color:var(--or);font-size:1.1rem;"></i>
                     {% block page_title %}{% endblock %}
                 </div>
+                <!-- Indicateur licence dans la topbar -->
                 <div class="d-flex align-items-center gap-4">
-
                     {% if user.type_poste == 'DIRECTEUR' and not user.is_superuser and user.societe %}
                         {% if cle %}
                             {% if cle.jours_restants <= 3 %}
@@ -662,14 +616,6 @@
                         </a>
                         {% endif %}
                     {% endif %}
-
-                    {# ── Indicateur OBR mode (LIVE/TEST) ── #}
-                    {% if user.societe %}
-                    <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;padding:3px 10px;font-weight:700;letter-spacing:0.5px;border-radius:20px;{% if obr_live %}background:#fee2e2;color:#dc2626;border:1px solid #fca5a5{% else %}background:#dbeafe;color:#2563eb;border:1px solid #93c5fd{% endif %}">
-                        <span style="width:6px;height:6px;border-radius:50%;{% if obr_live %}background:#dc2626{% else %}background:#2563eb{% endif %}"></span>
-                        {{ obr_label }}
-                    </span>
-                    {% endif %}
                     
                     <div class="d-none d-sm-flex align-items-center gap-2" style="font-size:0.85rem;color:var(--text-muted);font-weight:500;">
                         <i class="bi bi-calendar3"></i> {% now "d M Y" %}
@@ -687,59 +633,12 @@
             </div>
         </div>
 
-        <!-- MODAL ACTIVATION LICENCE -->
+        <!-- MODAL -->
         {% if user.type_poste == "DIRECTEUR" and not user.is_superuser and user.societe %}
         <div class="licence-modal-overlay" id="licenceModal"
              style="{% if not licence_expired %}display:none;{% endif %}">
             <!-- Colle ici tout le contenu de ton modal -->
         </div>
-        {% endif %}
-
-        <!-- MODAL NOTIFICATION LICENCE 15 JOURS -->
-        {% if licence_15j %}
-        <div id="licence-notif-overlay" class="licence-overlay">
-            <div class="licence-modal">
-                <div class="icon"><i class="bi bi-shield-exclamation"></i></div>
-                <div class="jours-label">Jours restants</div>
-                <div class="jours">{{ licence_15j }}</div>
-                <h4 class="mt-2">Votre licence expire bientôt</h4>
-                <p>Pensez à renouveler votre licence auprès de l'administrateur pour continuer à utiliser toutes les fonctionnalités sans interruption.</p>
-                <button class="btn-ok" id="btn-dismiss-licence">
-                    <i class="bi bi-check-lg me-1"></i> OK
-                </button>
-            </div>
-        </div>
-        <script>
-        (function() {
-            function getCookie(name) {
-                var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? decodeURIComponent(match[2]) : null;
-            }
-            var btn = document.getElementById('btn-dismiss-licence');
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    var overlay = document.getElementById('licence-notif-overlay');
-                    if (!overlay) return;
-                    fetch('{% url "superadmin:dismiss_notification_licence" %}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: 'dismiss=1',
-                    }).then(function(r) { return r.json(); }).then(function(data) {
-                        if (data.ok) {
-                            overlay.style.transition = 'opacity 0.3s';
-                            overlay.style.opacity = '0';
-                            setTimeout(function() { overlay.remove(); }, 300);
-                        }
-                    }).catch(function() {
-                        overlay.remove();
-                    });
-                });
-            }
-        })();
-        </script>
         {% endif %}
 
     {% endwith %}   <!-- FIN WITH -->

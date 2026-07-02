@@ -1,9 +1,9 @@
-# superadmin/views.py â€” VERSION FINALE
-# LOGIQUE CLÃ‰S :
-#   superadmin enregistre sociÃ©tÃ© â†’ clÃ© essai 14j activÃ©e AUTOMATIQUEMENT
-#   le chef s'inscrit lui-mÃªme via /accounts/register/ avec son NIF
-#   le NIF doit avoir une clÃ© ACTIVE sinon inscription refusÃ©e
-#   aprÃ¨s 14j d'essai, superadmin gÃ©nÃ¨re une clÃ© payante â†’ chef la saisit dans l'appli
+# superadmin/views.py — VERSION FINALE
+# LOGIQUE CLÉS :
+#   superadmin enregistre société → clé essai 14j activée AUTOMATIQUEMENT
+#   le chef s'inscrit lui-même via /accounts/register/ avec son NIF
+#   le NIF doit avoir une clé ACTIVE sinon inscription refusée
+#   après 14j d'essai, superadmin génère une clé payante → chef la saisit dans l'appli
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -18,7 +18,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.paginator import Paginator
 from datetime import date, timedelta
-import calendar, os
+import calendar, os, requests
 from facturer.models import Facture
 from django.db.models import Sum
 from collections import defaultdict
@@ -31,20 +31,20 @@ from .forms import (
     SocieteForm, CleActivationForm, RevoquerCleForm,
     InscriptionChefForm, ClePayanteForm,
     UtilisateurCreationForm, UtilisateurModificationForm, ChangerMotDePasseForm,
-    SocieteGeranceForm,          # â† Pour gÃ©rer gÃ©rant, email, numÃ©ro de dÃ©part
+    SocieteGeranceForm,
     SocieteAdminConfigForm,
 )
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  DÃ‰CORATEURS
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
+#  DÉCORATEURS
+# ═══════════════════════════════════════════════════════════════
 
 def superadmin_required(view_func):
     @login_required
     def wrapper(request, *args, **kwargs):
         if not request.user.is_superuser:
-            messages.error(request, "AccÃ¨s rÃ©servÃ© Ã  l'administrateur.")
+            messages.error(request, "Accès réservé à l'administrateur.")
             return redirect('accounts:login')
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -53,21 +53,21 @@ def est_superadmin(user):
     return user.is_superuser
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
 #  DASHBOARD
-#  âœ… CORRECTION : stats enrichies (essai, actives, expirant)
-#     AlignÃ© sur index.php de WIBABI
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  ✅ CORRECTION : stats enrichies (essai, actives, expirant)
+#     Aligné sur index.php de WIBABI
+# ═══════════════════════════════════════════════════════════════
 
 
 @superadmin_required
 def dashboard(request):
     today = date.today()
 
-    # Liste des sociÃ©tÃ©s pour le sÃ©lecteur
+    # Liste des sociétés pour le sélecteur
     all_societes = Societe.objects.all().order_by('nom')
 
-    # RÃ©cupÃ©ration de la sociÃ©tÃ© sÃ©lectionnÃ©e (par dÃ©faut = premiÃ¨re sociÃ©tÃ©)
+    # Récupération de la société sélectionnée (par défaut = première société)
     selected_societe_id = request.GET.get('societe')
     if selected_societe_id:
         selected_societe = get_object_or_404(Societe, pk=selected_societe_id)
@@ -109,7 +109,7 @@ def dashboard(request):
 
     derniers_audits = AuditCle.objects.select_related('societe').order_by('-date_action')[:10]
 
-    # ==================== GRAPHique PAR SOCIÃ‰TÃ‰ ====================
+    # ==================== GRAPHique PAR SOCIÉTÉ ====================
     labels = []
     ca_data = []
 
@@ -152,9 +152,9 @@ def dashboard(request):
     }
 
     return render(request, 'superadmin/dashboard.html', context)
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  GESTION DES SOCIÃ‰TÃ‰S
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
+#  GESTION DES SOCIÉTÉS
+# ═══════════════════════════════════════════════════════════════
 
 @superadmin_required
 def societes_liste(request):
@@ -205,18 +205,54 @@ def societes_liste(request):
 
 
 @superadmin_required
+@require_POST
+def ajax_verifier_nif(request):
+    nif = request.POST.get('nif', '').strip()
+    if not nif:
+        return JsonResponse({'ok': False, 'error': 'NIF requis'})
+
+    url = "https://obr.bi/index.php/component/odvc/?option=com_odvc&view=odvc&id=1"
+    payload = {
+        "option": "com_odvc",
+        "view": "odvc",
+        "id": "1",
+        "type_doc": "4",
+        "nif": nif,
+        "Rechercher": "Vérifier",
+    }
+
+    try:
+        resp = requests.post(url, data=payload, timeout=15)
+        resp.encoding = 'utf-8'
+        html = resp.text
+
+        search_str = "appartient à <b>"
+        start = html.find(search_str)
+        if start != -1:
+            start += len(search_str)
+            end = html.find("</b>", start)
+            nom = html[start:end].strip()
+            if nom:
+                return JsonResponse({'ok': True, 'nom': nom})
+
+        return JsonResponse({'ok': False, 'error': 'NIF non trouvé sur OBR'})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
+
+
+@superadmin_required
 def societe_creer(request):
     """
-    CrÃ©e une sociÃ©tÃ© ET active automatiquement une clÃ© d'essai 14 jours.
+    Crée une société ET active automatiquement une clé d'essai 14 jours.
 
     LOGIQUE :
-      1. Superadmin remplit les infos de base de la sociÃ©tÃ© (nom, NIF, adresse)
-      2. La clÃ© d'essai 14 jours est crÃ©Ã©e et activÃ©e AUTOMATIQUEMENT
+      1. Superadmin remplit les infos de base de la société (nom, NIF, adresse)
+      2. La clé d'essai 14 jours est créée et activée AUTOMATIQUEMENT
       3. Le chef pourra s'inscrire via /accounts/register/ en fournissant son NIF
-      4. Le systÃ¨me vÃ©rifiera que le NIF a une clÃ© ACTIVE avant d'autoriser l'inscription
+      4. Le système vérifiera que le NIF a une clé ACTIVE avant d'autoriser l'inscription
 
-    Le chef ne reÃ§oit PAS de clÃ© â€” c'est le NIF qui est le "sÃ©same" d'inscription.
-    AprÃ¨s 14 jours, le superadmin gÃ©nÃ¨re une clÃ© payante que le chef saisit dans l'appli.
+    Le chef ne reçoit PAS de clé — c'est le NIF qui est le "sésame" d'inscription.
+    Après 14 jours, le superadmin génère une clé payante que le chef saisit dans l'appli.
     """
     if request.method == 'POST':
         form = SocieteForm(request.POST, request.FILES)
@@ -224,14 +260,14 @@ def societe_creer(request):
             with transaction.atomic():
                 societe = form.save()
 
-                # â”€â”€ ClÃ© essai 14j crÃ©Ã©e et activÃ©e AUTOMATIQUEMENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                # ── Clé essai 14j créée et activée AUTOMATIQUEMENT ──────────
                 cle = CleActivation.creer_essai(societe, cree_par=request.user.username)
 
-                # â”€â”€ Journaliser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                # ── Journaliser ──────────────────────────────────────────────
                 AuditCle.objects.create(
                     societe=societe, action='CREEE',
                     message=(
-                        f"SociÃ©tÃ© '{societe.nom}' (NIF: {societe.nif}) enregistrÃ©e "
+                        f"Société '{societe.nom}' (NIF: {societe.nif}) enregistrée "
                         f"par {request.user.username}."
                     ),
                     ip_address=request.META.get('REMOTE_ADDR'),
@@ -239,8 +275,8 @@ def societe_creer(request):
                 AuditCle.objects.create(
                     societe=societe, cle=cle, action='ACTIVEE',
                     message=(
-                        f"ClÃ© d'essai 14 jours activÃ©e automatiquement pour '{societe.nom}'. "
-                        f"ClÃ©: {cle.cle_visible} â€” expire le {cle.date_fin.strftime('%d/%m/%Y')}. "
+                        f"Clé d'essai 14 jours activée automatiquement pour '{societe.nom}'. "
+                        f"Clé: {cle.cle_visible} — expire le {cle.date_fin.strftime('%d/%m/%Y')}. "
                         f"Le chef peut s'inscrire via son NIF : {societe.nif}."
                     ),
                     ip_address=request.META.get('REMOTE_ADDR'),
@@ -248,8 +284,8 @@ def societe_creer(request):
 
                 messages.success(
                     request,
-                    f"âœ… SociÃ©tÃ© Â« {societe.nom} Â» enregistrÃ©e. "
-                    f"ClÃ© d'essai 14 jours activÃ©e automatiquement (expire le "
+                    f"✅ Société « {societe.nom} » enregistrée. "
+                    f"Clé d'essai 14 jours activée automatiquement (expire le "
                     f"{cle.date_fin.strftime('%d/%m/%Y')}). "
                     f"Le chef peut maintenant s'inscrire avec le NIF : {societe.nif}."
                 )
@@ -258,7 +294,7 @@ def societe_creer(request):
         form = SocieteForm()
     return render(request, 'superadmin/societe_form.html', {
         'form':  form,
-        'titre': 'Enregistrer une nouvelle sociÃ©tÃ©',
+        'titre': 'Enregistrer une nouvelle société',
     })
 
 
@@ -269,45 +305,45 @@ def societe_modifier(request, pk):
         form = SocieteForm(request.POST, request.FILES, instance=societe)
         if form.is_valid():
             form.save()
-            messages.success(request, "SociÃ©tÃ© mise Ã  jour.")
+            messages.success(request, "Société mise à jour.")
             return redirect('superadmin:societe_detail', pk=pk)
     else:
         form = SocieteForm(instance=societe)
     return render(request, 'superadmin/societe_form.html', {
-        'form': form, 'titre': 'Modifier sociÃ©tÃ©', 'societe': societe
+        'form': form, 'titre': 'Modifier société', 'societe': societe
     })
 
 
 @superadmin_required
 def societe_detail(request, pk):
     """
-    Fiche dÃ©taillÃ©e d'une sociÃ©tÃ©.
+    Fiche détaillée d'une société.
 
     Le superadmin peut voir :
-      1. Les infos qu'il a saisies (nom + NIF) â€” section "Enregistrement"
-      2. Les infos complÃ©tÃ©es par le chef Ã  l'inscription â€” section "Informations fournies par le chef"
+      1. Les infos qu'il a saisies (nom + NIF) — section "Enregistrement"
+      2. Les infos complétées par le chef à l'inscription — section "Informations fournies par le chef"
       3. Le compte du chef (nom, email, username, date d'inscription)
-      4. Les clÃ©s d'activation (historique + active)
+      4. Les clés d'activation (historique + active)
       5. Le journal d'audit (toutes les actions)
 
-    Si le chef ne s'est pas encore inscrit â†’ alerte visible.
-    Si le chef s'est inscrit â†’ comparaison possible entre ce que le superadmin
-    a enregistrÃ© et ce que le chef a fourni.
+    Si le chef ne s'est pas encore inscrit → alerte visible.
+    Si le chef s'est inscrit → comparaison possible entre ce que le superadmin
+    a enregistré et ce que le chef a fourni.
     """
     societe      = get_object_or_404(Societe, pk=pk)
     cles         = societe.cles_activation.all().order_by('-date_creation')
     audits       = societe.audits.all()[:20]
     utilisateurs = Utilisateur.objects.filter(societe=societe).order_by('-date_creation')
 
-    # â”€â”€ Licence active â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    licence_active = societe.cle_active   # utilise @property du modÃ¨le
+    # ── Licence active ─────────────────────────────────────────────────────
+    licence_active = societe.cle_active   # utilise @property du modèle
 
     if licence_active:
         if licence_active.est_essai:
-            statut_affichage = f"Essai actif â€” {licence_active.jours_restants} jours restants"
+            statut_affichage = f"Essai actif — {licence_active.jours_restants} jours restants"
             statut_classe    = "warning"
         else:
-            statut_affichage = f"Licence active â€” {licence_active.label_plan}"
+            statut_affichage = f"Licence active — {licence_active.label_plan}"
             statut_classe    = "success"
     else:
         cle_revoquee = societe.cles_activation.filter(statut='REVOQUEE').exists()
@@ -318,49 +354,49 @@ def societe_detail(request, pk):
             statut_affichage = "Aucune licence active"
             statut_classe    = "secondary"
 
-    # â”€â”€ Infos du chef (pour comparaison superadmin) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    chef                 = societe.chef              # @property â€” DIRECTEUR liÃ© Ã  la sociÃ©tÃ©
-    inscription_complete = societe.inscription_complete  # @property â€” chef inscrit ou non
-    infos_completes      = societe.infos_completes   # @property â€” champs remplis par chef
+    # ── Infos du chef (pour comparaison superadmin) ────────────────────────
+    chef                 = societe.chef              # @property — DIRECTEUR lié à la société
+    inscription_complete = societe.inscription_complete  # @property — chef inscrit ou non
+    infos_completes      = societe.infos_completes   # @property — champs remplis par chef
 
-    # â”€â”€ Tableau comparatif : ce que le superadmin a enregistrÃ©
-    #    vs ce que le chef a fourni Ã  l'inscription â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Tableau comparatif : ce que le superadmin a enregistré
+    #    vs ce que le chef a fourni à l'inscription ────────────────────────
     infos_superadmin = [
-        ('NIF enregistrÃ©',        societe.nif,  'bi-fingerprint'),
+        ('NIF enregistré',        societe.nif,  'bi-fingerprint'),
         ('Date d\'enregistrement', societe.date_creation.strftime('%d/%m/%Y %H:%M'), 'bi-calendar'),
     ]
 
     infos_chef_societe = []
     if inscription_complete:
         infos_chef_societe = [
-            ('Nom officiel fourni',  societe.nom            or 'â€”', 'bi-building'),
-            ('Registre de commerce', societe.registre      or 'â€”', 'bi-file-earmark-text'),
-            ('TÃ©lÃ©phone',            societe.telephone     or 'â€”', 'bi-telephone'),
-            ('BoÃ®te postale',        societe.boite_postal  or 'â€”', 'bi-mailbox'),
-            ('Centre fiscal',        societe.centre_fiscale or 'â€”', 'bi-bank'),
+            ('Nom officiel fourni',  societe.nom            or '—', 'bi-building'),
+            ('Registre de commerce', societe.registre      or '—', 'bi-file-earmark-text'),
+            ('Téléphone',            societe.telephone     or '—', 'bi-telephone'),
+            ('Boîte postale',        societe.boite_postal  or '—', 'bi-mailbox'),
+            ('Centre fiscal',        societe.centre_fiscale or '—', 'bi-bank'),
             ('Assujetti TVA',        'Oui' if societe.assujeti_tva else 'Non', 'bi-receipt'),
             ('Assujetti TC',         'Oui' if societe.assujeti_tc  else 'Non', 'bi-cash-stack'),
-            ('Province',             societe.province      or 'â€”', 'bi-map'),
-            ('Commune',              societe.commune       or 'â€”', 'bi-shop'),
-            ('Quartier',             societe.quartier      or 'â€”', 'bi-geo'),
-            ('Avenue',               societe.avenue        or 'â€”', 'bi-signpost'),
-            ('NumÃ©ro',               societe.numero        or 'â€”', 'bi-hash'),
-            ('Adresse complÃ¨te',     societe.adresse_complete or 'â€”', 'bi-house'),
+            ('Province',             societe.province      or '—', 'bi-map'),
+            ('Commune',              societe.commune       or '—', 'bi-shop'),
+            ('Quartier',             societe.quartier      or '—', 'bi-geo'),
+            ('Avenue',               societe.avenue        or '—', 'bi-signpost'),
+            ('Numéro',               societe.numero        or '—', 'bi-hash'),
+            ('Adresse complète',     societe.adresse_complete or '—', 'bi-house'),
         ]
 
-    # â”€â”€ Infos du compte chef â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Infos du compte chef ───────────────────────────────────────────────
     infos_compte_chef = []
     if chef:
         infos_compte_chef = [
             ('Nom complet',       chef.nom_complet,                                'bi-person'),
             ('Nom d\'utilisateur', chef.username,                                   'bi-person-badge'),
-            ('Email',             chef.email or 'â€”',                                'bi-envelope'),
+            ('Email',             chef.email or '—',                                'bi-envelope'),
             ('Poste',             chef.get_type_poste_display(),                    'bi-briefcase'),
             ('Date d\'inscription', chef.date_creation.strftime('%d/%m/%Y %H:%M'), 'bi-calendar-check'),
             ('Compte actif',      'Oui' if chef.actif else 'Non',                  'bi-toggle-on'),
         ]
 
-    # â”€â”€ Stats mÃ©tier (si modules disponibles) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Stats métier (si modules disponibles) ──────────────────────────────
     stats_societe = {}
     try:
         from clients.models import Client
@@ -384,7 +420,7 @@ def societe_detail(request, pk):
         'statut_classe':        statut_classe,
         'stats_societe':        stats_societe,
 
-        # â”€â”€ Infos chef & comparaison â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ── Infos chef & comparaison ───────────────────────────────────────
         'chef':                 chef,
         'inscription_complete': inscription_complete,
         'infos_completes':      infos_completes,
@@ -393,15 +429,14 @@ def societe_detail(request, pk):
         'infos_compte_chef':    infos_compte_chef,
     })
 
-
 @superadmin_required
 @require_POST
 def societe_toggle(request, pk):
     """
-    âœ… CORRECTION : distinction suspension / rÃ©activation.
-    - Si active : suspend (rÃ©voque la clÃ© active).
-    - Si suspendue : tente de rÃ©activer la derniÃ¨re clÃ© non-expirÃ©e.
-    - Ã‰quivalent des actions suspendre_entreprise / reactiver_entreprise de PHP.
+    ✅ CORRECTION : distinction suspension / réactivation.
+    - Si active : suspend (révoque la clé active).
+    - Si suspendue : tente de réactiver la dernière clé non-expirée.
+    - Équivalent des actions suspendre_entreprise / reactiver_entreprise de PHP.
     """
     societe = get_object_or_404(Societe, pk=pk)
     today   = date.today()
@@ -414,18 +449,18 @@ def societe_toggle(request, pk):
     ).first()
 
     if cle_active:
-        # â”€â”€ SUSPENDRE : dÃ©sactiver la clÃ© (active=False â†’ statut=REVOQUEE) â”€â”€
+        # ── SUSPENDRE : désactiver la clé (active=False → statut=REVOQUEE) ──
         cle_active.active           = False
         cle_active.motif_revocation = raison
         cle_active.save()
         AuditCle.objects.create(
             societe=societe, cle=cle_active, action='SUSPENDUE',
-            message=f"SociÃ©tÃ© suspendue par {request.user.username}. Raison : {raison}",
+            message=f"Société suspendue par {request.user.username}. Raison : {raison}",
             ip_address=request.META.get('REMOTE_ADDR'),
         )
-        messages.warning(request, f"SociÃ©tÃ© Â« {societe.nom} Â» suspendue.")
+        messages.warning(request, f"Société « {societe.nom} » suspendue.")
     else:
-        # â”€â”€ RÃ‰ACTIVER : cherche la derniÃ¨re clÃ© rÃ©voquÃ©e non-expirÃ©e â”€â”€
+        # ── RÉACTIVER : cherche la dernière clé révoquée non-expirée ──
         cle_revoquee = societe.cles_activation.filter(
             statut='REVOQUEE',
             date_fin__gte=today,
@@ -437,17 +472,17 @@ def societe_toggle(request, pk):
             cle_revoquee.save()
             AuditCle.objects.create(
                 societe=societe, cle=cle_revoquee, action='REACTIVEE',
-                message=f"SociÃ©tÃ© rÃ©activÃ©e par {request.user.username}.",
+                message=f"Société réactivée par {request.user.username}.",
                 ip_address=request.META.get('REMOTE_ADDR'),
             )
             messages.success(
                 request,
-                f"SociÃ©tÃ© Â« {societe.nom} Â» rÃ©activÃ©e jusqu'au "
+                f"Société « {societe.nom} » réactivée jusqu'au "
                 f"{cle_revoquee.date_fin.strftime('%d/%m/%Y')}."
             )
         else:
-            # Aucune clÃ© rÃ©activable â†’ proposer une nouvelle clÃ©
-            messages.info(request, f"GÃ©nÃ©rez une nouvelle clÃ© pour rÃ©activer Â« {societe.nom} Â».")
+            # Aucune clé réactivable → proposer une nouvelle clé
+            messages.info(request, f"Générez une nouvelle clé pour réactiver « {societe.nom} ».")
             return redirect('superadmin:cle_generer', pk=pk)
 
     return redirect('superadmin:societe_detail', pk=pk)
@@ -474,39 +509,39 @@ def societe_supprimer(request, pk):
     nom_societe = societe.nom
     try:
         with transaction.atomic():
-            # Les clÃ©s seront supprimÃ©es automatiquement (CASCADE depuis societe FK)
-            # Pas besoin de les libÃ©rer manuellement
+            # Les clés seront supprimées automatiquement (CASCADE depuis societe FK)
+            # Pas besoin de les libérer manuellement
 
-            # Supprimer les utilisateurs liÃ©s
+            # Supprimer les utilisateurs liés
             nb_users = Utilisateur.objects.filter(societe=societe).count()
             Utilisateur.objects.filter(societe=societe).delete()
 
-            # Supprimer l'historique des connexions (cascade via utilisateurs dÃ©jÃ  supprimÃ©s)
+            # Supprimer l'historique des connexions (cascade via utilisateurs déjà supprimés)
             # Supprimer les audits
             AuditCle.objects.filter(societe=societe).delete()
 
-            # Tenter de supprimer les donnÃ©es mÃ©tier si les apps existent
+            # Tenter de supprimer les données métier si les apps existent
             _supprimer_donnees_metier(societe)
 
-            # Supprimer la sociÃ©tÃ©
+            # Supprimer la société
             societe.delete()
 
         messages.success(
             request,
-            f"âœ… SociÃ©tÃ© Â« {nom_societe} Â» supprimÃ©e dÃ©finitivement "
-            f"({nb_users} utilisateur(s) supprimÃ©(s))."
+            f"✅ Société « {nom_societe} » supprimée définitivement "
+            f"({nb_users} utilisateur(s) supprimé(s))."
         )
         return redirect('superadmin:societes_liste')
 
     except Exception as e:
-        messages.error(request, f"âŒ Erreur lors de la suppression : {e}")
+        messages.error(request, f"❌ Erreur lors de la suppression : {e}")
         return redirect('superadmin:societe_detail', pk=pk)
 
 
 def _supprimer_donnees_metier(societe):
     """
-    Supprime les donnÃ©es mÃ©tier liÃ©es Ã  la sociÃ©tÃ© (best-effort).
-    Ã‰quivalent des DELETE en cascade dans entreprises.php de WIBABI.
+    Supprime les données métier liées à la société (best-effort).
+    Équivalent des DELETE en cascade dans entreprises.php de WIBABI.
     """
     modules = [
         ('facturer.models', 'LigneFacture'),
@@ -531,15 +566,15 @@ def _supprimer_donnees_metier(societe):
             pass
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  GESTION DES CLÃ‰S D'ACTIVATION
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
+#  GESTION DES CLÉS D'ACTIVATION
+# ═══════════════════════════════════════════════════════════════
 
 @superadmin_required
 def cle_generer(request, pk):
     """
-    âœ… CORRECTION : type_plan et duree_mois intÃ©grÃ©s.
-    Aligne sur generer_licences.php pour une sociÃ©tÃ© spÃ©cifique.
+    ✅ CORRECTION : type_plan et duree_mois intégrés.
+    Aligne sur generer_licences.php pour une société spécifique.
     """
     societe = get_object_or_404(Societe, pk=pk)
     if request.method == 'POST':
@@ -548,28 +583,45 @@ def cle_generer(request, pk):
             cle         = form.save(commit=False)
             cle.societe = societe
             cle.cree_par = request.user.username
-            # Si type_plan est ESSAI â†’ activer immÃ©diatement (chef n'a pas besoin de saisir la clÃ©)
+            # Si type_plan est ESSAI → activer immédiatement (chef n'a pas besoin de saisir la clé)
+            # APRÈS — ajouter un avertissement si clé DISPONIBLE déjà présente
             if cle.type_plan == 'ESSAI':
+                # L'essai est activé automatiquement (pas de saisie requise)
                 cle.utilisee         = True
                 cle.date_utilisation = timezone.now()
+            # Les clés payantes (STARTER, BUSINESS, ENTERPRISE) restent en DISPONIBLE
+            # jusqu'à ce que le chef les saisisse dans l'application → cle.activer()
             cle.save()
+
+            # ── Avertir si une clé DISPONIBLE existe déjà pour cette société ──
+            cle_existante = societe.cles_activation.filter(
+                statut='DISPONIBLE', active=True
+            ).exclude(pk=cle.pk).first()
+
+            if cle_existante:
+                messages.warning(
+                    request,
+                    f"⚠️ Attention : une clé '{cle_existante.cle_visible}' est déjà "
+                    f"disponible et non saisie pour cette société. "
+                    f"Pensez à la révoquer si elle n'est plus valable."
+                )
             AuditCle.objects.create(
                 societe=societe, cle=cle, action='CREEE',
                 message=(
-                    f"ClÃ© {cle.cle_visible} ({cle.label_plan}) gÃ©nÃ©rÃ©e "
+                    f"Clé {cle.cle_visible} ({cle.label_plan}) générée "
                     f"du {cle.date_debut} au {cle.date_fin} "
                     f"par {request.user.username}."
                 ),
                 ip_address=request.META.get('REMOTE_ADDR'),
             )
-            messages.success(request, f"âœ… ClÃ© gÃ©nÃ©rÃ©e : {cle.cle_visible} ({cle.label_plan})")
+            messages.success(request, f"✅ Clé générée : {cle.cle_visible} ({cle.label_plan})")
             return redirect('superadmin:cle_detail', pk=cle.pk)
     else:
         today        = date.today()
         dernier_jour = calendar.monthrange(today.year, today.month)[1]
         form = CleActivationForm(initial={
             'date_debut': today,
-            'date_fin':   today + timedelta(days=14),  # dÃ©faut essai
+            'date_fin':   today + timedelta(days=14),  # défaut essai
             'type_plan':  'ESSAI',
         })
     return render(request, 'superadmin/cle_form.html', {'form': form, 'societe': societe})
@@ -588,15 +640,15 @@ def cle_revoquer(request, pk):
         form = RevoquerCleForm(request.POST)
         if form.is_valid():
             motif                = form.cleaned_data['motif']
-            cle.active           = False    # statut sera calculÃ© REVOQUEE via save()
+            cle.active           = False    # statut sera calculé REVOQUEE via save()
             cle.motif_revocation = motif
             cle.save()
             AuditCle.objects.create(
                 societe=cle.societe, cle=cle, action='REVOQUEE',
-                message=f"RÃ©voquÃ©e par {request.user.username}. Motif: {motif}",
+                message=f"Révoquée par {request.user.username}. Motif: {motif}",
                 ip_address=request.META.get('REMOTE_ADDR'),
             )
-            messages.warning(request, f"ClÃ© {cle.cle_visible} rÃ©voquÃ©e.")
+            messages.warning(request, f"Clé {cle.cle_visible} révoquée.")
             if cle.societe:
                 return redirect('superadmin:societe_detail', pk=cle.societe.pk)
             return redirect('superadmin:liste_cles')
@@ -655,8 +707,8 @@ def liste_cles(request):
 @superadmin_required
 def creer_cle_activation(request):
     """
-    GÃ©nÃ¨re une clÃ© d'activation pour une sociÃ©tÃ© spÃ©cifique.
-    La clÃ© intÃ¨gre le nom + NIF de la sociÃ©tÃ© dans son code.
+    Génère une clé d'activation pour une société spécifique.
+    La clé intègre le nom + NIF de la société dans son code.
     Format : {NOM3}-{NIF4}-{PERIODE}-{ALEA6}  ex: SOD-4567-12M-AB3D4E
     """
     if request.method == 'POST':
@@ -668,7 +720,7 @@ def creer_cle_activation(request):
             AuditCle.objects.create(
                 cle=cle, societe=cle.societe, action='CREEE',
                 message=(
-                    f"ClÃ© {cle.cle_visible} ({cle.label_plan}) crÃ©Ã©e pour {cle.societe.nom} "
+                    f"Clé {cle.cle_visible} ({cle.label_plan}) créée pour {cle.societe.nom} "
                     f"(NIF: {cle.societe.nif}) par {request.user.username}. "
                     f"Valide du {cle.date_debut.strftime('%d/%m/%Y')} "
                     f"au {cle.date_fin.strftime('%d/%m/%Y')}."
@@ -677,8 +729,8 @@ def creer_cle_activation(request):
             )
             messages.success(
                 request,
-                f"âœ… ClÃ© crÃ©Ã©e : {cle.cle_visible} ({cle.label_plan}) "
-                f"pour {cle.societe.nom} â€” Ã  remettre au chef."
+                f"✅ Clé créée : {cle.cle_visible} ({cle.label_plan}) "
+                f"pour {cle.societe.nom} — à remettre au chef."
             )
             return redirect('superadmin:liste_cles')
     else:
@@ -690,17 +742,17 @@ def creer_cle_activation(request):
     return render(request, 'superadmin/creer_cle.html', {'form': form})
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  ENDPOINT AJAX â€” LICENCES D'UNE SOCIÃ‰TÃ‰
-#  âœ… AJOUT : Ã©quivalent de ajax_get_licences.php dans WIBABI
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
+#  ENDPOINT AJAX — LICENCES D'UNE SOCIÉTÉ
+#  ✅ AJOUT : équivalent de ajax_get_licences.php dans WIBABI
+# ═══════════════════════════════════════════════════════════════
 
 @superadmin_required
 def ajax_cles_societe(request, pk):
     """
-    Retourne en JSON la liste des clÃ©s d'une sociÃ©tÃ©.
-    AppelÃ© en AJAX depuis la page liste des sociÃ©tÃ©s (modal gÃ©rer licences).
-    Ã‰quivalent exact de ajax_get_licences.php dans WIBABI PHP.
+    Retourne en JSON la liste des clés d'une société.
+    Appelé en AJAX depuis la page liste des sociétés (modal gérer licences).
+    Équivalent exact de ajax_get_licences.php dans WIBABI PHP.
     """
     societe = get_object_or_404(Societe, pk=pk)
     cles    = societe.cles_activation.order_by('-date_activation', '-date_creation')
@@ -730,27 +782,27 @@ def ajax_cles_societe(request, pk):
     })
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  INSCRIPTION CHEF â€” Premier accÃ¨s (remplace setup_complet)
+# ═══════════════════════════════════════════════════════════════
+#  INSCRIPTION CHEF — Premier accès (remplace setup_complet)
 #
 #  LOGIQUE :
-#    1. Le superadmin a dÃ©jÃ  enregistrÃ© la sociÃ©tÃ© + clÃ© essai ACTIVE
-#    2. Le chef arrive sur /setup/ et remplit ses infos + les infos de sa sociÃ©tÃ©
-#    3. Le NIF est vÃ©rifiÃ© â†’ doit avoir une clÃ© ACTIVE en base
-#    4. Compte chef crÃ©Ã© â†’ connexion automatique â†’ accueil
-#    5. Pas de clÃ© Ã  saisir â€” le NIF autorisÃ© par le superadmin suffit
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#    1. Le superadmin a déjà enregistré la société + clé essai ACTIVE
+#    2. Le chef arrive sur /setup/ et remplit ses infos + les infos de sa société
+#    3. Le NIF est vérifié → doit avoir une clé ACTIVE en base
+#    4. Compte chef créé → connexion automatique → accueil
+#    5. Pas de clé à saisir — le NIF autorisé par le superadmin suffit
+# ═══════════════════════════════════════════════════════════════
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  INSCRIPTION CHEF â€” Version corrigÃ©e (stockage sÃ©curisÃ© des infos du chef)
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
+#  INSCRIPTION CHEF — Version corrigée (stockage sécurisé des infos du chef)
+# ═══════════════════════════════════════════════════════════════
 
 def inscription_chef(request):
     """
-    Inscription du chef de sociÃ©tÃ©.
+    Inscription du chef de société.
     - Le chef saisit uniquement son NIF
-    - On retrouve la sociÃ©tÃ© existante (crÃ©Ã©e par le superadmin)
-    - Le chef complÃ¨te les informations de la sociÃ©tÃ© + crÃ©e son compte DIRECTEUR
+    - On retrouve la société existante (créée par le superadmin)
+    - Le chef complète les informations de la société + crée son compte DIRECTEUR
     """
     if request.user.is_authenticated:
         return redirect('accueil')
@@ -768,7 +820,7 @@ def inscription_chef(request):
                         messages.error(request, "Erreur de validation du NIF.")
                         return render(request, 'superadmin/inscription_chef.html', {'form': form})
 
-                    # Mise Ã  jour des informations fournies par le CHEF
+                    # Mise à jour des informations fournies par le CHEF
                     societe.registre          = cd.get('registre', societe.registre)
                     societe.boite_postal      = cd.get('boite_postal', societe.boite_postal)
                     societe.telephone         = cd.get('telephone', societe.telephone)
@@ -783,7 +835,7 @@ def inscription_chef(request):
                     societe.forme             = cd.get('forme', societe.forme)
                     societe.nom_complet_gerant = cd.get('nom_complet_gerant', societe.nom_complet_gerant)
 
-                    # BoolÃ©ens
+                    # Booléens
                     societe.assujeti_tva = bool(cd.get('assujeti_tva', False))
                     societe.assujeti_tc  = bool(cd.get('assujeti_tc', False))
                     societe.assujeti_pfl = bool(cd.get('assujeti_pfl', False))
@@ -792,10 +844,10 @@ def inscription_chef(request):
                     if 'logo' in cd and cd['logo']:
                         societe.logo = cd['logo']
 
-                    societe.statut = 'essai'   # Important pour Ã©viter le modal licence
+                    #societe.statut = 'essai'   # Important pour éviter le modal licence
                     societe.save()
 
-                    # CrÃ©ation du compte chef
+                    # Création du compte chef
                     chef = Utilisateur.objects.create_user(
                         username=cd['chef_username'],
                         password=cd['chef_password1'],
@@ -837,12 +889,12 @@ def inscription_chef(request):
 
                     messages.success(
                         request,
-                        f"âœ… Bienvenue {chef.nom_complet} ! Votre sociÃ©tÃ© '{societe.nom}' est configurÃ©e."
+                        f"✅ Bienvenue {chef.nom_complet} ! Votre société '{societe.nom}' est configurée."
                     )
                     return redirect('accueil')
 
             except Exception as e:
-                messages.error(request, f"âŒ Erreur lors de l'inscription : {str(e)}")
+                messages.error(request, f"❌ Erreur lors de l'inscription : {str(e)}")
 
         # Si le formulaire a des erreurs, on passe 'societe' pour afficher le nom en lecture seule
         societe_context = getattr(form, '_societe', None) if hasattr(form, '_societe') else None
@@ -855,73 +907,102 @@ def inscription_chef(request):
     # Rendu du template avec le contexte 'societe'
     return render(request, 'superadmin/inscription_chef.html', {
         'form': form,
-        'societe': societe_context   # â† C'est cette ligne que tu demandais
+        'societe': societe_context   # ← C'est cette ligne que tu demandais
     })
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  SAISIR CLÃ‰ PAYANTE â€” AprÃ¨s expiration de l'essai 14j
+# ═══════════════════════════════════════════════════════════════
+#  SAISIR CLÉ PAYANTE — Après expiration de l'essai 14j
 #
 #  LOGIQUE :
-#    1. L'essai 14j expire â†’ le middleware redirige vers /licence-expiree/
+#    1. L'essai 14j expire → le middleware redirige vers /licence-expiree/
 #    2. Le chef demande une licence payante au superadmin
-#    3. Il reÃ§oit une clÃ© (ex: SOD-4567-12M-AB3D4E)
-#    4. Il la saisit ici â†’ licence prolongÃ©e â†’ retour Ã  l'accueil
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#    3. Il reçoit une clé (ex: SOD-4567-12M-AB3D4E)
+#    4. Il la saisit ici → licence prolongée → retour à l'accueil
+# ═══════════════════════════════════════════════════════════════
 
+# APRÈS
 @login_required
 def saisir_cle_payante(request):
     societe = getattr(request.user, 'societe', None)
     if not societe:
-        messages.error(request, "Votre compte n'est pas liÃ© Ã  une sociÃ©tÃ©.")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'ok': False, 'error': "Compte non lié à une société."}, status=400)
+        messages.error(request, "Votre compte n'est pas lié à une société.")
         return redirect('accueil')
 
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     if request.method == 'POST':
-        print("=== POST REÃ‡U ===")                    # â† Debug 1
-        print("DonnÃ©es POST :", request.POST)         # â† Debug 2
-        
         form = ClePayanteForm(request.POST)
-        
+
         if form.is_valid():
-            print("Formulaire valide")                 # â† Debug 3
             success, message, cle_obj = form.verifier_pour_societe(societe)
-            
-            print(f"Success: {success} | Message: {message}")   # â† Debug 4
-            
+
             if success and cle_obj:
                 cle_obj.activer()
-                messages.success(request, f"âœ… Licence activÃ©e avec succÃ¨s !")
+
+                # ── Journaliser l'activation ──────────────────────
+                AuditCle.objects.create(
+                    societe=societe,
+                    cle=cle_obj,
+                    action='ACTIVEE',
+                    message=(
+                        f"Licence {cle_obj.label_plan} activée par "
+                        f"{request.user.username} — expire le "
+                        f"{cle_obj.date_fin.strftime('%d/%m/%Y')}."
+                    ),
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                )
+
+                if is_ajax:
+                    return JsonResponse({
+                        'ok': True,
+                        'message': (
+                            f"Licence {cle_obj.label_plan} activée ! "
+                            f"Valide jusqu'au {cle_obj.date_fin.strftime('%d/%m/%Y')}."
+                        ),
+                    })
+
+                messages.success(request, "✅ Licence activée avec succès !")
                 return redirect('accueil')
+
             else:
-                messages.error(request, message or "ClÃ© invalide")
+                if is_ajax:
+                    return JsonResponse({'ok': False, 'error': message or "Clé invalide."})
+                messages.error(request, message or "Clé invalide.")
+
         else:
-            print("Erreurs formulaire :", form.errors)   # â† Debug 5
-            messages.error(request, "Veuillez vÃ©rifier la clÃ© saisie.")
+            # Erreur de formulaire (champ vide, etc.)
+            erreur = next(iter(form.errors.values()))[0] if form.errors else "Clé invalide."
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': erreur})
+            messages.error(request, erreur)
 
     else:
         form = ClePayanteForm()
 
     return render(request, 'superadmin/saisir_cle_payante.html', {
-        'form': form,
+        'form':    form,
         'societe': societe,
     })
 
 def licence_expiree(request):
     """
-    Page affichÃ©e quand la licence est expirÃ©e.
+    Page affichée quand la licence est expirée.
     Propose deux actions :
-      - Saisir une clÃ© payante (si le chef en a une)
+      - Saisir une clé payante (si le chef en a une)
       - Contacter l'administrateur
     """
-    societe_nom = request.session.get('licence_societe', 'Votre sociÃ©tÃ©')
+    societe_nom = request.session.get('licence_societe', 'Votre société')
     return render(request, 'superadmin/licence_expiree.html', {
         'societe_nom': societe_nom,
     })
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
 #  GESTION DES UTILISATEURS
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
 
 @login_required
 def utilisateurs_liste(request):
@@ -969,14 +1050,14 @@ def utilisateurs_liste(request):
 @require_POST
 def ajax_creer_utilisateur(request):
     if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission refusÃ©e'}, status=403)
+        return JsonResponse({'success': False, 'error': 'Permission refusée'}, status=403)
     form = UtilisateurCreationForm(request.POST, request.FILES)
     if form.is_valid():
         utilisateur = form.save(commit=False)
         if hasattr(request.user, 'societe') and request.user.societe:
             utilisateur.societe = request.user.societe
         utilisateur.save()
-        return JsonResponse({'success': True, 'message': f"Utilisateur {utilisateur.username} crÃ©Ã©."})
+        return JsonResponse({'success': True, 'message': f"Utilisateur {utilisateur.username} créé."})
     return JsonResponse({'success': False, 'errors': {f: e[0] for f, e in form.errors.items()}}, status=400)
 
 
@@ -984,12 +1065,12 @@ def ajax_creer_utilisateur(request):
 @require_POST
 def ajax_modifier_utilisateur(request, pk):
     if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission refusÃ©e'}, status=403)
+        return JsonResponse({'success': False, 'error': 'Permission refusée'}, status=403)
     utilisateur = get_object_or_404(Utilisateur, pk=pk)
     form = UtilisateurModificationForm(request.POST, request.FILES, instance=utilisateur)
     if form.is_valid():
         form.save()
-        return JsonResponse({'success': True, 'message': f"{utilisateur.username} modifiÃ©."})
+        return JsonResponse({'success': True, 'message': f"{utilisateur.username} modifié."})
     return JsonResponse({'success': False, 'errors': {f: e[0] for f, e in form.errors.items()}}, status=400)
 
 
@@ -997,26 +1078,26 @@ def ajax_modifier_utilisateur(request, pk):
 @require_POST
 def ajax_supprimer_utilisateur(request, pk):
     if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission refusÃ©e'}, status=403)
+        return JsonResponse({'success': False, 'error': 'Permission refusée'}, status=403)
     utilisateur = get_object_or_404(Utilisateur, pk=pk)
     if utilisateur.pk == request.user.pk:
         return JsonResponse({'success': False, 'error': 'Impossible de supprimer votre propre compte.'}, status=400)
     username = utilisateur.username
     utilisateur.delete()
-    return JsonResponse({'success': True, 'message': f"{username} supprimÃ©."})
+    return JsonResponse({'success': True, 'message': f"{username} supprimé."})
 
 
 @login_required
 @require_POST
 def ajax_changer_mot_de_passe(request, pk):
     if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission refusÃ©e'}, status=403)
+        return JsonResponse({'success': False, 'error': 'Permission refusée'}, status=403)
     utilisateur = get_object_or_404(Utilisateur, pk=pk)
     form = ChangerMotDePasseForm(request.POST)
     if form.is_valid():
         utilisateur.set_password(form.cleaned_data['nouveau_mot_de_passe'])
         utilisateur.save()
-        return JsonResponse({'success': True, 'message': f"Mot de passe de {utilisateur.username} changÃ©."})
+        return JsonResponse({'success': True, 'message': f"Mot de passe de {utilisateur.username} changé."})
     return JsonResponse({'success': False, 'errors': {f: e[0] for f, e in form.errors.items()}}, status=400)
 
 
@@ -1088,6 +1169,10 @@ def backup_telecharger(request, pk):
                         filename=os.path.basename(backup.fichier.path))
 
 
+# ═══════════════════════════════════════════════════════════════
+#  CONFIGURATION GÉNÉRALE DE L'APPLICATION
+# ═══════════════════════════════════════════════════════════════
+
 @login_required
 @user_passes_test(est_superadmin)
 def reinitialisation_page(request):
@@ -1131,27 +1216,27 @@ def reinitialisation_confirmer(request):
         messages.error(request, f"❌ Erreur : {e}")
         return redirect('superadmin:reinitialisation')
 
-#  GESTION DES SOCIÃ‰TÃ‰S (Superadmin) â€” Nouveau menu regroupÃ©
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  GESTION DES SOCIÉTÉS (Superadmin) — Nouveau menu regroupé
+# ═══════════════════════════════════════════════════════════════
 
 
 
 @superadmin_required
 def societe_gestion_liste(request):
     """
-    Liste paginÃ©e des sociÃ©tÃ©s (10 par page).
+    Liste paginée des sociétés (10 par page).
     """
     societes_list = Societe.objects.all().order_by('nom')
 
-    # Pagination : 10 sociÃ©tÃ©s par page
+    # Pagination : 10 sociétés par page
     paginator = Paginator(societes_list, 10)
     page_number = request.GET.get('page')
     societes = paginator.get_page(page_number)
 
     return render(request, 'superadmin/societe_gestion_liste.html', {
         'societes': societes,
-        'page_title': 'Gestion des SociÃ©tÃ©s',
-        'paginator': paginator,   # pour afficher les numÃ©ros de pages
+        'page_title': 'Gestion des Sociétés',
+        'paginator': paginator,   # pour afficher les numéros de pages
     })
 
 
@@ -1161,7 +1246,7 @@ def societe_gestion_modifier(request, pk):
 
     if request.method == 'POST':
         print("=== POST brut ===")
-        print("obr_password reÃ§u:", repr(request.POST.get('obr_password')))
+        print("obr_password reçu:", repr(request.POST.get('obr_password')))
 
         form     = SocieteGeranceForm(request.POST, instance=societe)
         obr_form = SocieteAdminConfigForm(request.POST, instance=societe)
@@ -1179,22 +1264,22 @@ def societe_gestion_modifier(request, pk):
                 societe.nom_complet_gerant = gerance.nom_complet_gerant
                 societe.email_societe      = gerance.email_societe
                 societe.numero_depart      = gerance.numero_depart
+
+                if hasattr(societe, 'smtp_email'):
+                    societe.smtp_email = gerance.smtp_email
+                if hasattr(societe, 'smtp_password'):
+                    societe.smtp_password = gerance.smtp_password
+
                 societe.obr_actif          = obr.obr_actif
                 societe.obr_username       = obr.obr_username
                 societe.obr_system_id      = obr.obr_system_id
-                societe.obr_base_url       = obr.obr_base_url
                 societe.obr_password       = obr.obr_password
-
-                print("=== AVANT SAVE ===")
-                print("societe.obr_password:", repr(societe.obr_password))
+                societe.obr_mode_production = obr.obr_mode_production
+                societe.obr_base_url       = obr.obr_base_url
 
                 societe.save()
 
-                print("=== APRÃˆS SAVE ===")
-                societe.refresh_from_db()
-                print("obr_password en base:", repr(societe.obr_password))
-
-            messages.success(request, f"âœ… ParamÃ¨tres de Â« {societe.nom} Â» mis Ã  jour.")
+            messages.success(request, f"✅ Paramètres de « {societe.nom} » mis à jour.")
             return redirect('superadmin:societe_gestion_liste')
         else:
             messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
@@ -1210,9 +1295,9 @@ def societe_gestion_modifier(request, pk):
     })
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
 #  SUIVI GLOBAL DES STOCKS (Transactions)
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ═══════════════════════════════════════════════════════════════
 
 @superadmin_required
 def stock_entrees(request):
@@ -1322,3 +1407,136 @@ def stock_sorties(request):
         'types': SortieStock.TYPE_SORTIE_CHOICES,
         'statuts': SortieStock.STATUT_OBR_CHOICES,
     })
+
+
+@superadmin_required
+def sortie_compenser_obr(request, pk):
+    from decimal import Decimal
+    from django.db import transaction
+    from stock.models import EntreeStock
+    from stock.obr_service import envoyer_entree_stock
+
+    sortie = get_object_or_404(
+        SortieStock.objects.select_related('entree_stock__produit', 'facture', 'societe'),
+        pk=pk
+    )
+
+    if not sortie.facture or sortie.facture.statut_obr != 'ANNULE':
+        messages.error(request, "Cette sortie n'est pas liée à une facture annulée.")
+        return redirect('superadmin:stock_sorties')
+
+    if sortie.statut_obr != 'ENVOYE':
+        messages.error(request, "Cette sortie n'a pas été envoyée à l'OBR.")
+        return redirect('superadmin:stock_sorties')
+
+    if EntreeStock.objects.filter(
+        societe=sortie.societe,
+        produit=sortie.entree_stock.produit,
+        facture=sortie.facture,
+        type_entree='ER',
+        commentaire__icontains="COMPENSATION"
+    ).exists():
+        messages.info(request, "Cette sortie a déjà été compensée.")
+        return redirect('superadmin:stock_sorties')
+
+    try:
+        with transaction.atomic():
+            entree = EntreeStock.objects.create(
+                societe=sortie.societe,
+                type_entree='ER',
+                numero_ref=f"COMP-{sortie.facture.numero}",
+                date_entree=timezone.now().date(),
+                produit=sortie.entree_stock.produit,
+                quantite=sortie.quantite,
+                prix_revient=Decimal(str(sortie.prix)),
+                prix_vente_actuel=sortie.prix,
+                devise=sortie.devise,
+                commentaire=f"COMPENSATION Stock OBR - Retour facture annulée {sortie.facture.display_numero}",
+                facture=sortie.facture,
+                statut_obr='EN_ATTENTE',
+            )
+
+        success, msg = envoyer_entree_stock(entree)
+        if success:
+            messages.success(request, f"Compensation OBR réussie : {msg}")
+        else:
+            messages.warning(request, f"Entrée créée mais envoi OBR échoué : {msg}")
+
+    except Exception as e:
+        logger.exception(f"Erreur compensation sortie #{pk}")
+        messages.error(request, f"Erreur : {str(e)}")
+
+    return redirect('superadmin:stock_sorties')
+
+
+@superadmin_required
+def entree_compenser_obr(request, pk):
+    from decimal import Decimal
+    from django.db import transaction
+    from stock.models import SortieStock
+    from stock.obr_service import envoyer_sortie_stock
+
+    entree = get_object_or_404(
+        EntreeStock.objects.select_related('produit', 'facture', 'societe'),
+        pk=pk
+    )
+
+    if not entree.facture or entree.facture.statut_obr != 'ANNULE' or entree.facture.type_facture != 'FA':
+        messages.error(request, "Cette entrée n'est pas liée à une facture d'avoir (FA) annulée.")
+        return redirect('superadmin:stock_entrees')
+
+    if entree.statut_obr != 'ENVOYE':
+        messages.error(request, "Cette entrée n'a pas été envoyée à l'OBR.")
+        return redirect('superadmin:stock_entrees')
+
+    if SortieStock.objects.filter(
+        societe=entree.societe,
+        entree_stock__produit=entree.produit,
+        facture=entree.facture,
+        commentaire__icontains="COMPENSATION"
+    ).exists():
+        messages.info(request, "Cette entrée a déjà été compensée.")
+        return redirect('superadmin:stock_entrees')
+
+    try:
+        premiere_entree = entree.produit.entrees_stock.filter(
+            societe=entree.societe
+        ).first()
+        if not premiere_entree:
+            messages.error(request, f"Aucune entrée de stock trouvée pour le produit {entree.produit.designation}.")
+            return redirect('superadmin:stock_entrees')
+
+        with transaction.atomic():
+            sortie = SortieStock.objects.create(
+                societe=entree.societe,
+                type_sortie='SN',
+                entree_stock=premiere_entree,
+                quantite=entree.quantite,
+                prix=Decimal(str(entree.prix_vente_actuel or 0)),
+                date_sortie=timezone.now().date(),
+                devise=entree.devise,
+                code=f"COMP-{entree.facture.numero}",
+                commentaire=f"COMPENSATION Stock OBR - Annulation avoir {entree.facture.display_numero}",
+                facture=entree.facture,
+                statut_obr='EN_ATTENTE',
+            )
+
+        success, msg = envoyer_sortie_stock(sortie)
+        if success:
+            messages.success(request, f"Compensation OBR réussie : {msg}")
+        else:
+            messages.warning(request, f"Sortie créée mais envoi OBR échoué : {msg}")
+
+    except Exception as e:
+        logger.exception(f"Erreur compensation entrée #{pk}")
+        messages.error(request, f"Erreur : {str(e)}")
+
+    return redirect('superadmin:stock_entrees')
+
+
+@login_required
+@require_POST
+def dismiss_notification_licence(request):
+    """Masque la notification de licence pour 24h."""
+    request.session['licence_notif_dismissed'] = timezone.now().isoformat()
+    return JsonResponse({'ok': True})

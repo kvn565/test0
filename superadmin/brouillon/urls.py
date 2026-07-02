@@ -18,7 +18,6 @@ urlpatterns = [
     #    Si /setup/ est ici → URL = /superadmin/setup/ → middleware ne le reconnaît PAS.
     path('saisir-cle-payante/', views.saisir_cle_payante, name='saisir_cle_payante'),
     path('licence-expiree/',   views.licence_expiree,     name='licence_expiree'),
-    path('dismiss-notification-licence/', views.dismiss_notification_licence, name='dismiss_notification_licence'),
 
     # ── Sociétés ──────────────────────────────────────────────────
     path('societes/',                           views.societes_liste,    name='societes_liste'),

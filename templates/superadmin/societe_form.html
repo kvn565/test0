@@ -65,7 +65,11 @@
                         <label class="form-label" for="{{ form.nif.id_for_label }}">
                             NIF (Numéro d'Identification Fiscale) <span style="color:#e74c3c;">*</span>
                         </label>
-                        {{ form.nif }}
+                        <div class="position-relative">
+                            {{ form.nif }}
+                            <span id="nif-status" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:1.1rem;"></span>
+                        </div>
+                        <div id="nif-msg" style="font-size:0.78rem;margin-top:5px;"></div>
                         {% if form.nif.help_text %}
                         <div style="font-size:0.78rem;color:#8a9aaa;margin-top:5px;">
                             <i class="bi bi-info-circle me-1"></i>{{ form.nif.help_text }}
@@ -115,4 +119,59 @@
 
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not societe %}
+<script>
+(function() {
+    var nifInput = document.getElementById('{{ form.nif.id_for_label }}');
+    var nomInput = document.getElementById('{{ form.nom.id_for_label }}');
+    var statusEl = document.getElementById('nif-status');
+    var msgEl = document.getElementById('nif-msg');
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    var timer = null;
+
+    if (!nifInput || !nomInput) return;
+
+    nifInput.addEventListener('input', function() {
+        clearTimeout(timer);
+        var val = this.value.trim();
+
+        statusEl.textContent = '';
+        msgEl.textContent = '';
+
+        if (val.length < 10) return;
+
+        timer = setTimeout(function() {
+            statusEl.innerHTML = '<span class="spinner-border spinner-border-sm" style="color:#8a9aaa;"></span>';
+
+            fetch('{% url "superadmin:verifier_nif" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'nif=' + encodeURIComponent(val),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.ok) {
+                    nomInput.value = data.nom;
+                    statusEl.innerHTML = '<i class="bi bi-check-circle-fill" style="color:#10b981;"></i>';
+                    msgEl.innerHTML = '<span style="color:#10b981;">Nom trouvé : <strong>' + data.nom + '</strong></span>';
+                } else {
+                    statusEl.innerHTML = '<i class="bi bi-x-circle-fill" style="color:#e74c3c;"></i>';
+                    msgEl.innerHTML = '<span style="color:#e74c3c;">' + data.error + '</span>';
+                }
+            })
+            .catch(function() {
+                statusEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill" style="color:#f59e0b;"></i>';
+                msgEl.innerHTML = '<span style="color:#f59e0b;">Erreur de connexion</span>';
+            });
+        }, 500);
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

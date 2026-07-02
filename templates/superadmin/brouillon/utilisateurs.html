@@ -110,7 +110,6 @@
                                 <th>Statut</th>
                                 <th>Inscription</th>
                                 <th>Dernière connexion</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -157,15 +156,6 @@
                                     {% else %}
                                         <span class="text-muted">—</span>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-outline-warning"
-                                            data-bs-toggle="modal" data-bs-target="#mdpModal"
-                                            data-user-id="{{ u.pk }}"
-                                            data-user-nom="{{ u.nom_complet }}"
-                                            title="Réinitialiser le mot de passe">
-                                        <i class="bi bi-key"></i>
-                                    </button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -225,94 +215,4 @@
     </div>
 
 </div>
-
-{# ── Modal Réinitialisation Mot de Passe ── #}
-<div class="modal fade" id="mdpModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-key me-2"></i>Réinitialiser le mot de passe</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="mdpForm" method="post">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <p id="mdpUserLabel" class="text-muted mb-3"></p>
-                    <div class="mb-3">
-                        <label class="form-label">Nouveau mot de passe</label>
-                        <input type="password" name="nouveau_mot_de_passe" id="mdpNew" class="form-control" minlength="8" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Confirmer le mot de passe</label>
-                        <input type="password" name="confirmer_mot_de_passe" id="mdpConfirm" class="form-control" required>
-                    </div>
-                    <div id="mdpError" class="alert alert-danger d-none"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-warning" id="mdpSubmit">
-                        <i class="bi bi-check-lg me-1"></i>Réinitialiser
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentUserId = null;
-
-    const modal = document.getElementById('mdpModal');
-    modal.addEventListener('show.bs.modal', function(event) {
-        const btn = event.relatedTarget;
-        currentUserId = btn.dataset.userId;
-        document.getElementById('mdpUserLabel').textContent =
-            'Réinitialisation du mot de passe pour : ' + btn.dataset.userNom;
-        document.getElementById('mdpNew').value = '';
-        document.getElementById('mdpConfirm').value = '';
-        document.getElementById('mdpError').classList.add('d-none');
-    });
-
-    document.getElementById('mdpForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const submitBtn = document.getElementById('mdpSubmit');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>En cours...';
-
-        fetch('{% url "superadmin:user_mdp" 0 %}'.replace('/0/', '/' + currentUserId + '/'), {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            },
-            body: new URLSearchParams(new FormData(this))
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                const mdpEl = bootstrap.Modal.getInstance(modal);
-                mdpEl.hide();
-                const toast = document.createElement('div');
-                toast.className = 'position-fixed bottom-0 end-0 p-3';
-                toast.style.zIndex = '9999';
-                toast.innerHTML = '<div class="toast show align-items-center text-bg-success border-0"><div class="d-flex"><div class="toast-body"><i class="bi bi-check-circle me-2"></i>' + data.message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>';
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 4000);
-            } else {
-                const errDiv = document.getElementById('mdpError');
-                errDiv.textContent = data.errors ? Object.values(data.errors).join(', ') : (data.error || 'Erreur inconnue');
-                errDiv.classList.remove('d-none');
-            }
-        })
-        .catch(err => {
-            document.getElementById('mdpError').textContent = 'Erreur réseau : ' + err.message;
-            document.getElementById('mdpError').classList.remove('d-none');
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Réinitialiser';
-        });
-    });
-});
-</script>
 {% endblock %}

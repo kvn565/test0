@@ -17,12 +17,11 @@ TOKEN_CACHE_SECONDS = 50
 
 def get_obr_base_url(societe):
     url = getattr(societe, 'obr_base_url', None)
-    if not url or not str(url).strip():
-        raise ValueError(
-            f"URL Base OBR non configurée pour la société '{societe.nom}'. "
-            f"Veuillez configurer le champ 'obr_base_url' dans l'administration."
-        )
-    return str(url).strip().rstrip('/')
+    if url and str(url).strip():
+        return str(url).strip().rstrip('/')
+    host = "ebms.obr.gov.bi"
+    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
+    return f"https://{host}:{port}/ebms_api"
 
 
 def build_obr_url(societe, endpoint):

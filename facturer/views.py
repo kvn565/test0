@@ -12,7 +12,7 @@ from io import BytesIO
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -104,6 +104,13 @@ def facture_liste(request):
     q = request.GET.get('q', '').strip()
     statut = request.GET.get('statut', '')
     type_f = request.GET.get('type', '')
+    mode = request.GET.get('mode')
+
+    # Par défaut : filtrer selon le mode API actif
+    if mode is None:
+        mode = 'PRODUCTION' if societe.obr_mode_production else 'TEST'
+    else:
+        mode = mode.strip()
 
     if q:
         qs = qs.filter(
@@ -115,14 +122,20 @@ def facture_liste(request):
         qs = qs.filter(statut_obr=statut)
     if type_f:
         qs = qs.filter(type_facture=type_f)
+    if mode:
+        qs = qs.filter(obr_mode_envoye=(mode == 'PRODUCTION'))
 
     base = Facture.objects.filter(societe=societe)
+    if mode:
+        base_filtered = base.filter(obr_mode_envoye=(mode == 'PRODUCTION'))
+    else:
+        base_filtered = base
     stats = {
-        'total': base.count(),
-        'en_attente': base.filter(statut_obr='EN_ATTENTE').count(),
-        'envoyes': base.filter(statut_obr='ENVOYE').count(),
-        'echecs': base.filter(statut_obr='ECHEC').count(),
-        'annulees': base.filter(statut_obr='ANNULE').count(),
+        'total': base_filtered.count(),
+        'en_attente': base_filtered.filter(statut_obr='EN_ATTENTE').count(),
+        'envoyes': base_filtered.filter(statut_obr='ENVOYE').count(),
+        'echecs': base_filtered.filter(statut_obr='ECHEC').count(),
+        'annulees': base_filtered.filter(statut_obr='ANNULE').count(),
     }
 
     paginator = Paginator(qs, 10)
@@ -141,6 +154,8 @@ def facture_liste(request):
         'q': q,
         'statut': statut,
         'type_f': type_f,
+        'mode': mode,
+        'mode_actif': societe.obr_mode_production,
         'types': Facture.TYPE_CHOICES,
         'statuts': Facture.STATUT_OBR_CHOICES,
         'produits_qs': Produit.objects.filter(societe=societe).order_by('designation'),
@@ -390,7 +405,10 @@ def ajax_envoyer_obr(request, pk):
 
             return JsonResponse({
                 'ok': True,
-                'message': 'Facture envoyée avec succès à l\'OBR et stock synchronisé.'
+                'message': result.get('message', 'Facture envoyée avec succès à l\'OBR'),
+                'registered_number': facture.obr_registered_number or '',
+                'registered_date': facture.obr_registered_date.isoformat() if facture.obr_registered_date else '',
+                'date_envoi': facture.date_envoi_obr.isoformat() if facture.date_envoi_obr else '',
             })
         else:
             error_msg = result.get('message', 'Échec de l\'envoi à l\'OBR')
@@ -463,6 +481,22 @@ def ajax_get_produits_facture_originale(request, facture_id):
     taux_zero = TauxTVA.get_taux_zero(societe)
     valeur_zero = truncate3(taux_zero.valeur if taux_zero else 0)
 
+    fa_ids_ignore = request.GET.get('exclude_fa_id')
+    avoirs = Facture.objects.filter(
+        facture_originale=facture_originale,
+        type_facture='FA'
+    )
+    if fa_ids_ignore:
+        avoirs = avoirs.exclude(pk=int(fa_ids_ignore))
+
+    avoir_lignes = LigneFacture.objects.filter(
+        facture__in=avoirs,
+        produit__isnull=False
+    ).values('produit_id').annotate(
+        total_retourne=Sum('quantite')
+    )
+    retourne_par_produit = {r['produit_id']: truncate3(r['total_retourne'] or 0) for r in avoir_lignes}
+
     data = []
     for ligne in lignes:
         if societe_assujettie and ligne.taux_tva:
@@ -470,10 +504,13 @@ def ajax_get_produits_facture_originale(request, facture_id):
         else:
             taux_valeur = valeur_zero
 
+        deja_retourne = retourne_par_produit.get(ligne.produit.pk, 0)
+        restant = max(0, truncate3(ligne.quantite) - deja_retourne)
+
         data.append({
             'id': ligne.produit.pk,
             'designation': ligne.produit.designation,
-            'quantite_vendue': truncate3(ligne.quantite),
+            'quantite_vendue': restant,
             'prix_ttc':        truncate3(ligne.prix_vente_tvac or 0),
             'taux_tva':        taux_valeur,
         })

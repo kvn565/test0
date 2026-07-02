@@ -2,6 +2,7 @@
 from decimal import Decimal
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Sum
 from django.utils import timezone
 
 from .models import Facture, LigneFacture
@@ -30,8 +31,8 @@ class FactureHeaderForm(forms.ModelForm):
             'mode_paiement'
         ]
         widgets = {
-            'date_facture': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'heure_facture': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'date_facture': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'readonly': 'readonly', 'tabindex': '-1'}),
+            'heure_facture': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'readonly': 'readonly', 'tabindex': '-1'}),
             'client': forms.Select(attrs={'class': 'form-select'}),
             'type_facture': forms.Select(attrs={'class': 'form-select'}),
             'facture_originale': forms.Select(attrs={'class': 'form-select avoir-field'}),
@@ -88,12 +89,18 @@ class FactureHeaderForm(forms.ModelForm):
         cleaned_data = super().clean()
         tf = cleaned_data.get('type_facture')
         client = cleaned_data.get('client')
+        fo = cleaned_data.get('facture_originale')
 
         if not client:
             self.add_error('client', "Le client est obligatoire pour toute facture.")
 
+        # Si facture_originale fournie, forcer type_facture='FA' même si
+        # l'utilisateur a oublié de changer le dropdown (défaut='FN')
+        if fo:
+            cleaned_data['type_facture'] = 'FA'
+            tf = 'FA'
+
         if tf == 'FA':
-            fo = cleaned_data.get('facture_originale')
             motif = (cleaned_data.get('motif_avoir') or '').strip()
 
             if not fo:
@@ -162,42 +169,71 @@ class LigneFactureForm(forms.ModelForm):
         self.fields['prix_vente_tvac'].required = True
         self.fields['taux_tva'].required = False  # ← Ajouté: géré par le modèle
 
-        def clean(self):
-            cleaned_data = super().clean()
-            produit = cleaned_data.get('produit')
-            service = cleaned_data.get('service')
-            quantite = cleaned_data.get('quantite')
-            prix_tvac = cleaned_data.get('prix_vente_tvac')
+    def clean(self):
+        cleaned_data = super().clean()
+        produit = cleaned_data.get('produit')
+        service = cleaned_data.get('service')
+        quantite = cleaned_data.get('quantite')
+        prix_tvac = cleaned_data.get('prix_vente_tvac')
 
-            if not produit and not service:
-                raise ValidationError("Vous devez sélectionner un produit OU un service.")
+        if not produit and not service:
+            raise ValidationError("Vous devez sélectionner un produit OU un service.")
 
-            if produit and service:
-                raise ValidationError("Choisissez soit un produit, soit un service.")
+        if produit and service:
+            raise ValidationError("Choisissez soit un produit, soit un service.")
 
-            # ====================== TRONCATURE À 3 DÉCIMALES ======================
-            if quantite is not None:
-                cleaned_data['quantite'] = quantite.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+        # ====================== TRONCATURE À 3 DÉCIMALES ======================
+        if quantite is not None:
+            cleaned_data['quantite'] = quantite.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
-            if prix_tvac is not None:
-                cleaned_data['prix_vente_tvac'] = prix_tvac.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
-            # =====================================================================
+        if prix_tvac is not None:
+            cleaned_data['prix_vente_tvac'] = prix_tvac.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+        # =====================================================================
 
-            # ====================== ANTI-DOUBLON PRODUIT ======================
-            if self.facture and produit:
-                qs = LigneFacture.objects.filter(
-                    facture=self.facture,
+        # ====================== ANTI-DOUBLON PRODUIT ======================
+        if self.facture and produit:
+            qs = LigneFacture.objects.filter(
+                facture=self.facture,
+                produit=produit
+            )
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+
+            if qs.exists():
+                raise ValidationError({
+                    'produit': f"Le produit « {produit.designation} » est déjà présent dans cette facture."
+                })
+
+        # ====================== STOCK DISPONIBLE (FN) ======================
+        if self.facture and produit and self.facture.type_facture == 'FN' and quantite is not None:
+            stock = produit.stock_projete
+            if quantite > stock:
+                raise ValidationError({
+                    'quantite': f"Quantité ({quantite}) dépasse le stock disponible ({stock}) pour « {produit.designation} »."
+                })
+
+        # ====================== QUANTITÉ MAXIMALE (FA) ======================
+        if self.facture and produit and self.facture.type_facture == 'FA' and quantite is not None and self.facture.facture_originale_id:
+            ligne_originale = LigneFacture.objects.filter(
+                facture=self.facture.facture_originale,
+                produit=produit
+            ).first()
+            if ligne_originale:
+                deja_retourne = LigneFacture.objects.filter(
+                    facture__facture_originale=self.facture.facture_originale,
+                    facture__type_facture='FA',
                     produit=produit
                 )
                 if self.instance and self.instance.pk:
-                    qs = qs.exclude(pk=self.instance.pk)
-
-                if qs.exists():
+                    deja_retourne = deja_retourne.exclude(pk=self.instance.pk)
+                total_deja_retourne = deja_retourne.aggregate(total=Sum('quantite'))['total'] or 0
+                restant = float(ligne_originale.quantite) - float(total_deja_retourne)
+                if quantite > restant:
                     raise ValidationError({
-                        'produit': f"Le produit « {produit.designation} » est déjà présent dans cette facture."
+                        'quantite': f"Quantité ({quantite}) dépasse le reste disponible ({restant:.3f}) sur la facture originale."
                     })
 
-            return cleaned_data
+        return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)

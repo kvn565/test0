@@ -46,8 +46,11 @@ def truncate3(value):
 
 # ─── URL & TOKEN (inchangé) ─────────────────────────────────────────────
 def get_obr_base_url(societe):
+    url = getattr(societe, 'obr_base_url', None)
+    if url and str(url).strip():
+        return str(url).strip().rstrip('/')
     host = "ebms.obr.gov.bi"
-    port = 9443 if getattr(societe, 'obr_api_test', True) else 8443
+    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
     return f"https://{host}:{port}/ebms_api"
 
 
@@ -214,6 +217,14 @@ def envoyer_facture_obr(facture):
                         facture.date_envoi_obr = timezone.now()
                         facture.obr_registered_number = data.get("result", {}).get("invoice_registered_number", "")
                         facture.electronic_signature = data.get("electronic_signature", "")
+                        raw_date = data.get("result", {}).get("invoice_registered_date", "")
+                        if raw_date:
+                            from datetime import datetime as dt_lib
+                            try:
+                                facture.obr_registered_date = dt_lib.strptime(raw_date, "%Y-%m-%d %H:%M:%S")
+                            except (ValueError, TypeError):
+                                pass
+                        facture.obr_mode_envoye = societe.obr_mode_production
                         facture.save()
 
                         pending.statut = "SUCCESS"
@@ -326,6 +337,75 @@ def annuler_facture_obr(facture, motif: str):
             facture.date_annulation = timezone.now()
 
             facture.save(update_fields=['statut_obr', 'message_obr', 'motif_avoir', 'date_annulation'])
+
+            # ===== RESTAURATION STOCK APRÈS ANNULATION OBR =====
+            from stock.obr_service import envoyer_entree_stock, envoyer_sortie_stock
+
+            if facture.type_facture == 'FN':
+                for ligne in facture.lignes.filter(produit__isnull=False).select_related('produit'):
+                    entree = EntreeStock.objects.create(
+                        societe=societe, produit=ligne.produit, facture=facture,
+                        type_entree='ER', date_entree=timezone.now().date(),
+                        quantite=ligne.quantite, prix_revient=Decimal('0'),
+                        prix_vente_actuel=ligne.prix_vente_tvac or 0,
+                        numero_ref=f"ANNUL-FN-{facture.numero}",
+                        commentaire=f"Restauration stock après annulation facture {facture.numero}",
+                        statut_obr='EN_ATTENTE', fournisseur=None,
+                    )
+                    try:
+                        result = envoyer_entree_stock(entree)
+                        if isinstance(result, (list, tuple)):
+                            success, msg = result[0], result[1]
+                        else:
+                            success, msg = result.get('success', False), result.get('message', '')
+                        if not success:
+                            logger.warning(f"Échec envoi OBR stock ({msg}) - Restauration locale")
+                            EntreeStock.objects.filter(pk=entree.pk).delete()
+                            EntreeStock.objects.create(
+                                societe=societe, produit=ligne.produit, facture=facture,
+                                type_entree='ER', date_entree=timezone.now().date(),
+                                quantite=ligne.quantite, prix_revient=Decimal('0'),
+                                prix_vente_actuel=ligne.prix_vente_tvac or 0,
+                                numero_ref=f"ANNUL-FN-{facture.numero}",
+                                commentaire=f"Restauration locale (échec OBR) facture {facture.numero}",
+                                statut_obr='ENVOYE', fournisseur=None,
+                            )
+                    except Exception as stock_err:
+                        logger.warning(f"Exception envoi OBR stock: {stock_err}")
+
+            elif facture.type_facture == 'FA':
+                for ligne in facture.lignes.filter(produit__isnull=False).select_related('produit'):
+                    entree_ref = ligne.produit.entrees_stock.filter(societe=societe).first()
+                    if not entree_ref:
+                        continue
+                    sortie = SortieStock.objects.create(
+                        societe=societe, type_sortie='SN', entree_stock=entree_ref,
+                        quantite=ligne.quantite, prix=ligne.prix_vente_tvac or 0,
+                        date_sortie=timezone.now().date(), code=f"REV-FA-{facture.numero}",
+                        commentaire=f"Révocation retour après annulation avoir {facture.numero}",
+                        statut_obr='EN_ATTENTE', facture=facture,
+                    )
+                    try:
+                        result = envoyer_sortie_stock(sortie)
+                        if isinstance(result, (list, tuple)):
+                            success, msg = result[0], result[1]
+                        else:
+                            success, msg = result.get('success', False), result.get('message', '')
+                        if not success:
+                            logger.warning(f"Échec envoi OBR sortie ({msg}) - Restauration locale")
+                            SortieStock.objects.filter(pk=sortie.pk).delete()
+                            entree_ref2 = ligne.produit.entrees_stock.filter(societe=societe).first()
+                            if entree_ref2:
+                                SortieStock.objects.create(
+                                    societe=societe, type_sortie='SN', entree_stock=entree_ref2,
+                                    quantite=ligne.quantite, prix=ligne.prix_vente_tvac or 0,
+                                    date_sortie=timezone.now().date(), code=f"REV-FA-{facture.numero}",
+                                    commentaire=f"Révocation locale (échec OBR) avoir {facture.numero}",
+                                    statut_obr='ENVOYE', facture=facture,
+                                )
+                    except Exception as stock_err:
+                        logger.warning(f"Exception envoi OBR sortie: {stock_err}")
+
             pending.statut = "SUCCESS"
             pending.message = message_obr
             pending.save(update_fields=['statut', 'message'])

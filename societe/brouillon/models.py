@@ -84,7 +84,8 @@ class Societe(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        help_text="Laisser vide pour utiliser le port par défaut selon le mode (TEST=9443, PRODUCTION=8443)"
+        default="https://ebms.obr.gov.bi:9443/ebms_api",
+        help_text="Laisser vide pour utiliser par défaut"
     )
 
     obr_actif = models.BooleanField(default=False, verbose_name="Intégration OBR activée")

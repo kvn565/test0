@@ -81,6 +81,7 @@ class Facture(models.Model):
     obr_registered_date = models.DateTimeField(null=True, blank=True, editable=False)
     electronic_signature = models.TextField(blank=True, editable=False)
     qr_code_image = models.ImageField(upload_to='qrcodes/factures/', blank=True, null=True)
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Envoyé en mode PRODUCTION", editable=False)
 
     cree_par = models.ForeignKey('superadmin.Utilisateur', on_delete=models.SET_NULL, null=True,
                                  related_name='factures_creees', verbose_name="Créée par", editable=False)

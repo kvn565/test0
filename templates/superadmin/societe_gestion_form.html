@@ -42,10 +42,10 @@
                                 <label class="form-label fw-bold">Mode API OBR</label>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" 
-                                           id="id_obr_mode_production" 
+                                           id="mode_switch" 
                                            name="obr_mode_production"
                                            {% if societe.obr_mode_production %}checked{% endif %}>
-                                    <label class="form-check-label" for="id_obr_mode_production">
+                                    <label class="form-check-label" for="mode_switch">
                                         <strong id="mode_label">
                                             {% if societe.obr_mode_production %}
                                                 PRODUCTION (LIVE)
@@ -90,12 +90,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const toggle = document.getElementById('id_obr_mode_production');
+    const formCheckbox = document.getElementById('id_obr_mode_production');
+    const modeSwitch = document.getElementById('mode_switch');
     const label = document.getElementById('mode_label');
     const urlPreview = document.getElementById('url_preview');
+    const urlInput = document.getElementById('id_obr_base_url');
 
-    function updateMode() {
-        if (toggle.checked) {
+    function sync(checked) {
+        if (checked) {
             label.textContent = "PRODUCTION (LIVE)";
             urlPreview.textContent = "https://ebms.obr.gov.bi:8443/ebms_api";
             urlPreview.style.color = "#d32f2f";
@@ -104,10 +106,23 @@ document.addEventListener('DOMContentLoaded', function() {
             urlPreview.textContent = "https://ebms.obr.gov.bi:9443/ebms_api";
             urlPreview.style.color = "#1976d2";
         }
+
+        if (formCheckbox) formCheckbox.checked = checked;
+        if (modeSwitch) modeSwitch.checked = checked;
+
+        if (urlInput) {
+            urlInput.value = checked ? "https://ebms.obr.gov.bi:8443/ebms_api" : "https://ebms.obr.gov.bi:9443/ebms_api";
+        }
     }
 
-    toggle.addEventListener('change', updateMode);
-    updateMode(); // Initial
+    if (formCheckbox) {
+        formCheckbox.addEventListener('change', function() { sync(this.checked); });
+    }
+    if (modeSwitch) {
+        modeSwitch.addEventListener('click', function() { sync(this.checked); });
+    }
+
+    sync(formCheckbox ? formCheckbox.checked : false);
 });
 </script>
 {% endblock %}

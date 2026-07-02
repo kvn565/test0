@@ -4,6 +4,7 @@
 {% block nav_facturer %}active{% endblock %}
 
 {% block content %}
+
 <div class="row g-4">
 
     {# En-tête + bouton créer #}
@@ -66,6 +67,12 @@
                     <div class="text-muted small">Échecs envoi</div>
                 </div>
             </div>
+        </div>
+        <div class="mt-2 text-end">
+            <span class="badge {% if mode_actif %}bg-danger{% else %}bg-primary{% endif %} p-2" style="font-size:0.75rem;">
+                <i class="bi bi-infinity me-1"></i>API OBR :
+                {% if mode_actif %}<strong>PRODUCTION</strong> (8443){% else %}<strong>TEST</strong> (9443){% endif %}
+            </span>
         </div>
     </div>
 
