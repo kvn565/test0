@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from django.utils import timezone
 
 from produits.models import Produit
@@ -27,11 +27,19 @@ def _check_droit(request):
 
 
 def get_filtres(request):
+    mode = request.GET.get('mode')
+    if mode is None:
+        societe = getattr(request.user, 'societe', None)
+        if societe:
+            mode = 'PRODUCTION' if societe.obr_mode_production else 'TEST'
+        else:
+            mode = ''
     return {
         'date_debut': request.GET.get('date_debut', ''),
         'date_fin':   request.GET.get('date_fin', ''),
         'produit_id': request.GET.get('produit', ''),
         'service_id': request.GET.get('service', ''),
+        'mode':       mode,
     }
 
 
@@ -41,6 +49,15 @@ def ctx_commun(f, societe):
         'produits': Produit.objects.filter(societe=societe, statut='ACTIF').order_by('designation'),
         'services': Service.objects.filter(societe=societe, statut='ACTIF').order_by('designation'),
     }
+
+def filtrer_par_mode(qs, mode, facture_field=None):
+    """Filtre un queryset par mode OBR (TEST/PRODUCTION).
+    facture_field : pour les modèles liés à Facture via une FK (ex: 'facture__obr_mode_envoye')"""
+    if mode == 'TEST':
+        return qs.filter(**{f'{facture_field}obr_mode_envoye': False}) if facture_field else qs.filter(obr_mode_envoye=False)
+    elif mode == 'PRODUCTION':
+        return qs.filter(**{f'{facture_field}obr_mode_envoye': True}) if facture_field else qs.filter(obr_mode_envoye=True)
+    return qs
 
 
 # ══════════════════════════════════════════════
@@ -69,10 +86,20 @@ def rapport_entrees(request):
     totaux = qs.aggregate(nb=Count('id'), total_qte=Sum('quantite'))
     totaux['total_valeur'] = sum(e.montant_total for e in qs)
 
+    totaux_par_devise = {}
+    for e in qs:
+        d = e.produit.devise or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'nb': 0, 'total_qte': Decimal('0'), 'total_valeur': Decimal('0')}
+        totaux_par_devise[d]['nb'] += 1
+        totaux_par_devise[d]['total_qte'] += Decimal(str(e.quantite or 0))
+        totaux_par_devise[d]['total_valeur'] += Decimal(str(e.montant_total or 0))
+
     return render(request, 'rapports/entrees.html', {
         **ctx_commun(f, societe),
         'lignes': qs,
         'totaux': totaux,
+        'totaux_par_devise': totaux_par_devise,
         'titre': 'Entrées / Achats',
         'rapport': 'entrees',
         'rapport_icone': 'bi-box-arrow-in-down',
@@ -104,6 +131,15 @@ def rapport_cout_stock(request):
 
     ll = list(qs)
 
+    totaux_par_devise = {}
+    for l in ll:
+        d = l.facture.devise or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'total_ht': Decimal('0'), 'total_tva': Decimal('0'), 'total_ttc': Decimal('0')}
+        totaux_par_devise[d]['total_ht'] += Decimal(str(l.montant_ht or 0))
+        totaux_par_devise[d]['total_tva'] += Decimal(str(l.montant_tva or 0))
+        totaux_par_devise[d]['total_ttc'] += Decimal(str(l.montant_ttc or 0))
+
     return render(request, 'rapports/cout_stock.html', {
         **ctx_commun(f, societe),
         'lignes': ll,
@@ -111,6 +147,7 @@ def rapport_cout_stock(request):
         'total_ht': sum(l.montant_ht for l in ll),
         'total_tva': sum(l.montant_tva for l in ll),
         'total_ttc': sum(l.montant_ttc for l in ll),
+        'totaux_par_devise': totaux_par_devise,
         'titre': 'Coût du Stock Vendu',
         'rapport': 'cout_stock',
         'rapport_icone': 'bi-calculator',
@@ -141,10 +178,20 @@ def rapport_sorties(request):
     totaux = qs.aggregate(nb=Count('id'), total_qte=Sum('quantite'))
     totaux['total_valeur'] = sum(s.montant_total for s in qs)
 
+    totaux_par_devise = {}
+    for s in qs:
+        d = s.entree_stock.produit.devise or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'nb': 0, 'total_qte': Decimal('0'), 'total_valeur': Decimal('0')}
+        totaux_par_devise[d]['nb'] += 1
+        totaux_par_devise[d]['total_qte'] += Decimal(str(s.quantite or 0))
+        totaux_par_devise[d]['total_valeur'] += Decimal(str(s.montant_total or 0))
+
     return render(request, 'rapports/sorties.html', {
         **ctx_commun(f, societe),
         'lignes': qs,
         'totaux': totaux,
+        'totaux_par_devise': totaux_par_devise,
         'titre': 'Sorties',
         'rapport': 'sorties',
         'rapport_icone': 'bi-box-arrow-up',
@@ -168,41 +215,47 @@ def rapport_stock_actuel(request):
         produits_qs = produits_qs.filter(id=f['produit_id'])
 
     lignes = []
-    total_valeur = Decimal('0')
+
+    statuts_confirmes = ['ENVOYE', 'VALIDE']
 
     for p in produits_qs:
-        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_vente  = LigneFacture.objects.filter(facture__societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
 
-        stock = qte_entree - qte_sortie - qte_vente
+        stock = qte_entree - qte_sortie
 
-        agg = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(
+        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
 
         prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
         valeur_stock = max(stock, 0) * prix_moyen
-        total_valeur += valeur_stock
 
         lignes.append({
             'produit': p,
             'qte_entree': qte_entree,
             'qte_sortie': qte_sortie,
-            'qte_vente': qte_vente,
             'stock': stock,
-            'prix_moyen': round(float(prix_moyen), 2),
-            'valeur_stock': round(float(valeur_stock), 2),
+            'prix_moyen': prix_moyen,
+            'valeur_stock': valeur_stock,
             'alerte': stock <= 0,
+            'devise': p.devise,
         })
 
     lignes.sort(key=lambda x: x['alerte'], reverse=True)
+
+    totaux_par_devise = {}
+    for l in lignes:
+        d = l['devise'] or 'BIF'
+        if d not in totaux_par_devise:
+            totaux_par_devise[d] = {'total_valeur': Decimal('0')}
+        totaux_par_devise[d]['total_valeur'] += l['valeur_stock']
 
     return render(request, 'rapports/stock_actuel.html', {
         **ctx_commun(f, societe),
         'lignes': lignes,
         'nb': len(lignes),
-        'total_valeur': total_valeur,
+        'totaux_par_devise': totaux_par_devise,
         'titre': 'Stock Actuel',
         'rapport': 'stock_actuel',
         'rapport_icone': 'bi-archive',
@@ -229,9 +282,11 @@ def rapport_facturation(request):
         qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
     if f['service_id']:
         qs = qs.filter(lignes__service__id=f['service_id']).distinct()
+    qs = filtrer_par_mode(qs, f['mode'])
 
-    factures_fn = qs.filter(type_facture='FN')
-    factures_fa = qs.filter(type_facture='FA')
+    qs_totaux = qs.exclude(statut_obr='ANNULE')
+    factures_fn = qs_totaux.filter(type_facture='FN')
+    factures_fa = qs_totaux.filter(type_facture='FA')
 
     totaux_fn = factures_fn.aggregate(
         nb=Count('id'),
@@ -257,7 +312,21 @@ def rapport_facturation(request):
         'total_ht_avoirs': totaux_fa.get('total_ht') or 0,
         'total_tva_avoirs': totaux_fa.get('total_tva') or 0,
         'total_ttc_avoirs': totaux_fa.get('total_ttc') or 0,
+        'par_devise': {},
     }
+
+    for fact in qs_totaux:
+        d = fact.devise or 'BIF'
+        if d not in totaux['par_devise']:
+            totaux['par_devise'][d] = {'total_ht': Decimal('0'), 'total_tva': Decimal('0'), 'total_ttc': Decimal('0')}
+        if fact.type_facture == 'FN':
+            totaux['par_devise'][d]['total_ht'] += fact.total_ht or 0
+            totaux['par_devise'][d]['total_tva'] += fact.total_tva or 0
+            totaux['par_devise'][d]['total_ttc'] += fact.total_ttc or 0
+        elif fact.type_facture == 'FA':
+            totaux['par_devise'][d]['total_ht'] -= fact.total_ht or 0
+            totaux['par_devise'][d]['total_tva'] -= fact.total_tva or 0
+            totaux['par_devise'][d]['total_ttc'] -= fact.total_ttc or 0
 
     return render(request, 'rapports/facturation.html', {
         **ctx_commun(f, societe),
@@ -284,15 +353,14 @@ def export_stock_excel(request):
     if f['produit_id']:
         produits_qs = produits_qs.filter(id=f['produit_id'])
 
+    statuts_confirmes = ['ENVOYE', 'VALIDE']
     lignes = []
     for p in produits_qs:
-        # ... (même calcul que dans rapport_stock_actuel - à factoriser plus tard)
-        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_vente  = LigneFacture.objects.filter(facture__societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        stock = qte_entree - qte_sortie - qte_vente
+        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        stock = qte_entree - qte_sortie
 
-        agg = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(
+        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
         prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
@@ -302,13 +370,12 @@ def export_stock_excel(request):
             'produit': p,
             'qte_entree': qte_entree,
             'qte_sortie': qte_sortie,
-            'qte_vente': qte_vente,
             'stock': stock,
-            'prix_moyen': round(float(prix_moyen), 2),
-            'valeur_stock': round(float(valeur_stock), 2),
+            'prix_moyen': float(Decimal(str(prix_moyen)).quantize(Decimal('0.001'), rounding=ROUND_DOWN)),
+            'valeur_stock': float(Decimal(str(valeur_stock)).quantize(Decimal('0.001'), rounding=ROUND_DOWN)),
         })
 
-    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Vendu', 'Stock', 'PMP (BIF)', 'Valeur Stock (BIF)']
+    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Stock', 'PMP (BIF)', 'Valeur Stock (BIF)']
     data_export = []
     for l in lignes:
         data_export.append([
@@ -318,7 +385,6 @@ def export_stock_excel(request):
             l['produit'].unite or '—',
             l['qte_entree'],
             l['qte_sortie'],
-            l['qte_vente'],
             l['stock'],
             l['prix_moyen'],
             l['valeur_stock'],
@@ -343,14 +409,14 @@ def export_stock_pdf(request):
     if f['produit_id']:
         produits_qs = produits_qs.filter(id=f['produit_id'])
 
+    statuts_confirmes = ['ENVOYE', 'VALIDE']
     lignes = []
     for p in produits_qs:
-        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_vente  = LigneFacture.objects.filter(facture__societe=societe, produit=p).aggregate(t=Sum('quantite'))['t'] or 0
-        stock = qte_entree - qte_sortie - qte_vente
+        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        stock = qte_entree - qte_sortie
 
-        agg = EntreeStock.objects.filter(societe=societe, produit=p).aggregate(
+        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
         prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
@@ -360,14 +426,13 @@ def export_stock_pdf(request):
             'produit': p,
             'qte_entree': qte_entree,
             'qte_sortie': qte_sortie,
-            'qte_vente': qte_vente,
             'stock': stock,
-            'prix_moyen': round(float(prix_moyen), 2),
-            'valeur_stock': round(float(valeur_stock), 2),
+            'prix_moyen': float(Decimal(str(prix_moyen)).quantize(Decimal('0.001'), rounding=ROUND_DOWN)),
+            'valeur_stock': float(Decimal(str(valeur_stock)).quantize(Decimal('0.001'), rounding=ROUND_DOWN)),
         })
 
     # Préparation des données
-    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Vendu', 'Stock', 'PMP (BIF)', 'Valeur Stock (BIF)']
+    colonnes = ['Produit', 'Code', 'Catégorie', 'Unité', 'Entré', 'Sorti', 'Stock', 'PMP (BIF)', 'Valeur Stock (BIF)']
     data = []
     for l in lignes:
         data.append([
@@ -377,7 +442,6 @@ def export_stock_pdf(request):
             l['produit'].unite or '—',
             l['qte_entree'],
             l['qte_sortie'],
-            l['qte_vente'],
             l['stock'],
             l['prix_moyen'],
             l['valeur_stock'],
@@ -590,7 +654,7 @@ def export_facturation_excel(request):
 
     f = get_filtres(request)
 
-    qs = Facture.objects.filter(societe=societe).select_related('client').order_by('-date_facture')
+    qs = Facture.objects.filter(societe=societe).exclude(statut_obr='ANNULE').select_related('client').order_by('-date_facture')
 
     if f['date_debut']:
         qs = qs.filter(date_facture__gte=f['date_debut'])
@@ -600,21 +664,32 @@ def export_facturation_excel(request):
         qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
     if f['service_id']:
         qs = qs.filter(lignes__service__id=f['service_id']).distinct()
+    qs = filtrer_par_mode(qs, f['mode'])
 
-    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'OBR']
+    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'Mode', 'OBR']
     data = []
+    tot_ht = tot_tva = tot_ttc = Decimal('0')
     for facture in qs:
+        ht  = Decimal(str(getattr(facture, 'total_ht', 0) or 0))
+        tva = Decimal(str(getattr(facture, 'total_tva', 0) or 0))
+        ttc = Decimal(str(getattr(facture, 'total_ttc', 0) or 0))
+        if facture.type_facture == 'FA':
+            ht  = -ht; tva = -tva; ttc = -ttc
+        tot_ht  += ht
+        tot_tva += tva
+        tot_ttc += ttc
+        mode_label = 'PRODUCTION' if facture.obr_mode_envoye else 'TEST'
         data.append([
             facture.numero or '—',
             facture.date_facture.strftime('%d/%m/%Y') if facture.date_facture else '—',
             getattr(facture.client, 'nom', '—'),
             facture.get_type_facture_display() or facture.type_facture or '—',
-            getattr(facture, 'statut', '—') or '—',                    # ← Correction ici
-            float(getattr(facture, 'total_ht', 0) or 0),
-            float(getattr(facture, 'total_tva', 0) or 0),
-            float(getattr(facture, 'total_ttc', 0) or 0),
+            getattr(facture, 'statut', '—') or '—',
+            float(ht), float(tva), float(ttc),
+            mode_label,
             getattr(facture, 'statut_obr', '—') or '—',
         ])
+    data.append(['', '', '', '', '', 'TOTAUX', float(tot_ht), float(tot_tva), float(tot_ttc), '', ''])
 
     chemin = generer_excel("Facturation", colonnes, data, "facturation")
     return redirect(f"/media/{chemin}")
@@ -629,7 +704,7 @@ def export_facturation_pdf(request):
 
     f = get_filtres(request)
 
-    qs = Facture.objects.filter(societe=societe).select_related('client').order_by('-date_facture')
+    qs = Facture.objects.filter(societe=societe).exclude(statut_obr='ANNULE').select_related('client').order_by('-date_facture')
 
     if f['date_debut']:
         qs = qs.filter(date_facture__gte=f['date_debut'])
@@ -639,21 +714,32 @@ def export_facturation_pdf(request):
         qs = qs.filter(lignes__produit__id=f['produit_id']).distinct()
     if f['service_id']:
         qs = qs.filter(lignes__service__id=f['service_id']).distinct()
+    qs = filtrer_par_mode(qs, f['mode'])
 
-    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'OBR']
+    colonnes = ['N° Facture', 'Date', 'Client', 'Type', 'Statut', 'Total HT', 'TVA', 'Total TTC', 'Mode', 'OBR']
     data = []
+    tot_ht = tot_tva = tot_ttc = Decimal('0')
     for facture in qs:
+        ht  = Decimal(str(getattr(facture, 'total_ht', 0) or 0))
+        tva = Decimal(str(getattr(facture, 'total_tva', 0) or 0))
+        ttc = Decimal(str(getattr(facture, 'total_ttc', 0) or 0))
+        if facture.type_facture == 'FA':
+            ht  = -ht; tva = -tva; ttc = -ttc
+        tot_ht  += ht
+        tot_tva += tva
+        tot_ttc += ttc
+        mode_label = 'PRODUCTION' if facture.obr_mode_envoye else 'TEST'
         data.append([
             facture.numero or '—',
             facture.date_facture.strftime('%d/%m/%Y') if facture.date_facture else '—',
             getattr(facture.client, 'nom', '—'),
             facture.get_type_facture_display() or facture.type_facture or '—',
             getattr(facture, 'statut', '—') or '—',
-            float(getattr(facture, 'total_ht', 0) or 0),
-            float(getattr(facture, 'total_tva', 0) or 0),
-            float(getattr(facture, 'total_ttc', 0) or 0),
+            float(ht), float(tva), float(ttc),
+            mode_label,
             getattr(facture, 'statut_obr', '—') or '—',
         ])
+    data.append(['', '', '', '', '', 'TOTAUX', float(tot_ht), float(tot_tva), float(tot_ttc), '', ''])
 
     # Important : on passe orientation="landscape"
     chemin = generer_pdf(

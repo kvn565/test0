@@ -12,7 +12,7 @@ import os
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -31,9 +31,9 @@ else:
 # WeasyPrint pour génération PDF
 from weasyprint import HTML
 
-from .models import Facture, LigneFacture
+from .models import Facture, LigneFacture, FacturePendingOBR
 from .forms import FactureHeaderForm
-from .obr_service import envoyer_facture_obr, annuler_facture_obr
+from .obr_service import envoyer_facture_obr, annuler_facture_obr, envoyer_reversement_stock_obr
 from produits.models import Produit
 from services.models import Service
 from stock.models import SortieStock, EntreeStock
@@ -93,9 +93,25 @@ def facture_liste(request):
 
     qs = Facture.objects.filter(societe=societe).select_related('client').order_by('-date_facture', '-id')
 
+    # Nettoyage : toute facture EN_ATTENTE visible dans la liste est abandonnée → suppression
+    Facture.objects.filter(
+        societe=societe,
+        statut_obr='EN_ATTENTE',
+    ).delete()
+    if request.session.get('facture_en_cours'):
+        del request.session['facture_en_cours']
+        request.session.modified = True
+
     q      = request.GET.get('q', '').strip()
     statut = request.GET.get('statut', '')
     type_f = request.GET.get('type', '')
+    mode   = request.GET.get('mode')
+
+    # Par défaut : filtrer selon le mode API actif
+    if mode is None:
+        mode = 'PRODUCTION' if societe.obr_mode_production else 'TEST'
+    else:
+        mode = mode.strip()
 
     if q:
         qs = qs.filter(
@@ -107,14 +123,20 @@ def facture_liste(request):
         qs = qs.filter(statut_obr=statut)
     if type_f:
         qs = qs.filter(type_facture=type_f)
+    if mode:
+        qs = qs.filter(obr_mode_envoye=(mode == 'PRODUCTION'))
 
     base = Facture.objects.filter(societe=societe)
+    if mode:
+        base_filtered = base.filter(obr_mode_envoye=(mode == 'PRODUCTION'))
+    else:
+        base_filtered = base
     stats = {
-        'total':      base.count(),
-        'en_attente': base.filter(statut_obr='EN_ATTENTE').count(),
-        'envoyes':    base.filter(statut_obr='ENVOYE').count(),
-        'echecs':     base.filter(statut_obr='ECHEC').count(),
-        'annulees':   base.filter(statut_obr='ANNULE').count(),
+        'total':      base_filtered.count(),
+        'en_attente': base_filtered.filter(statut_obr='EN_ATTENTE').count(),
+        'envoyes':    base_filtered.filter(statut_obr='ENVOYE').count(),
+        'echecs':     base_filtered.filter(statut_obr='ECHEC').count(),
+        'annulees':   base_filtered.filter(statut_obr='ANNULE').count(),
     }
 
     paginator = Paginator(qs, 10)  # ← 10 au lieu de 5, plus confortable
@@ -137,6 +159,8 @@ def facture_liste(request):
         'type_f':      type_f,
         'types':       Facture.TYPE_CHOICES,
         'statuts':     Facture.STATUT_OBR_CHOICES,
+        'mode':        mode,
+        'mode_actif':  societe.obr_mode_production,
         'produits_qs': Produit.objects.filter(societe=societe).order_by('designation'),
         'services_qs': Service.objects.filter(societe=societe).order_by('designation'),
     })
@@ -152,6 +176,12 @@ def facture_detail(request, pk):
     if err:
         messages.error(request, err)
         return redirect('accueil')
+
+    # Nettoyage : supprimer les autres factures EN_ATTENTE (une seule à la fois possible)
+    Facture.objects.filter(
+        societe=societe,
+        statut_obr='EN_ATTENTE',
+    ).exclude(pk=pk).delete()
 
     # Correction importante : on cherche la facture sans forcer la société au début
     facture = get_object_or_404(
@@ -222,55 +252,50 @@ def facture_supprimer(request, pk):
 def facture_annuler(request, pk):
     societe, err = _check_droit(request)
     if err:
-        messages.error(request, err)
-        return redirect('facturer:liste')
+        return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    facture = get_object_or_404(Facture, pk=pk, societe=societe)
+    try:
+        facture = Facture.objects.get(pk=pk, societe=societe)
+    except Facture.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': "Facture introuvable."}, status=404)
+
     statut = (facture.statut_obr or '').strip().upper()
 
     if statut == 'ANNULE':
-        messages.warning(request, "Cette facture est déjà annulée.")
-        return redirect('facturer:liste')
+        return JsonResponse({'ok': False, 'error': "Facture déjà annulée."}, status=400)
 
     motif = request.POST.get('motif', '').strip()
 
     try:
-        with transaction.atomic():
-            if statut == 'ENVOYE':
-                if not motif:
-                    # Ici on peut renvoyer une réponse JSON si l'appel vient d'AJAX/modal
-                    messages.error(request, "Le motif d'annulation est obligatoire pour une facture envoyée à l'OBR.")
-                    return redirect('facturer:detail', pk=pk)
+        if statut == 'ENVOYE':
+            if not motif:
+                return JsonResponse({'ok': False, 'error': "Le motif d'annulation est obligatoire."}, status=400)
 
-                result = annuler_facture_obr(facture, motif=motif)
-                if not result.get('success'):
-                    messages.error(request, result.get('message', "Échec annulation OBR"))
-                    return redirect('facturer:detail', pk=pk)
+            annuler_facture_obr(facture, motif=motif)
+            facture.refresh_from_db()
 
-                facture.statut_obr = 'ANNULE'
-                facture.motif_avoir = f"Annulation OBR : {motif}"
-                facture.save(update_fields=['statut_obr', 'motif_avoir'])
-                messages.success(request, f"Facture {facture.display_numero} annulée auprès de l'OBR.")
+            if request.session.get('facture_en_cours') == pk:
+                del request.session['facture_en_cours']
+                request.session.modified = True
 
-            elif statut in ('EN_ATTENTE', 'ECHEC'):
-                # Suppression directe sans motif
-                if request.session.get('facture_en_cours') == pk:
-                    del request.session['facture_en_cours']
-                    request.session.modified = True
+            return JsonResponse({'ok': True, 'message': f"Facture {facture.display_numero} annulée auprès de l'OBR."})
 
-                num = facture.display_numero
-                facture.lignes.all().delete()
-                facture.delete()
-                messages.success(request, f"Facture {num} supprimée définitivement (locale).")
+        elif statut in ('EN_ATTENTE', 'ECHEC'):
+            if request.session.get('facture_en_cours') == pk:
+                del request.session['facture_en_cours']
+                request.session.modified = True
 
-            else:
-                messages.error(request, f"Statut non gérable : {statut}")
+            num = facture.display_numero
+            facture.delete()
+
+            return JsonResponse({'ok': True, 'message': f"Facture {num} supprimée définitivement."})
+
+        else:
+            return JsonResponse({'ok': False, 'error': f"Statut non gérable : {statut}"}, status=400)
 
     except Exception as e:
         logger.exception(f"Erreur annulation facture {pk}")
-        messages.error(request, "Erreur interne lors de l'annulation.")
-
-    return redirect('facturer:liste')
+        return JsonResponse({'ok': False, 'error': str(e) or "Erreur interne lors de l'annulation."}, status=500)
 
 # ──────────────────────────────────────────────
 #  AJAX — ENVOYER À OBR (corrigé + logs améliorés)
@@ -283,11 +308,12 @@ def ajax_creer_facture(request):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    if Facture.objects.filter(societe=societe, statut_obr='EN_ATTENTE').exists():
-        return JsonResponse({
-            'ok': False,
-            'error': "Une facture est déjà en attente. Vous devez l'envoyer ou l'annuler avant d'en créer une nouvelle."
-        }, status=400)
+    # Supprimer automatiquement toute ancienne facture en attente avant d'en créer une nouvelle
+    anciennes = Facture.objects.filter(societe=societe, statut_obr='EN_ATTENTE')
+    if anciennes.exists():
+        for f in anciennes:
+            f.delete()
+        logger.info(f"Création nouvelle facture : {anciennes.count()} ancienne(s) facture(s) en attente supprimée(s)")
 
     form = FactureHeaderForm(societe=societe, data=request.POST)
 
@@ -347,7 +373,11 @@ def ajax_envoyer_obr(request, pk):
 
             return JsonResponse({
                 'ok': True,
-                'message': 'Facture envoyée avec succès à l\'OBR',
+                'message': result.get('message', 'Facture envoyée avec succès à l\'OBR'),
+                'registered_number': facture.obr_registered_number or '',
+                'registered_date': facture.obr_registered_date.isoformat() if facture.obr_registered_date else '',
+                'signature': (facture.electronic_signature or '')[:50] + '...' if facture.electronic_signature and len(facture.electronic_signature) > 50 else (facture.electronic_signature or ''),
+                'date_envoi': facture.date_envoi_obr.isoformat() if facture.date_envoi_obr else '',
             })
         else:
             return JsonResponse({'ok': False, 'error': result.get('message', 'Échec de l\'envoi')}, status=400)
@@ -401,19 +431,31 @@ def ajax_get_produits_facture_originale(request, facture_id):
 
     facture_originale = get_object_or_404(Facture, pk=facture_id, societe=societe, type_facture='FN')
 
-    # Récupère les produits uniques de la facture originale avec leur quantité vendue
     lignes = facture_originale.lignes.filter(produit__isnull=False).select_related('produit')
 
-    data = [
-        {
+    fa_ids_ignore = request.GET.get('exclude_fa_id')
+    avoirs = Facture.objects.filter(facture_originale=facture_originale, type_facture='FA')
+    if fa_ids_ignore:
+        avoirs = avoirs.exclude(pk=int(fa_ids_ignore))
+
+    avoir_lignes = LigneFacture.objects.filter(
+        facture__in=avoirs,
+        produit__isnull=False
+    ).values('produit_id').annotate(total_retourne=Sum('quantite'))
+    retourne_par_produit = {r['produit_id']: float(r['total_retourne'] or 0) for r in avoir_lignes}
+
+    data = []
+    for ligne in lignes:
+        deja_retourne = retourne_par_produit.get(ligne.produit.pk, 0)
+        restant = max(0, float(ligne.quantite or 0) - deja_retourne)
+
+        data.append({
             'id': ligne.produit.pk,
-            'designation': ligne.produit.designation,
-            'quantite_vendue': float(ligne.quantite),
-            'prix_ttc': float(ligne.prix_vente_tvac),
-            'taux_tva': float(ligne.taux_tva),
-        }
-        for ligne in lignes
-    ]
+            'designation': ligne.produit.designation or '',
+            'quantite_vendue': restant,
+            'prix_ttc': float(ligne.prix_vente_tvac or 0),
+            'taux_tva': float(ligne.taux_tva_valeur or 0),
+        })
 
     return JsonResponse({'ok': True, 'produits': data})
 # ──────────────────────────────────────────────
@@ -487,7 +529,7 @@ def ajax_ajouter_ligne(request):
     facture = get_object_or_404(Facture, pk=facture_id, societe=societe)
 
     try:
-        quantite = Decimal(str(payload.get('quantite') or '0')).quantize(Decimal('0.01'))
+        quantite = Decimal(str(payload.get('quantite') or '0')).quantize(Decimal('0.001'))
     except Exception:
         return JsonResponse({'ok': False, 'error': 'Quantité invalide'}, status=400)
 
@@ -535,22 +577,18 @@ def ajax_ajouter_ligne(request):
                 prix_ttc = Decimal(str(service.prix or 0))
                 taux_tva = Decimal(str(service.taux_tva.valeur if getattr(service.taux_tva, 'valeur', None) else 18))
 
-            # Création de la ligne
-            LigneFacture.objects.create(
+            ligne = LigneFacture.objects.create(
                 facture=facture,
                 designation=designation,
                 prix_vente_tvac=prix_ttc,
                 quantite=quantite,
-                taux_tva=taux_tva,
                 produit=produit,
                 service=service,
             )
 
-            # ====================== CALCUL ET SAUVEGARDE FORCÉE DES TOTAUX ======================
-            facture.recalculer_totaux()           # Calcul + save
-            facture = Facture.objects.get(pk=facture.pk)   # Rechargement complet
+            facture.recalculer_totaux()
+            facture = Facture.objects.get(pk=facture.pk)
 
-            # Calcul dynamique du stock pour l'interface
             if produit:
                 produit.refresh_from_db()
                 stock_avant = produit.stock_disponible
@@ -570,11 +608,14 @@ def ajax_ajouter_ligne(request):
 
     return JsonResponse({
         'ok': True,
-        'ligne_id': ligne.pk if 'ligne' in locals() else None,
+        'ligne_id': ligne.pk,
         'designation': designation,
         'quantite': float(quantite),
-        'prix_ttc': float(prix_ttc),
+        'prix_tvac': float(prix_ttc),
         'taux_tva': int(taux_tva),
+        'montant_ht': float(ligne.montant_ht),
+        'montant_tva': float(ligne.montant_tva),
+        'montant_ttc': float(ligne.montant_ttc),
         'total_ht': float(facture.total_ht or 0),
         'total_tva': float(facture.total_tva or 0),
         'total_ttc': float(facture.total_ttc or 0),
@@ -597,7 +638,9 @@ def ajax_supprimer_ligne(request):
         data = json.loads(request.body)
         ligne_id = data.get('ligne_id')
     except Exception:
-        return JsonResponse({'ok': False, 'error': 'JSON invalide'}, status=400)
+        ligne_id = request.POST.get('ligne_id')
+        if not ligne_id:
+            return JsonResponse({'ok': False, 'error': 'ligne_id manquant'}, status=400)
 
     ligne = get_object_or_404(LigneFacture, pk=ligne_id, facture__societe=societe)
     facture = ligne.facture
@@ -605,16 +648,19 @@ def ajax_supprimer_ligne(request):
 
     try:
         with transaction.atomic():
-            if produit and facture.type_facture in ['FN', 'FA']:
-                # Inverse de l'ajout :
-                # Si on supprime une FN → on doit remettre la quantité (comme FA)
-                # Si on supprime une FA → on doit enlever la quantité (comme FN)
-                inverse_type = 'FA' if facture.type_facture == 'FN' else 'FN'
-                produit.ajuster_stock(
-                    quantite=ligne.quantite,
-                    type_facture=inverse_type,
-                    facture=facture
-                )
+            if produit:
+                if facture.type_facture == 'FN':
+                    SortieStock.objects.filter(
+                        facture=facture,
+                        entree_stock__produit=produit,
+                        statut_obr='EN_ATTENTE',
+                    ).delete()
+                elif facture.type_facture == 'FA':
+                    EntreeStock.objects.filter(
+                        facture=facture,
+                        produit=produit,
+                        statut_obr='EN_ATTENTE',
+                    ).delete()
 
             ligne.delete()
             facture.recalculer_totaux()
@@ -623,11 +669,15 @@ def ajax_supprimer_ligne(request):
         logger.exception(f"Erreur suppression ligne {ligne_id}")
         return JsonResponse({'ok': False, 'error': 'Erreur lors de la suppression'}, status=500)
 
+    stock_apres = float(produit.stock_disponible) if produit else None
+
     return JsonResponse({
         'ok': True,
         'total_ht': float(facture.total_ht),
         'total_tva': float(facture.total_tva),
         'total_ttc': float(facture.total_ttc),
+        'stock_apres': stock_apres,
+        'produit_id': produit.pk if produit else None,
     })
 
 
@@ -789,6 +839,141 @@ def facture_generer_pos_pdf(request, pk):
 # ──────────────────────────────────────────────
 #  Anciennes vues (redirigent vers les nouvelles) - conservées
 # ──────────────────────────────────────────────
+
+# ──────────────────────────────────────────────
+#  AJAX MODIFIER LIGNE — Quantité/Prix
+# ──────────────────────────────────────────────
+
+@login_required
+@require_POST
+def ajax_modifier_ligne(request):
+    societe, err = _check_droit(request)
+    if err:
+        return JsonResponse({'ok': False, 'error': err}, status=403)
+
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, TypeError):
+        return JsonResponse({'ok': False, 'error': 'JSON invalide'}, status=400)
+
+    ligne_id = payload.get('ligne_id')
+    if not ligne_id:
+        return JsonResponse({'ok': False, 'error': 'ligne_id manquant'}, status=400)
+
+    ligne = get_object_or_404(LigneFacture, pk=ligne_id, facture__societe=societe)
+    facture = ligne.facture
+    produit = ligne.produit
+
+    try:
+        nouvelle_qte = Decimal(str(payload.get('quantite') or '0')).quantize(Decimal('0.001'))
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Quantité invalide'}, status=400)
+
+    if nouvelle_qte <= 0:
+        return JsonResponse({'ok': False, 'error': 'La quantité doit être supérieure à 0'}, status=400)
+
+    nouvelle_qte = nouvelle_qte.quantize(Decimal('0.001'))
+
+    try:
+        with transaction.atomic():
+            ancienne_qte = ligne.quantite
+            diff = nouvelle_qte - ancienne_qte
+
+            if produit and facture.type_facture in ['FN', 'FA']:
+                if diff > 0:
+                    produit.ajuster_stock(quantite=diff, type_facture=facture.type_facture, facture=facture)
+                elif diff < 0:
+                    inverse_type = 'FA' if facture.type_facture == 'FN' else 'FN'
+                    produit.ajuster_stock(quantite=abs(diff), type_facture=inverse_type, facture=facture)
+
+            ligne.quantite = nouvelle_qte
+
+            prix_tvac = payload.get('prix_tvac')
+            if prix_tvac is not None:
+                try:
+                    ligne.prix_vente_tvac = Decimal(str(prix_tvac))
+                except Exception:
+                    pass
+
+            ligne.save()
+            facture.recalculer_totaux()
+
+    except ValueError as ve:
+        return JsonResponse({'ok': False, 'error': str(ve)}, status=400)
+    except Exception as e:
+        logger.exception(f"Erreur modification ligne {ligne_id}")
+        return JsonResponse({'ok': False, 'error': 'Erreur lors de la modification'}, status=500)
+
+    if produit:
+        produit.refresh_from_db()
+        stock_dispo = float(produit.stock_disponible)
+    else:
+        stock_dispo = None
+
+    return JsonResponse({
+        'ok': True,
+        'ligne_id': ligne.pk,
+        'designation': ligne.designation,
+        'quantite': float(nouvelle_qte),
+        'prix_tvac': float(ligne.prix_vente_tvac),
+        'taux_tva': int(ligne.taux_tva_valeur) if ligne.taux_tva else 0,
+        'montant_ht': float(ligne.montant_ht),
+        'montant_tva': float(ligne.montant_tva),
+        'montant_ttc': float(ligne.montant_ttc),
+        'total_ht': float(facture.total_ht or 0),
+        'total_tva': float(facture.total_tva or 0),
+        'total_ttc': float(facture.total_ttc or 0),
+        'stock_apres': stock_dispo,
+        'produit_id': produit.pk if produit else None,
+        'message': 'Ligne modifiée avec succès',
+    })
+
+
+# ──────────────────────────────────────────────
+#  AJAX SUPPRIMER FACTURE EN ATTENTE (sendBeacon)
+# ──────────────────────────────────────────────
+
+@login_required
+@require_POST
+def ajax_supprimer_facture_en_attente(request):
+    societe, err = _check_droit(request)
+    if err:
+        return JsonResponse({'ok': False, 'error': err}, status=403)
+
+    facture_id = request.POST.get('facture_id') or request.GET.get('facture_id')
+    if not facture_id:
+        return JsonResponse({'ok': False, 'error': 'facture_id manquant'}, status=400)
+
+    try:
+        facture = Facture.objects.filter(
+            pk=facture_id,
+            societe=societe,
+            statut_obr='EN_ATTENTE'
+        ).first()
+
+        if not facture:
+            FacturePendingOBR.objects.filter(
+                facture_id=facture_id,
+                facture__societe=societe,
+            ).delete()
+            return JsonResponse({'ok': True})
+
+        with transaction.atomic():
+            facture.delete()
+
+            FacturePendingOBR.objects.filter(
+                facture_id=facture_id,
+            ).delete()
+
+        if request.session.get('facture_en_cours') == int(facture_id):
+            del request.session['facture_en_cours']
+            request.session.modified = True
+
+    except Exception as e:
+        logger.exception(f"Erreur suppression facture en attente {facture_id}")
+
+    return JsonResponse({'ok': True})
+
 
 @login_required
 def facture_imprimer_a4(request, pk):

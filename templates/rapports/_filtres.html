@@ -3,9 +3,10 @@
   Usage : {% include 'rapports/_filtres.html' %}
   
   Variables disponibles via ctx_commun(**f) :
-    date_debut, date_fin, produit_id, service_id
-  Variable optionnelle :
+    date_debut, date_fin, produit_id, service_id, mode
+  Variables optionnelles :
     show_service_filter — activer le filtre service
+    show_mode_filter — activer le filtre mode OBR
 {% endcomment %}
 <div class="card mb-3">
     <div style="padding:16px 20px;">
@@ -61,13 +62,25 @@
             </div>
             {% endif %}
 
+            <!-- Mode OBR -->
+            {% if show_mode_filter %}
+            <div class="flex-grow-1" style="min-width: 140px;">
+                <label class="form-label small text-muted mb-1">Mode OBR</label>
+                <select name="mode" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="TEST" {% if mode == 'TEST' %}selected{% endif %}>TEST</option>
+                    <option value="PRODUCTION" {% if mode == 'PRODUCTION' %}selected{% endif %}>PRODUCTION</option>
+                </select>
+            </div>
+            {% endif %}
+
             <!-- Boutons -->
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-funnel"></i> Filtrer
                 </button>
 
-                {% if date_debut or date_fin or produit_id or service_id %}
+                {% if date_debut or date_fin or produit_id or service_id or mode %}
                 <button type="button" class="btn btn-outline-secondary"
                     onclick="window.location.href='{% url request.resolver_match.view_name %}'">
                     <i class="bi bi-x-lg"></i> Effacer

@@ -391,6 +391,7 @@
         .toast-msg.warning { border-left-color: #f39c12; }
         .toast-msg.info    { border-left-color: #3498db; }
         @keyframes slideIn { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -455,10 +456,12 @@
         <!-- Stock — protégé par droits -->
         {% if user.droit_stock_produit or user.is_superuser %}
         <div class="nav-section">Stock</div>
+        {% if user.droit_stock_categorie or user.is_superuser %}
         {% url 'categories:liste' as url_categories %}
         <a href="{{ url_categories|default:'#' }}" class="nav-link-item {% block nav_categories %}{% endblock %}">
             <i class="bi bi-tags"></i> Catégories
         </a>
+        {% endif %}
 
         {% url 'taux:liste' as url_taux %}
         <a href="{{ url_taux|default:'#' }}" class="nav-link-item {% block nav_taux %}{% endblock %}">
@@ -480,26 +483,32 @@
         </a>
         <div class="collapse" id="submenuMouvements">
             <div class="nav flex-column ms-3">
+                {% if user.droit_stock_entree or user.is_superuser %}
                 {% url 'stock:entrees' as url_entrees %}
                 <a href="{{ url_entrees|default:'#' }}" class="nav-link-item {% block nav_entrees %}{% endblock %}">
                     <i class="bi bi-box-arrow-in-down me-2"></i> Entrées
                 </a>
+                {% endif %}
+                {% if user.droit_stock_sortie or user.is_superuser %}
                 {% url 'stock:sorties' as url_sorties %}
                 <a href="{{ url_sorties|default:'#' }}" class="nav-link-item {% block nav_sorties %}{% endblock %}">
                     <i class="bi bi-box-arrow-up me-2"></i> Sorties
                 </a>
+                {% endif %}
             </div>
         </div>
         {% endif %}
 
         <!-- Facturation — protégé par droits -->
-        {% if user.droit_facture_pnb or user.droit_facture_fdnb or user.is_superuser %}
+        {% if user.droit_facture_pnb or user.droit_facture_fdnb or user.droit_facture_particulier or user.is_superuser %}
         <div class="nav-section">Facturation</div>
 
+        {% if user.droit_stock_fournisseur or user.is_superuser %}
         {% url 'fournisseurs:liste' as url_fournisseurs %}
         <a href="{{ url_fournisseurs|default:'#' }}" class="nav-link-item {% block nav_fournisseurs %}{% endblock %}">
             <i class="bi bi-truck"></i> Fournisseurs
         </a>
+        {% endif %}
         {% url 'clients:liste' as url_clients %}<a href="{{ url_clients|default:'#' }}" class="nav-link-item {% block nav_clients %}{% endblock %}">
             <i class="bi bi-people"></i> Clients
         </a>
@@ -608,6 +617,14 @@
                 {% endif %}
             {% endif %}
 
+            {# ── Indicateur OBR mode (LIVE/TEST) ── #}
+            {% if user.societe %}
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;padding:3px 10px;font-weight:700;letter-spacing:0.5px;border-radius:20px;{% if obr_live %}background:#fee2e2;color:#dc2626;border:1px solid #fca5a5{% else %}background:#dbeafe;color:#2563eb;border:1px solid #93c5fd{% endif %}">
+                <span style="width:6px;height:6px;border-radius:50%;{% if obr_live %}background:#dc2626{% else %}background:#2563eb{% endif %}"></span>
+                {{ obr_label }}
+            </span>
+            {% endif %}
+
             <a href="{% url 'accounts:profil' %}" class="text-decoration-none" style="color:var(--texte); font-size:0.85rem;">
                 <i class="bi bi-person-circle me-1"></i>{{ user.nom }}
             </a>
@@ -617,6 +634,11 @@
     <div class="page-content">
         {% block content %}{% endblock %}
     </div>
+
+    <div style="text-align:center;padding:20px 15px 10px;font-size:0.75rem;color:#8a9aaa;border-top:1px solid #e8ecf0;margin-top:20px;">
+        Powered by Burundi Jobs © 2026 — Tous droits réservés
+    </div>
+
 </div>
 
 

@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models import Sum
+from decimal import Decimal, ROUND_DOWN
+
 from societe.models import Societe
 from produits.models import Produit
 from fournisseurs.models import Fournisseur
@@ -25,75 +27,92 @@ class EntreeStock(models.Model):
 
     societe           = models.ForeignKey(Societe, on_delete=models.CASCADE, related_name='entrees_stock')
     type_entree       = models.CharField(max_length=5, choices=TYPE_ENTREE_CHOICES, verbose_name="Type d'entrée")
-    numero_ref        = models.CharField(max_length=50, blank=True, verbose_name="N° Réquisition / Réf. fiche")
+    numero_ref        = models.CharField(max_length=50, blank=True, verbose_name="N° Référence")
     date_entree       = models.DateField(verbose_name="Date d'entrée")
-    produit           = models.ForeignKey(Produit, on_delete=models.PROTECT, related_name='entrees_stock', verbose_name="Produit")
-    fournisseur       = models.ForeignKey(Fournisseur, on_delete=models.SET_NULL, null=True, blank=True, related_name='entrees_stock', verbose_name="Fournisseur")
-    quantite          = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Quantité")
-    prix_revient      = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Prix de revient")
-    prix_vente_actuel = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Prix de vente actuel")
-    statut_obr        = models.CharField(max_length=20, choices=STATUT_OBR_CHOICES, default='EN_ATTENTE', verbose_name="Statut OBR")
-    message_obr       = models.TextField(blank=True, verbose_name="Message OBR")
-    date_envoi_obr    = models.DateTimeField(null=True, blank=True)
-    date_creation     = models.DateTimeField(auto_now_add=True)
-    date_modification = models.DateTimeField(auto_now=True)
 
-    # === NOUVEAUX CHAMPS AJOUTÉS ===
+    produit           = models.ForeignKey(Produit, on_delete=models.PROTECT, related_name='entrees_stock', verbose_name="Produit")
+    fournisseur       = models.ForeignKey(Fournisseur, on_delete=models.SET_NULL, null=True, blank=True, related_name='entrees_stock')
+
+    # ==================== DEVISE AJOUTÉE ====================
+    devise = models.CharField(
+        max_length=10,
+        choices=Produit.DEVISE_CHOICES,
+        default='BIF',
+        verbose_name="Devise"
+    )
+
+    quantite          = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Quantité")   # Mis à 3 décimales
+    prix_revient      = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Prix de revient")
+    prix_vente_actuel = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Prix de vente actuel (TVAC)")
+
     commentaire       = models.TextField(blank=True, null=True, verbose_name="Commentaire")
     facture           = models.ForeignKey(
-        'facturer.Facture', 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
+        'facturer.Facture',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
         related_name='entrees_stock',
         verbose_name="Facture liée"
     )
+
+    statut_obr     = models.CharField(max_length=20, choices=STATUT_OBR_CHOICES, default='EN_ATTENTE')
+    message_obr    = models.TextField(blank=True)
+    date_envoi_obr = models.DateTimeField(null=True, blank=True)
+
+    date_creation     = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name        = "Entrée stock"
         verbose_name_plural = "Entrées stock"
         ordering            = ['-date_creation']
-        
-        # ==================== CORRECTION PRINCIPALE ====================
-        # Empêche les doublons d'entrées, surtout les retours (ER) liés à une facture
-        unique_together = [
-            ('societe', 'produit', 'facture', 'type_entree'),
-        ]
-        
+        unique_together     = [('societe', 'produit', 'facture', 'type_entree')]
         indexes = [
             models.Index(fields=['societe', 'produit', 'date_entree']),
             models.Index(fields=['statut_obr']),
-            models.Index(fields=['facture']),           # Utile pour les liens avec FA
+            models.Index(fields=['facture']),
         ]
 
     def __str__(self):
-        return f"{self.type_entree} | {self.produit.designation} | {self.quantite} | {self.date_entree}"
+        return f"{self.type_entree} | {self.produit.designation} | {self.quantite} {self.devise}"
 
+    def save(self, *args, **kwargs):
+        if self.produit_id:
+            # Copier automatiquement la devise du produit
+            if not self.devise:
+                self.devise = self.produit.devise
+
+            # Copier le prix de vente si vide
+            if not self.prix_vente_actuel or self.prix_vente_actuel == 0:
+                self.prix_vente_actuel = self.produit.prix_vente_tvac
+
+        super().save(*args, **kwargs)
+
+    # ── Propriétés ──────────────────────────────────────────────────────
     @property
-    def montant_total(self):
+    def montant_total(self) -> Decimal:
         return self.quantite * self.prix_revient
 
     @property
-    def quantite_sortie(self):
-        return SortieStock.objects.filter(
-            entree_stock=self
-        ).aggregate(total=Sum('quantite'))['total'] or 0
+    def quantite_sortie(self) -> Decimal:
+        from .models import SortieStock
+        return SortieStock.objects.filter(entree_stock=self).aggregate(
+            total=Sum('quantite')
+        )['total'] or Decimal('0')
 
     @property
-    def quantite_disponible(self):
-        return self.quantite - self.quantite_sortie
+    def quantite_disponible(self) -> Decimal:
+        return (self.quantite - self.quantite_sortie).quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
     @property
-    def type_produit(self):
-        return self.produit.origine if hasattr(self.produit, 'origine') else '—'
+    def type_produit(self) -> str:
+        return getattr(self.produit, 'origine', '—')
 
 
-# ══════════════════════════════════════════════════════════
-#  SORTIE STOCK (hors vente)
-# ══════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════
 class SortieStock(models.Model):
 
     TYPE_SORTIE_CHOICES = [
+        ('SN',  'SN – Sortie Normale (Vente)'),
         ('SP',  'SP – Sortie Perte'),
         ('SV',  'SV – Sortie Vol'),
         ('SD',  'SD – Sortie Désuétude'),
@@ -110,31 +129,43 @@ class SortieStock(models.Model):
         ('NON_CONCERNE', 'Non concerné'),
     ]
 
-    societe           = models.ForeignKey(Societe, on_delete=models.CASCADE, related_name='sorties_stock')
-    type_sortie       = models.CharField(max_length=5, choices=TYPE_SORTIE_CHOICES, verbose_name="Type de sortie")
-    code              = models.CharField(max_length=50, blank=True, verbose_name="Code sortie")
-    date_sortie       = models.DateField(verbose_name="Date de sortie")
-    entree_stock      = models.ForeignKey(
-        EntreeStock, on_delete=models.PROTECT,
+    societe      = models.ForeignKey(Societe, on_delete=models.CASCADE, related_name='sorties_stock')
+    type_sortie  = models.CharField(max_length=5, choices=TYPE_SORTIE_CHOICES, verbose_name="Type de sortie")
+    code         = models.CharField(max_length=50, blank=True, verbose_name="Code sortie")
+    date_sortie  = models.DateField(verbose_name="Date de sortie")
+
+    entree_stock = models.ForeignKey(
+        EntreeStock,
+        on_delete=models.PROTECT,
         related_name='sorties',
         verbose_name="Produit (depuis stock)"
     )
-    quantite          = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Quantité sortie")
-    prix              = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Prix unitaire")
-    commentaire       = models.TextField(blank=True, verbose_name="Commentaire / Explication")
-    statut_obr        = models.CharField(max_length=20, choices=STATUT_OBR_CHOICES, default='EN_ATTENTE', verbose_name="Statut OBR")
-    message_obr       = models.TextField(blank=True, verbose_name="Message OBR")
-    date_envoi_obr    = models.DateTimeField(null=True, blank=True)
+
+    # Devise déjà présente (conservée)
+    devise = models.CharField(
+        max_length=10,
+        choices=Produit.DEVISE_CHOICES,
+        default='BIF',
+        verbose_name="Devise"
+    )
+
+    quantite = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Quantité sortie")
+    prix     = models.DecimalField(max_digits=12, decimal_places=3, verbose_name="Prix unitaire (TVAC)")
+
+    commentaire  = models.TextField(blank=True, verbose_name="Commentaire")
+    facture      = models.ForeignKey(
+        'facturer.Facture',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='sorties_stock'
+    )
+
+    statut_obr     = models.CharField(max_length=20, choices=STATUT_OBR_CHOICES, default='EN_ATTENTE')
+    message_obr    = models.TextField(blank=True)
+    date_envoi_obr = models.DateTimeField(null=True, blank=True)
+
     date_creation     = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
-    facture = models.ForeignKey(
-        'facturer.Facture', 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        related_name='sorties_stock',
-        verbose_name="Facture liée"
-    )
 
     class Meta:
         verbose_name        = "Sortie stock"
@@ -142,22 +173,37 @@ class SortieStock(models.Model):
         ordering            = ['-date_creation']
 
     def __str__(self):
-        return f"{self.type_sortie} | {self.entree_stock.produit.designation} | {self.quantite} | {self.date_sortie}"
+        try:
+            designation = self.entree_stock.produit.designation
+        except Exception:
+            designation = '—'
+        return f"{self.type_sortie} | {designation} | {self.quantite} {self.devise}"
 
+    def save(self, *args, **kwargs):
+        if self.entree_stock_id:
+            if not self.devise:
+                self.devise = self.entree_stock.devise
+
+            if not self.prix:
+                self.prix = self.entree_stock.prix_vente_actuel or self.entree_stock.produit.prix_vente_tvac
+
+        super().save(*args, **kwargs)
+
+    # ── Propriétés ──────────────────────────────────────────────────────
     @property
-    def produit(self):
+    def produit(self) -> Produit:
         return self.entree_stock.produit
 
     @property
-    def montant_total(self):
+    def montant_total(self) -> Decimal:
         return self.quantite * self.prix
 
     @property
-    def quantite_en_stock(self):
-        """Stock disponible = total entré - total sorti (hors cette sortie)"""
+    def quantite_en_stock(self) -> Decimal:
+        from .models import SortieStock
         total_sorti = SortieStock.objects.filter(
             entree_stock=self.entree_stock
         ).exclude(pk=self.pk).aggregate(
-            total=models.Sum('quantite')
-        )['total'] or 0
-        return self.entree_stock.quantite - total_sorti
+            total=Sum('quantite')
+        )['total'] or Decimal('0')
+        return (self.entree_stock.quantite - total_sorti).quantize(Decimal('0.001'), rounding=ROUND_DOWN)

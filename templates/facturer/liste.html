@@ -87,6 +87,12 @@
                         {% endfor %}
                     </select>
 
+                    <select name="mode" class="form-select" style="min-width: 160px;">
+                        <option value="">Tous environnements</option>
+                        <option value="TEST" {% if mode == 'TEST' %}selected{% endif %}>TEST</option>
+                        <option value="PRODUCTION" {% if mode == 'PRODUCTION' %}selected{% endif %}>PRODUCTION</option>
+                    </select>
+
                     <select name="statut" class="form-select" style="min-width: 180px;">
                         <option value="">Tous statuts OBR</option>
                         {% for val, label in statuts %}
@@ -98,7 +104,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search me-1"></i>Filtrer
                         </button>
-                        {% if q or type_f or statut %}
+                        {% if q or type_f or statut or mode %}
                             <a href="{% url 'facturer:liste' %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-lg me-1"></i>Réinitialiser
                             </a>
@@ -124,6 +130,7 @@
                                 <th>Devise</th>
                                 <th class="text-end">Total TTC</th>
                                 <th class="text-center">Statut OBR</th>
+                                <th class="text-center">Mode</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
@@ -163,6 +170,17 @@
                                         <span class="badge bg-secondary">Annulée</span>
                                     {% else %}
                                         <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> En attente</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if f.statut_obr == 'ENVOYE' or f.statut_obr == 'ECHEC' or f.statut_obr == 'ANNULE' %}
+                                        {% if f.obr_mode_envoye %}
+                                            <span class="badge bg-danger" style="font-size:0.7rem;">PROD</span>
+                                        {% else %}
+                                            <span class="badge bg-primary" style="font-size:0.7rem;">TEST</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted" style="font-size:0.75rem;">—</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end">

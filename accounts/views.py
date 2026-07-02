@@ -8,8 +8,18 @@ from django.utils import timezone
 
 from .forms import ConnexionForm, ProfilForm, MotDePasseForm
 from superadmin.models import Utilisateur, HistoriqueConnexion
+from django.shortcuts import render
 
 
+
+
+
+
+
+
+def landing_view(request):
+    """Page d'accueil publique (Landing Page)"""
+    return render(request, 'index.html')
 # ─────────────────────────────────────────────────────────────────
 #  HELPERS
 # ─────────────────────────────────────────────────────────────────

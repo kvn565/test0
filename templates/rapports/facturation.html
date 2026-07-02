@@ -43,7 +43,7 @@
 </div>
 
 <!-- Filtres -->
-{% with show_service_filter=True %}
+{% with show_service_filter=True show_mode_filter=True %}
     {% include 'rapports/_filtres.html' %}
 {% endwith %}
 
@@ -159,6 +159,7 @@
                         <th class="text-end">Total HT</th>
                         <th class="text-end">TVA</th>
                         <th class="text-end">Total TTC</th>
+                        <th>Mode</th>
                         <th>Statut OBR</th>
                     </tr>
                 </thead>
@@ -202,6 +203,17 @@
                             {% if f.type_facture == 'FA' %}<small class="text-danger"> (avoir)</small>{% endif %}
                         </td>
                         <td>
+                            {% if f.obr_mode_envoye is not None %}
+                                {% if f.obr_mode_envoye %}
+                                    <span class="badge bg-danger" style="font-size:0.7rem;">PROD</span>
+                                {% else %}
+                                    <span class="badge bg-primary" style="font-size:0.7rem;">TEST</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted" style="font-size:0.7rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             {% if f.statut_obr == 'ENVOYE' %}<span class="badge bg-success">Envoyé</span>
                             {% elif f.statut_obr == 'ECHEC' %}<span class="badge bg-danger">Échec</span>
                             {% elif f.statut_obr == 'EN_ATTENTE' %}<span class="badge bg-warning text-dark">Attente</span>
@@ -219,6 +231,7 @@
                         <td class="text-end py-3" style="color:{{ rapport_clr }}">
                             {{ totaux.total_ttc|default:0|floatformat:3 }}
                         </td>
+                        <td></td>
                         <td></td>
                     </tr>
                 </tfoot>

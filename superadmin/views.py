@@ -1292,6 +1292,7 @@ def societe_gestion_modifier(request, pk):
                 societe.obr_actif          = obr.obr_actif
                 societe.obr_username       = obr.obr_username
                 societe.obr_system_id      = obr.obr_system_id
+                societe.obr_mode_production = obr.obr_mode_production
                 societe.obr_base_url       = obr.obr_base_url
                 societe.obr_password       = obr.obr_password
 

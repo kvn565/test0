@@ -1,0 +1,24 @@
+.hero {
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel-item {
+    transition: transform 0.6s ease-in-out;
+}
+
+.btn-gold {
+    background-color: #C9A84C;
+    border: none;
+}
+
+.text-or { color: #C9A84C; }
+
+.navbar {
+    transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+    background-color: rgba(255,255,255,0.98) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}

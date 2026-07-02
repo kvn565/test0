@@ -18,4 +18,5 @@ urlpatterns = [
 
     # ─── Actions AJAX ────────────────────────────────────────────────────────────
     path('ajax/importer-dmc/', views.ajax_importer_dmc, name='ajax_importer_dmc'),
+    path('<int:pk>/', views.produit_detail, name='detail'),
 ]

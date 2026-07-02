@@ -6,7 +6,7 @@ import logging
 import time
 import json
 import urllib3
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 from django.utils import timezone
 from django.core.cache import cache
@@ -25,7 +25,6 @@ from stock.obr_service import envoyer_entree_stock, envoyer_sortie_stock
 logger = logging.getLogger(__name__)
 
 # ─── CONFIGURATION ─────────────────────────────────────────────────────────
-OBR_BASE_URL = "https://ebms.obr.gov.bi:9443/ebms_api"
 TIMEOUT = 45
 MAX_RETRIES = 5
 BASE_RETRY_DELAY = 8
@@ -44,6 +43,16 @@ ENDPOINT_CANCEL_INVOICE  = "/cancelInvoice/"
 ENDPOINT_ADD_STOCK_MOVE = "/AddStockMovement/"
 
 
+# ─── URL OBR ───────────────────────────────────────────────────────────────
+def get_obr_base_url(societe):
+    url = getattr(societe, 'obr_base_url', None)
+    if url and str(url).strip():
+        return str(url).strip().rstrip('/')
+    host = "ebms.obr.gov.bi"
+    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
+    return f"https://{host}:{port}/ebms_api"
+
+
 # ─── TOKEN ─────────────────────────────────────────────────────────────────
 def get_obr_token(societe):
     """
@@ -59,7 +68,7 @@ def get_obr_token(societe):
         raise ValueError(f"Identifiants OBR manquants pour {societe.nom}")
 
     # Prépare la requête
-    url = f"{OBR_BASE_URL}{ENDPOINT_LOGIN}"
+    url = f"{get_obr_base_url(societe)}{ENDPOINT_LOGIN}"
     payload = {
         "username": societe.obr_username,
         "password": societe.obr_password
@@ -90,10 +99,12 @@ def get_obr_headers(societe):
 def build_invoice_payload(facture):
     societe = facture.societe
     client  = facture.client
-    lignes  = facture.lignes.select_related('produit', 'service').all()
+    lignes  = facture.lignes.select_related('produit', 'service', 'taux_tva').all()
 
-    # Format date + heure
-    datetime_str = f"{facture.date_facture.strftime('%Y-%m-%d')} {facture.heure_facture.strftime('%H:%M:%S')}"
+    # Date/heure extraite de l'identifiant (régénéré juste avant dans envoyer_facture_obr)
+    ident = facture.invoice_identifier
+    date_part = ident.split('/')[2]  # YYYYMMDDHHMMSS
+    datetime_str = f"{date_part[:4]}-{date_part[4:6]}-{date_part[6:8]} {date_part[8:10]}:{date_part[10:12]}:{date_part[12:14]}"
 
     # Mapping mode paiement
     payment_mapping = {'CAISSE': '1', 'BANQUE': '2', 'CREDIT': '3', 'AUTRES': '4'}
@@ -141,11 +152,13 @@ def build_invoice_payload(facture):
 
     # Lignes — champs obligatoires + taxes conditionnelles
     for ligne in lignes:
-        prix_ht  = float(ligne.prix_ht)
-        quantite = float(ligne.quantite)
-        montant_ht  = round(prix_ht * quantite, 2)
-        montant_tva = round(montant_ht * float(ligne.taux_tva) / 100, 2)
-        montant_ttc = round(montant_ht + montant_tva, 2)
+        # Utiliser les montants déjà calculés par le modèle (formule unique)
+        prix_ht    = float(ligne.prix_unitaire_ht)
+        quantite   = float(ligne.quantite)
+        taux       = float(ligne.taux_tva_valeur)
+        montant_ht = ligne.montant_ht
+        montant_tva = (montant_ht * Decimal(str(taux)) / Decimal('100')).quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+        montant_ttc = (montant_ht + montant_tva).quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
         payload["invoice_items"].append({
             "item_designation": str(ligne.designation)[:500],
@@ -172,11 +185,16 @@ def envoyer_facture_obr(facture):
     pending.save(update_fields=['retry_count'])
 
     try:
+        # Régénérer l'identifiant avec la date/heure de l'envoi
+        facture.generate_invoice_identifier()
+        facture.save(update_fields=['invoice_identifier'])
+        facture.refresh_from_db()
+
         payload = build_invoice_payload(facture)
 
         logger.info(f"[OBR] Début envoi facture {facture.numero} | Type: {facture.type_facture}")
 
-        url = f"{OBR_BASE_URL}{ENDPOINT_ADD_INVOICE}"
+        url = f"{get_obr_base_url(societe)}{ENDPOINT_ADD_INVOICE}"
 
         for attempt in range(1, MAX_RETRIES + 1):
             try:
@@ -203,6 +221,14 @@ def envoyer_facture_obr(facture):
                         facture.date_envoi_obr = timezone.now()
                         facture.obr_registered_number = data.get("result", {}).get("invoice_registered_number", "")
                         facture.electronic_signature = data.get("electronic_signature", "")
+                        raw_date = data.get("result", {}).get("invoice_registered_date", "")
+                        if raw_date:
+                            from datetime import datetime as dt_lib
+                            try:
+                                facture.obr_registered_date = dt_lib.strptime(raw_date, "%Y-%m-%d %H:%M:%S")
+                            except (ValueError, TypeError):
+                                pass
+                        facture.obr_mode_envoye = societe.obr_mode_production
                         facture.save()
 
                         pending.statut = "SUCCESS"
@@ -372,7 +398,7 @@ def annuler_facture_obr(facture, motif: str):
                 "cn_motif": motif
             }
 
-            url = f"{OBR_BASE_URL}{ENDPOINT_CANCEL_INVOICE}"
+            url = f"{get_obr_base_url(societe)}{ENDPOINT_CANCEL_INVOICE}"
             headers = get_obr_headers(societe)
 
             logger.info(f"[OBR Cancel] Tentative annulation facture {facture.numero} (ENVOYE)")
@@ -412,17 +438,69 @@ def annuler_facture_obr(facture, motif: str):
         facture.statut_obr = 'ANNULE'
         facture.save(update_fields=['statut_obr', 'message_obr', 'motif_avoir'])
 
-        # ====================== RESTAURATION STOCK ======================
-        # On délègue à la logique existante dans views.py ou on l'appelle ici
-        # Pour cohérence, on restaure seulement si c'était une FN
+        # ====================== RESTAURATION STOCK AVEC SYNCHRO OBR ======================
+        from stock.obr_service import envoyer_entree_stock, envoyer_sortie_stock
+
         if facture.type_facture == 'FN':
-            for ligne in facture.lignes.filter(produit__isnull=False):
-                # Appel à ta méthode ajuster_stock (inverse de la sortie)
-                # Adaptez selon votre implémentation exacte dans Produit
-                produit = ligne.produit
-                # Exemple (à adapter) :
-                # produit.ajuster_stock(quantite=ligne.quantite, type_facture='FA', facture=facture)
-                pass  # ← Remplace par ton appel réel si nécessaire
+            for ligne in facture.lignes.filter(produit__isnull=False).select_related('produit'):
+                entree = EntreeStock.objects.create(
+                    societe=societe, produit=ligne.produit, facture=facture,
+                    type_entree='ER', date_entree=timezone.now().date(),
+                    quantite=ligne.quantite, prix_revient=Decimal('0'),
+                    prix_vente_actuel=ligne.prix_vente_tvac or 0,
+                    numero_ref=f"ANNUL-FN-{facture.numero}",
+                    commentaire=f"Restauration stock après annulation facture {facture.numero}",
+                    statut_obr='EN_ATTENTE', fournisseur=None,
+                )
+                try:
+                    result = envoyer_entree_stock(entree)
+                    success = result[0] if isinstance(result, (list, tuple)) else result.get('success', False)
+                    msg = result[1] if isinstance(result, (list, tuple)) else result.get('message', '')
+                    if not success:
+                        logger.warning(f"Échec envoi OBR stock ({msg}) - Restauration locale")
+                        EntreeStock.objects.filter(pk=entree.pk).delete()
+                        EntreeStock.objects.create(
+                            societe=societe, produit=ligne.produit, facture=facture,
+                            type_entree='ER', date_entree=timezone.now().date(),
+                            quantite=ligne.quantite, prix_revient=Decimal('0'),
+                            prix_vente_actuel=ligne.prix_vente_tvac or 0,
+                            numero_ref=f"ANNUL-FN-{facture.numero}",
+                            commentaire=f"Restauration locale (échec OBR) facture {facture.numero}",
+                            statut_obr='ENVOYE', fournisseur=None,
+                        )
+                except Exception as stock_err:
+                    logger.warning(f"Exception envoi OBR stock: {stock_err}")
+
+        elif facture.type_facture == 'FA':
+            for ligne in facture.lignes.filter(produit__isnull=False).select_related('produit'):
+                entree_ref = ligne.produit.entrees_stock.filter(societe=societe).first()
+                if not entree_ref:
+                    continue
+                sortie = SortieStock.objects.create(
+                    societe=societe, type_sortie='SN', entree_stock=entree_ref,
+                    quantite=ligne.quantite, prix=ligne.prix_vente_tvac or 0,
+                    date_sortie=timezone.now().date(), code=f"REV-FA-{facture.numero}",
+                    commentaire=f"Révocation retour après annulation avoir {facture.numero}",
+                    statut_obr='EN_ATTENTE', facture=facture,
+                )
+                try:
+                    result = envoyer_sortie_stock(sortie)
+                    success = result[0] if isinstance(result, (list, tuple)) else result.get('success', False)
+                    msg = result[1] if isinstance(result, (list, tuple)) else result.get('message', '')
+                    if not success:
+                        logger.warning(f"Échec envoi OBR sortie ({msg}) - Restauration locale")
+                        SortieStock.objects.filter(pk=sortie.pk).delete()
+                        entree_ref2 = ligne.produit.entrees_stock.filter(societe=societe).first()
+                        if entree_ref2:
+                            SortieStock.objects.create(
+                                societe=societe, type_sortie='SN', entree_stock=entree_ref2,
+                                quantite=ligne.quantite, prix=ligne.prix_vente_tvac or 0,
+                                date_sortie=timezone.now().date(), code=f"REV-FA-{facture.numero}",
+                                commentaire=f"Révocation locale (échec OBR) avoir {facture.numero}",
+                                statut_obr='ENVOYE', facture=facture,
+                            )
+                except Exception as stock_err:
+                    logger.warning(f"Exception envoi OBR sortie: {stock_err}")
 
         pending.statut = "SUCCESS"
         pending.message = "Annulée avec succès"
@@ -436,6 +514,79 @@ def annuler_facture_obr(facture, motif: str):
         pending.message = str(e)[:500]
         pending.save(update_fields=['statut', 'message'])
         raise
+
+# ─── REVERSEMENT STOCK OBR (contre-passation) ──────────────────────────────
+
+@transaction.atomic
+def _envoyer_mouvement_obr(mouvement, mouvement_type, facture, societe):
+    """
+    Envoie un mouvement de stock à l'OBR pour la contre-passation.
+    mouvement_type : 'ER' (EntreeStock) ou 'SN' (SortieStock)
+    Succès → ENVOYE, Échec → suppression de l'enregistrement.
+    """
+    is_entree = mouvement_type == 'ER'
+    produit = mouvement.produit if is_entree else mouvement.entree_stock.produit
+
+    if is_entree:
+        envoyer_entree_stock(mouvement)
+    else:
+        envoyer_sortie_stock(mouvement)
+
+    mouvement.refresh_from_db()
+
+    if mouvement.statut_obr != 'ENVOYE':
+        mouvement.delete()
+        raise ValueError(f"Échec envoi OBR {mouvement_type} pour {produit.designation}")
+
+
+def envoyer_reversement_stock_obr(facture):
+    """
+    Contre-passation OBR pour une facture annulée.
+    - FN → EntreeStock (ER) pour remettre en stock
+    - FA → SortieStock (SN) pour enlever le retour
+    """
+    societe = facture.societe
+    lignes = facture.lignes.select_related('produit').all()
+
+    for ligne in lignes:
+        if not ligne.produit:
+            continue
+
+        produit = ligne.produit
+
+        if facture.type_facture == 'FN':
+            entree = EntreeStock.objects.create(
+                societe=societe,
+                produit=produit,
+                quantite=ligne.quantite,
+                prix_revient=produit.prix_moyen_pondere,
+                date_mouvement=timezone.now(),
+                statut_obr='EN_ATTENTE',
+                type_mouvement='ER',
+                description=f"Retour stock FN annulée #{facture.numero}",
+            )
+            try:
+                _envoyer_mouvement_obr(entree, 'ER', facture, societe)
+            except Exception:
+                raise
+
+        elif facture.type_facture == 'FA':
+            sortie = SortieStock.objects.create(
+                societe=societe,
+                entree_stock=EntreeStock.objects.filter(
+                    produit=produit, societe=societe
+                ).order_by('-date_mouvement').first(),
+                quantite=ligne.quantite,
+                date_mouvement=timezone.now(),
+                statut_obr='EN_ATTENTE',
+                type_mouvement='SN',
+                description=f"Contre-passation avoir FA annulée #{facture.numero}",
+            )
+            try:
+                _envoyer_mouvement_obr(sortie, 'SN', facture, societe)
+            except Exception:
+                raise
+
 
 # ─── NETTOYAGE DES DOUBLONS (à utiliser une seule fois) ─────────────────────
 def nettoyer_doublons_stock():

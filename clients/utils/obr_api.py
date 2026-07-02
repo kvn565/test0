@@ -1,19 +1,49 @@
 # clients/utils/obr_api.py
 import requests
-from django.conf import settings
+import logging
 from typing import Tuple, Optional
 
-EBMS_BASE_URL = "https://ebms.obr.gov.bi:9443/ebms_api"
+logger = logging.getLogger(__name__)
 
+ENDPOINT_LOGIN     = "/login/"
+ENDPOINT_CHECK_TIN = "/checkTIN/"
+
+
+# ─── HELPERS DYNAMIQUES PAR SOCIÉTÉ ─────────────────────────────────
+
+def get_obr_base_url(societe) -> str:
+    """
+    Retourne l'URL de base OBR de la société.
+    Lève une ValueError explicite si non configurée.
+    """
+    url = getattr(societe, 'obr_base_url', None)
+    if not url or not str(url).strip():
+        raise ValueError(
+            f"URL Base OBR non configurée pour la société '{societe}'. "
+            f"Veuillez renseigner le champ obr_base_url."
+        )
+    return str(url).strip().rstrip('/')
+
+
+def build_obr_url(societe, endpoint: str) -> str:
+    """Construit l'URL complète OBR pour une société et un endpoint donnés."""
+    return f"{get_obr_base_url(societe)}{endpoint}"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# AUTHENTIFICATION
+# ═══════════════════════════════════════════════════════════════════════
 
 def get_ebms_token(societe) -> Optional[str]:
     """
-    Récupère un token JWT valide (durée de vie ~60 secondes)
+    Récupère un token JWT OBR valide.
+    URL dynamique par société via obr_base_url.
     """
     if not societe.obr_username or not societe.obr_password:
         return None
 
-    url = f"{EBMS_BASE_URL}/login/"
+    url = build_obr_url(societe, ENDPOINT_LOGIN)
+
     payload = {
         "username": societe.obr_username,
         "password": societe.obr_password
@@ -26,23 +56,31 @@ def get_ebms_token(societe) -> Optional[str]:
         if data.get("success") and "result" in data and "token" in data["result"]:
             return data["result"]["token"]
     except Exception as e:
-        print(f"Erreur login OBR : {e}")  # ← pour debug, à retirer en prod
-        pass
+        logger.error(f"[OBR] Erreur login pour '{societe}' : {e}")
 
     return None
 
 
+# ═══════════════════════════════════════════════════════════════════════
+# VÉRIFICATION NIF
+# ═══════════════════════════════════════════════════════════════════════
+
 def check_tin(societe, nif: str) -> Tuple[Optional[str], Optional[str]]:
     """
-    Vérifie un NIF via l'API OBR /checkTIN/
+    Vérifie un NIF via l'API OBR /checkTIN/.
+    URL dynamique par société via obr_base_url.
     Retourne (nom_officiel, None) en cas de succès
-    ou (None, message_erreur) en cas d'échec
+    ou (None, message_erreur) en cas d'échec.
     """
     token = get_ebms_token(societe)
     if not token:
-        return None, "Impossible d'obtenir un token OBR. Vérifiez les identifiants (obr_username / obr_password) dans la fiche société."
+        return None, (
+            "Impossible d'obtenir un token OBR. "
+            "Vérifiez les identifiants (obr_username / obr_password) et l'URL (obr_base_url) dans la fiche société."
+        )
 
-    url = f"{EBMS_BASE_URL}/checkTIN/"
+    url = build_obr_url(societe, ENDPOINT_CHECK_TIN)
+
     headers = {"Authorization": f"Bearer {token}"}
     payload = {"tp_TIN": nif.strip()}
 
@@ -61,8 +99,9 @@ def check_tin(societe, nif: str) -> Tuple[Optional[str], Optional[str]]:
         return None, data.get("msg", "Réponse inattendue de l'OBR")
 
     except requests.exceptions.RequestException as e:
-        print(f"Erreur checkTIN : {e}")  # ← debug
+        logger.error(f"[OBR] Erreur checkTIN pour '{societe}' : {e}")
         return None, f"Erreur réseau lors de la vérification NIF : {str(e)}"
+
     except Exception as e:
-        print(f"Erreur inattendue checkTIN : {e}")
+        logger.error(f"[OBR] Erreur inattendue checkTIN pour '{societe}' : {e}")
         return None, f"Erreur inattendue : {str(e)}"

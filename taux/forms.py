@@ -1,6 +1,7 @@
-# taux/forms.py
 from django import forms
-from .models import Taux
+from decimal import Decimal
+
+from .models import TauxTVA
 
 
 class TauxForm(forms.ModelForm):
@@ -9,9 +10,15 @@ class TauxForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.societe = societe
 
+        if societe:
+            self.fields['nom'].widget.attrs.update({
+                'placeholder': 'Ex: TVA 18%, Exonéré...',
+                'autofocus': True,
+            })
+
     class Meta:
-        model  = Taux
-        fields = ['nom', 'valeur']
+        model = TauxTVA
+        fields = ['nom', 'valeur', 'est_defaut']
         widgets = {
             'nom': forms.TextInput(attrs={
                 'class':       'form-control',
@@ -20,21 +27,26 @@ class TauxForm(forms.ModelForm):
             }),
             'valeur': forms.NumberInput(attrs={
                 'class':       'form-control',
-                'placeholder': 'Ex: 18.00',
-                'step':        '0.01',
+                'placeholder': 'Ex: 18.000',          # Mis à jour
+                'step':        '0.001',               # ← Changement principal
                 'min':         '0',
                 'max':         '100',
+                'inputmode':   'decimal',
+            }),
+            'est_defaut': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
             }),
         }
         labels = {
-            'nom':    'Libellé du taux',
-            'valeur': 'Valeur (%)',
+            'nom':        'Libellé du taux',
+            'valeur':     'Valeur (%)',
+            'est_defaut': 'Taux par défaut',
         }
 
     def clean_nom(self):
         nom = self.cleaned_data.get('nom')
         if self.societe:
-            qs = Taux.objects.filter(societe=self.societe, nom__iexact=nom)
+            qs = TauxTVA.objects.filter(societe=self.societe, nom__iexact=nom)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
@@ -43,13 +55,19 @@ class TauxForm(forms.ModelForm):
 
     def clean_valeur(self):
         valeur = self.cleaned_data.get('valeur')
-        if valeur is not None and (valeur < 0 or valeur > 100):
-            raise forms.ValidationError("La valeur doit être comprise entre 0 et 100.")
+        if valeur is not None:
+            if valeur < 0 or valeur > 100:
+                raise forms.ValidationError("La valeur doit être comprise entre 0 et 100.")
+            
+            # Option importante : normaliser à exactement 3 décimales sans arrondi forcé
+            # (troncature ou quantize selon la stratégie choisie précédemment)
+            valeur = valeur.quantize(Decimal('0.001'))   # ou Decimal('0.000')
+            
         return valeur
 
     def save(self, commit=True):
         obj = super().save(commit=False)
-        if self.societe:
+        if self.societe and not obj.societe_id:
             obj.societe = self.societe
         if commit:
             obj.save()

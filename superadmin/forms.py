@@ -485,7 +485,10 @@ class SocieteAdminConfigForm(forms.ModelForm):
 
     class Meta:
         model = Societe
-        fields = ['obr_username', 'obr_password', 'obr_system_id', 'obr_actif']
+        fields = ['obr_username', 'obr_password', 'obr_system_id', 'obr_actif', 'obr_mode_production', 'obr_base_url']
+        widgets = {
+            'obr_base_url': forms.HiddenInput(),
+        }
 
     def save(self, commit=True):
         instance = super().save(commit=False)

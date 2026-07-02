@@ -3,11 +3,11 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 from societe.models import Societe
 from categories.models import Categorie
-from taux.models import Taux
+from taux.models import TauxTVA
 
 
 class Produit(models.Model):
@@ -56,8 +56,8 @@ class Produit(models.Model):
         help_text="Ex: kg, litre, pièce, carton"
     )
     prix_vente  = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=3,
         verbose_name="Prix de vente unitaire HT",
         help_text="Prix de vente hors taxes (HTVA)"
     )
@@ -68,7 +68,7 @@ class Produit(models.Model):
         verbose_name="Devise"
     )
     taux_tva    = models.ForeignKey(
-        Taux,
+        TauxTVA,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -165,10 +165,10 @@ class Produit(models.Model):
 
     @property
     def prix_vente_tvac(self):
-        """Prix de vente TTC calculé"""
+        """Prix de vente TTC calculé — tronqué à 3 décimales"""
         tva_rate = Decimal(str(self.taux_tva_valeur)) / Decimal('100')
         prix_ht = Decimal(str(self.prix_vente or 0))
-        return float((prix_ht * (Decimal('1') + tva_rate)).quantize(Decimal('0.01')))
+        return float((prix_ht * (Decimal('1') + tva_rate)).quantize(Decimal('0.001'), rounding=ROUND_DOWN))
 
     @property
     def tva_montant(self):
@@ -235,13 +235,15 @@ class Produit(models.Model):
         )['total']
 
         disponible = total_entrees - total_sorties
-        return max(disponible, Decimal('0'))
+        disponible = max(disponible, Decimal('0'))
+        return disponible.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
     def ajuster_stock(self, quantite: Decimal, type_facture: str, facture=None):
         from decimal import Decimal
         from django.db import transaction
         from django.utils import timezone
         from stock.models import SortieStock, EntreeStock
+        from facturer.models import LigneFacture
         import logging
         import uuid
 
@@ -288,8 +290,28 @@ class Produit(models.Model):
 
                 quantite_max_autorisee = ligne_originale.quantite
 
-                if quantite > quantite_max_autorisee:
-                    raise ValueError(f"Quantité d'avoir ({quantite}) dépasse la quantité vendue sur la FN de référence.")
+                deja_retourne = LigneFacture.objects.filter(
+                    facture__facture_originale=facture.facture_originale,
+                    facture__type_facture='FA',
+                    produit=self,
+                ).exclude(facture=facture).aggregate(
+                    total=Coalesce(Sum('quantite'), Value(Decimal('0')))
+                )['total'] or Decimal('0')
+
+                restant = quantite_max_autorisee - deja_retourne
+                if quantite > restant:
+                    if deja_retourne >= quantite_max_autorisee:
+                        msg = (
+                            f"Ce produit a déjà été retourné intégralement "
+                            f"({float(quantite_max_autorisee)} retourné sur {float(quantite_max_autorisee)} vendu)."
+                        )
+                    else:
+                        msg = (
+                            f"Quantité d'avoir ({float(quantite)}) dépasse le restant disponible "
+                            f"({float(restant)}). Déjà retourné : {float(deja_retourne)} sur "
+                            f"{float(quantite_max_autorisee)} vendu."
+                        )
+                    raise ValueError(msg)
 
                 entree, created = EntreeStock.objects.get_or_create(
                     societe=self.societe,

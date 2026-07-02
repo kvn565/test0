@@ -1,36 +1,52 @@
-from django import forms
-from datetime import date, timedelta
-from django.core.exceptions import ValidationError
+# facturer/forms.py — VERSION CORRIGÉE ET PROPRE
 from decimal import Decimal
+from django import forms
+from django.core.exceptions import ValidationError
+from django.db.models import Sum
+from django.utils import timezone
 
-from .models import Facture, LigneFacture
+from .models import Facture, LigneFacture, Devis, LigneDevis
 from clients.models import Client
 from produits.models import Produit
 from services.models import Service
-from django.utils import timezone
+from taux.models import TauxTVA
+from decimal import Decimal, ROUND_DOWN
 
 
 class FactureHeaderForm(forms.ModelForm):
-    """
-    Formulaire d'en-tête de facture – respecte les exigences OBR
-    """
     class Meta:
         model = Facture
         fields = [
-            'date_facture', 'heure_facture', 'client', 'type_facture',
-            'facture_originale', 'motif_avoir',
-            'bon_commande', 'devise', 'mode_paiement'
+            'date_facture',
+            'heure_facture',
+            'client',
+            'type_facture',
+            'facture_originale',
+            'motif_avoir',
+            'bon_commande',
+            'devise',
+            'mode_paiement'
         ]
         widgets = {
-            'date_facture': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'heure_facture': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'date_facture': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'readonly': 'readonly',
+                'tabindex': '-1',
+            }),
+            'heure_facture': forms.TimeInput(attrs={
+                'class': 'form-control',
+                'type': 'time',
+                'readonly': 'readonly',
+                'tabindex': '-1',
+            }),
             'client': forms.Select(attrs={'class': 'form-select'}),
             'type_facture': forms.Select(attrs={'class': 'form-select'}),
             'facture_originale': forms.Select(attrs={'class': 'form-select avoir-field'}),
             'motif_avoir': forms.Textarea(attrs={
                 'class': 'form-control avoir-field',
                 'rows': 3,
-                'placeholder': 'Motif obligatoire pour facture d\'avoir...'
+                'placeholder': "Motif obligatoire pour facture d'avoir..."
             }),
             'bon_commande': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -48,7 +64,6 @@ class FactureHeaderForm(forms.ModelForm):
             self.fields['client'].queryset = Client.objects.filter(
                 societe=societe
             ).order_by('nom')
-
             self.fields['facture_originale'].queryset = Facture.objects.filter(
                 societe=societe,
                 type_facture='FN'
@@ -59,50 +74,45 @@ class FactureHeaderForm(forms.ModelForm):
 
         self.fields['client'].empty_label = '-- Choisir un client --'
         self.fields['facture_originale'].empty_label = '-- Choisir la facture FN concernée --'
-
         self.fields['bon_commande'].required = False
 
-        # ====================== VALEURS PAR DÉFAUT POUR CRÉATION ======================
-        if not self.instance.pk:  # Nouvelle facture
-            now = timezone.now()
+        # Valeurs par défaut — injectées comme valeur du champ, pas juste initial
+        if not self.instance.pk:
+            now = timezone.localtime()
+            date_str = now.date().isoformat()
+            heure_str = now.strftime('%H:%M')
 
-            # Correction importante pour le champ date (format YYYY-MM-DD requis par input type="date")
-            today_str = now.date().isoformat()  # ex: 2026-04-15
-            self.fields['date_facture'].initial = today_str
-            self.fields['date_facture'].widget.attrs.update({
-                'readonly': 'readonly',
-                'style': 'background-color: #e9ecef;',
-            })
-
-            self.fields['heure_facture'].initial = now.strftime('%H:%M')
-            self.fields['heure_facture'].widget.attrs.update({
-                'readonly': 'readonly',
-                'style': 'background-color: #e9ecef;',
-            })
-
+            # initial sert si aucune donnée POST
+            self.fields['date_facture'].initial = date_str
+            self.fields['heure_facture'].initial = heure_str
             self.fields['type_facture'].initial = 'FN'
             self.fields['devise'].initial = 'BIF'
             self.fields['mode_paiement'].initial = 'CAISSE'
 
-        # Classes JS pour FA
-        avoir_fields = ['facture_originale', 'motif_avoir']
-        for field_name in avoir_fields:
+            # On force aussi la valeur dans les données si pas de POST
+            if not self.data:
+                self.initial['date_facture'] = date_str
+                self.initial['heure_facture'] = heure_str
+
+        for field_name in ['facture_originale', 'motif_avoir']:
             if field_name in self.fields:
                 current = self.fields[field_name].widget.attrs.get('class', '')
                 self.fields[field_name].widget.attrs['class'] = f"{current} avoir-field".strip()
 
-        # On enlève le disabled statique
-        if 'facture_originale' in self.fields:
-            self.fields['facture_originale'].widget.attrs.pop('disabled', None)
-
-    # ====================== VALIDATIONS ======================
     def clean(self):
         cleaned_data = super().clean()
         tf = cleaned_data.get('type_facture')
         client = cleaned_data.get('client')
+        fo = cleaned_data.get('facture_originale')
 
         if not client:
             self.add_error('client', "Le client est obligatoire pour toute facture.")
+
+        # Si facture_originale fournie, forcer type_facture='FA' même si
+        # l'utilisateur a oublié de changer le dropdown (défaut='FN')
+        if fo:
+            cleaned_data['type_facture'] = 'FA'
+            tf = 'FA'
 
         if tf == 'FA':
             fo = cleaned_data.get('facture_originale')
@@ -112,13 +122,12 @@ class FactureHeaderForm(forms.ModelForm):
                 self.add_error('facture_originale', "Une facture d'avoir doit référencer une facture normale (FN).")
             elif fo.type_facture != 'FN':
                 self.add_error('facture_originale', "Seule une facture de type FN peut être référencée.")
-            elif fo.statut_obr != 'ENVOYE':
+            elif getattr(fo, 'statut_obr', None) != 'ENVOYE':
                 self.add_error('facture_originale', "La facture référencée doit déjà être enregistrée à l'OBR.")
 
             if not motif:
                 self.add_error('motif_avoir', "Le motif est obligatoire pour une facture d'avoir.")
 
-        # Une seule facture EN_ATTENTE autorisée
         if not self.instance.pk and self.societe:
             if Facture.objects.filter(societe=self.societe, statut_obr='EN_ATTENTE').exists():
                 raise ValidationError(
@@ -128,26 +137,9 @@ class FactureHeaderForm(forms.ModelForm):
 
         return cleaned_data
 
-    def clean_date_facture(self):
-        if not self.instance.pk:
-            return timezone.now().date()
 
-        date_facture = self.cleaned_data.get('date_facture')
-        if not date_facture:
-            raise ValidationError("La date de facture est obligatoire.")
-        if date_facture > date.today():
-            raise ValidationError("La date de facture ne peut pas être dans le futur.")
-        if date_facture < date.today() - timedelta(days=365):
-            raise ValidationError("La date de facture est trop ancienne (max 1 an).")
-        return date_facture
-
-    def clean_heure_facture(self):
-        if not self.instance.pk:
-            return timezone.now().time()
-        heure = self.cleaned_data.get('heure_facture')
-        return heure or timezone.now().time()
-
-
+# ====================== LIGNE FACTURE ======================
+# ====================== LIGNE FACTURE ======================
 class LigneFactureForm(forms.ModelForm):
     class Meta:
         model = LigneFacture
@@ -156,93 +148,130 @@ class LigneFactureForm(forms.ModelForm):
             'produit': forms.Select(attrs={'class': 'form-select'}),
             'service': forms.Select(attrs={'class': 'form-select'}),
             'quantite': forms.NumberInput(attrs={
-                'class': 'form-control text-end',
-                'step': '0.01',
-                'min': '0.01',
+                'class': 'form-control text-end', 
+                'step': '0.001', 
+                'min': '0.001'
             }),
-            'designation': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Désignation (auto si produit/service)'
-            }),
+            'designation': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Désignation'}),
             'prix_vente_tvac': forms.NumberInput(attrs={
-                'class': 'form-control text-end',
-                'step': '0.01',
-                'min': '0.01',
+                'class': 'form-control text-end', 
+                'step': '0.001', 
+                'min': '0.001'
             }),
-            'taux_tva': forms.NumberInput(attrs={
-                'class': 'form-control text-end',
-                'step': '0.01',
-                'min': '0',
-                'max': '100',
-            }),
+            'taux_tva': forms.Select(attrs={'class': 'form-select'}),
         }
 
-    def __init__(self, societe=None, *args, **kwargs):
+    def __init__(self, societe=None, facture=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.societe = societe
+        self.facture = facture   # ← Très important
 
         if societe:
             self.fields['produit'].queryset = Produit.objects.filter(societe=societe).order_by('designation')
             self.fields['service'].queryset = Service.objects.filter(societe=societe).order_by('designation')
 
+            if not societe.assujeti_tva:
+                self.fields['taux_tva'].queryset = TauxTVA.objects.filter(
+                    societe=societe, valeur=Decimal('0.00')
+                )
+            else:
+                self.fields['taux_tva'].queryset = TauxTVA.objects.for_societe(societe)
+
         self.fields['produit'].required = False
         self.fields['service'].required = False
         self.fields['designation'].required = False
+        self.fields['prix_vente_tvac'].required = True
+        self.fields['taux_tva'].required = False  # ← Ajouté: géré par le modèle
 
-    def clean_quantite(self):
-        q = self.cleaned_data.get('quantite')
-        if q is None or q <= 0:
-            raise ValidationError("La quantité doit être > 0.")
-        return q.quantize(Decimal('0.01'))
+        def clean(self):
+            cleaned_data = super().clean()
+            produit = cleaned_data.get('produit')
+            service = cleaned_data.get('service')
+            quantite = cleaned_data.get('quantite')
+            prix_tvac = cleaned_data.get('prix_vente_tvac')
 
-    def clean_prix_vente_tvac(self):
-        p = self.cleaned_data.get('prix_vente_tvac')
-        if p is None or p <= 0:
-            raise ValidationError("Le prix TVAC doit être > 0.")
-        return p.quantize(Decimal('0.01'))
+            if not produit and not service:
+                raise ValidationError("Vous devez sélectionner un produit OU un service.")
 
-    def clean_taux_tva(self):
-        t = self.cleaned_data.get('taux_tva')
-        if t is None:
-            raise ValidationError("Le taux TVA est requis.")
-        if t < 0 or t > 100:
-            raise ValidationError("Taux TVA entre 0 et 100 %.")
-        return t.quantize(Decimal('0.01'))
+            if produit and service:
+                raise ValidationError("Choisissez soit un produit, soit un service.")
 
-    def clean(self):
-        cleaned_data = super().clean()
-        produit = cleaned_data.get('produit')
-        service = cleaned_data.get('service')
+            # ====================== TRONCATURE À 3 DÉCIMALES ======================
+            if quantite is not None:
+                cleaned_data['quantite'] = quantite.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
-        if not produit and not service:
-            raise ValidationError("Sélectionnez un produit OU un service.")
+            if prix_tvac is not None:
+                cleaned_data['prix_vente_tvac'] = prix_tvac.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+            # =====================================================================
 
-        if produit and service:
-            raise ValidationError("Choisissez un produit OU un service (pas les deux).")
+            # ====================== ANTI-DOUBLON PRODUIT ======================
+            if self.facture and produit:
+                qs = LigneFacture.objects.filter(
+                    facture=self.facture,
+                    produit=produit
+                )
+                if self.instance and self.instance.pk:
+                    qs = qs.exclude(pk=self.instance.pk)
 
-        return cleaned_data
+                if qs.exists():
+                    raise ValidationError({
+                        'produit': f"Le produit « {produit.designation} » est déjà présent dans cette facture."
+                    })
+
+            # ====================== STOCK DISPONIBLE (FN) ======================
+            if self.facture and produit and self.facture.type_facture == 'FN' and quantite is not None:
+                stock = produit.stock_projete
+                if quantite > stock:
+                    raise ValidationError({
+                        'quantite': f"Quantité ({quantite}) dépasse le stock disponible ({stock}) pour « {produit.designation} »."
+                    })
+
+            # ====================== QUANTITÉ MAXIMALE (FA) ======================
+            if self.facture and produit and self.facture.type_facture == 'FA' and quantite is not None and self.facture.facture_originale_id:
+                ligne_originale = LigneFacture.objects.filter(
+                    facture=self.facture.facture_originale,
+                    produit=produit
+                ).first()
+                if ligne_originale:
+                    deja_retourne = LigneFacture.objects.filter(
+                        facture__facture_originale=self.facture.facture_originale,
+                        facture__type_facture='FA',
+                        produit=produit
+                    )
+                    if self.instance and self.instance.pk:
+                        deja_retourne = deja_retourne.exclude(pk=self.instance.pk)
+                    total_deja_retourne = deja_retourne.aggregate(total=Sum('quantite'))['total'] or 0
+                    restant = float(ligne_originale.quantite) - float(total_deja_retourne)
+                    if quantite > restant:
+                        raise ValidationError({
+                            'quantite': f"Quantité ({quantite}) dépasse le reste disponible ({restant:.3f}) sur la facture originale."
+                        })
+
+            return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)
 
+        # === CORRECTION CRITIQUE ===
+        if self.facture:
+            instance.facture = self.facture
+        else:
+            raise ValidationError("La facture est obligatoire pour ajouter une ligne.")
+
+        # Auto-remplissage de la désignation
         if instance.produit:
             instance.designation = instance.produit.designation
-            instance.prix_vente_tvac = (
-                instance.produit.prix_vente_tvac or instance.produit.prix_vente or Decimal('0.00')
-            )
-            instance.taux_tva = (
-                instance.produit.taux_tva.valeur if instance.produit.taux_tva else Decimal('18.00')
-            )
         elif instance.service:
             instance.designation = instance.service.designation
-            instance.prix_vente_tvac = instance.service.prix or Decimal('0.00')
-            instance.taux_tva = (
-                instance.service.taux_tva.valeur if instance.service.taux_tva else Decimal('18.00')
-            )
-
-        if not instance.designation:
-            instance.designation = "Article / Service sans désignation"
+        elif not instance.designation:
+            instance.designation = "Article divers"
 
         if commit:
             instance.save()
+
         return instance
+
+
+# ====================== DEVIS ======================
+# Devis forms — importés depuis l'application devis
+from devis.forms import DevisHeaderForm, LigneDevisForm
