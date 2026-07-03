@@ -137,17 +137,16 @@ WSGI_APPLICATION = 'facturation.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gcbvghdlauy_app_wibabi',           # Nom de ta base de données (minuscule recommandé)
-        'USER': 'gcbvghdlauy',               # Change en production par un utilisateur dédié
-        'PASSWORD': '28rAQhMqp66Gk5',               # Mets ton mot de passe MySQL ici
+        'NAME': 'gcbvghdlauy_app_wibabi',
+        'USER': 'gcbvghdlauy',
+        'PASSWORD': '28rAQhMqp66Gk5',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
         },
-        # Options recommandées pour éviter les problèmes de connexion
-        'CONN_MAX_AGE': 300,          # Garde la connexion ouverte 5 minutes
-        'ATOMIC_REQUESTS': True,      # Transactions automatiques par requête
+        'CONN_MAX_AGE': 300,
+        'ATOMIC_REQUESTS': True,
     }
 }
 

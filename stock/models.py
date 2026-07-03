@@ -58,6 +58,12 @@ class EntreeStock(models.Model):
     message_obr    = models.TextField(blank=True)
     date_envoi_obr = models.DateTimeField(null=True, blank=True)
 
+    obr_mode_envoye = models.BooleanField(
+        default=False,
+        verbose_name="Mode PRODUCTION",
+        editable=False
+    )
+
     date_creation     = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -76,6 +82,9 @@ class EntreeStock(models.Model):
         return f"{self.type_entree} | {self.produit.designation} | {self.quantite} {self.devise}"
 
     def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+
         if self.produit_id:
             # Copier automatiquement la devise du produit
             if not self.devise:
@@ -164,6 +173,12 @@ class SortieStock(models.Model):
     message_obr    = models.TextField(blank=True)
     date_envoi_obr = models.DateTimeField(null=True, blank=True)
 
+    obr_mode_envoye = models.BooleanField(
+        default=False,
+        verbose_name="Mode PRODUCTION",
+        editable=False
+    )
+
     date_creation     = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -180,6 +195,9 @@ class SortieStock(models.Model):
         return f"{self.type_sortie} | {designation} | {self.quantite} {self.devise}"
 
     def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+
         if self.entree_stock_id:
             if not self.devise:
                 self.devise = self.entree_stock.devise

@@ -57,7 +57,8 @@ class ProduitForm(forms.ModelForm):
             )
 
             # Gestion taux TVA
-            tous_les_taux = TauxTVA.objects.filter(societe=societe).order_by('valeur')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            tous_les_taux = TauxTVA.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
 
             if getattr(societe, 'assujeti_tva', False):
                 self.taux_qs = tous_les_taux

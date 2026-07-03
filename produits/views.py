@@ -43,6 +43,7 @@ def _check_droit(request):
 @login_required
 def produit_liste(request):
     societe, erreur = _check_droit(request)
+    mode_production = societe.obr_mode_production
     if erreur:
         messages.error(request, erreur)
         return redirect('accueil')
@@ -55,7 +56,7 @@ def produit_liste(request):
 
     produits = (
         Produit.objects
-        .filter(societe=societe)
+        .filter(societe=societe, obr_mode_envoye=mode_production)
         .select_related('categorie', 'taux_tva')
         .order_by('-date_creation', 'designation')
     )
@@ -83,7 +84,7 @@ def produit_liste(request):
         produits_page = paginator.page(paginator.num_pages)
 
     # ── Statistiques (sur tous les produits, pas seulement la page) ──────────
-    base_qs = Produit.objects.filter(societe=societe)
+    base_qs = Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production)
 
     # ✅ FIX 3 : OR au lieu de AND pour capturer tout produit importé
     #            avec AU MOINS un champ OBR manquant
@@ -104,7 +105,7 @@ def produit_liste(request):
 
     return render(request, 'produits/produit_liste.html', {
         'produits':     produits_page,
-        'categories':   Categorie.objects.filter(societe=societe).order_by('nom'),
+        'categories':   Categorie.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom'),
         'stats':        stats,
         'q':            q,
         'origine':      origine,
@@ -179,6 +180,7 @@ def produit_creer_importe(request):
 @login_required
 def produit_modifier(request, pk):
     societe, erreur = _check_droit(request)
+    mode_production = societe.obr_mode_production
     if erreur:
         messages.error(request, erreur)
         return redirect('accueil')
@@ -186,7 +188,8 @@ def produit_modifier(request, pk):
     produit = get_object_or_404(
         Produit.objects.select_related('categorie', 'taux_tva'),
         pk=pk,
-        societe=societe
+        societe=societe,
+        obr_mode_envoye=mode_production
     )
 
     if request.method == 'POST':
@@ -224,11 +227,12 @@ def produit_modifier(request, pk):
 @require_POST
 def produit_supprimer(request, pk):
     societe, erreur = _check_droit(request)
+    mode_production = societe.obr_mode_production
     if erreur:
         messages.error(request, erreur)
         return redirect('accueil')
 
-    produit = get_object_or_404(Produit, pk=pk, societe=societe)
+    produit = get_object_or_404(Produit, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     # ✅ FIX 4 : Vérifier entrées stock ET lignes de facture avant suppression.
     #            Adapter 'lignes' selon le related_name réel dans ton modèle LigneFacture.
@@ -284,6 +288,7 @@ def ajax_importer_dmc(request):
 def produit_detail(request, pk):
     """Affichage détaillé d'un produit."""
     societe, erreur = _check_droit(request)
+    mode_production = societe.obr_mode_production
     if erreur:
         messages.error(request, erreur)
         return redirect('accueil')
@@ -291,7 +296,8 @@ def produit_detail(request, pk):
     produit = get_object_or_404(
         Produit.objects.select_related('categorie', 'taux_tva', 'societe'),
         pk=pk,
-        societe=societe
+        societe=societe,
+        obr_mode_envoye=mode_production
     )
 
     return render(request, 'produits/produit_detail.html', {

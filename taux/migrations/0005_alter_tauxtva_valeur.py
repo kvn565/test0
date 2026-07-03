@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('taux', '0004_alter_tauxtva_valeur'),
+        ('taux', '0004_auto_20260518_2031'),
     ]
 
     operations = [

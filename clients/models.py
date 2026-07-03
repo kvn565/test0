@@ -19,12 +19,13 @@ class TypeClient(models.Model):
     )
     nom = models.CharField(max_length=100, verbose_name="Type de client")
     est_defaut = models.BooleanField(default=False, verbose_name="Type par défaut")
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
 
     class Meta:
         verbose_name = "Type de client"
         verbose_name_plural = "Types de clients"
         ordering = ['nom']
-        unique_together = [('societe', 'nom')]   # Un type par société
+        unique_together = [('societe', 'nom')]
 
     def __str__(self):
         return self.nom
@@ -32,6 +33,11 @@ class TypeClient(models.Model):
     @property
     def nb_clients(self):
         return self.clients.count()
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
 
 class Client(models.Model):
@@ -85,6 +91,7 @@ class Client(models.Model):
     nom_obr_officiel = models.CharField(max_length=150, blank=True, null=True)
 
     # ── Traçabilité ──────────────────────────────────────────────────────
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
     cree_par = models.ForeignKey(
         'superadmin.Utilisateur',
         on_delete=models.SET_NULL,
@@ -103,6 +110,11 @@ class Client(models.Model):
 
     def __str__(self):
         return f"{self.nom} ({self.type_client.nom if self.type_client else 'Sans type'})"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
     @property
     def vat_customer_payer(self):

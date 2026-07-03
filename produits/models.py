@@ -66,6 +66,12 @@ class Produit(models.Model):
     nombre_par_paquet  = models.PositiveIntegerField(null=True, blank=True, verbose_name="Nombre par paquet")
     description_paquet = models.CharField(max_length=150, blank=True, default='', verbose_name="Description conditionnement")
 
+    obr_mode_envoye = models.BooleanField(
+        default=False,
+        verbose_name="Mode PRODUCTION",
+        editable=False
+    )
+
     date_creation     = models.DateTimeField(default=timezone.now, editable=False)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -155,6 +161,10 @@ class Produit(models.Model):
             if self.societe_id:  # Sécurité : societe doit être définie
                 self.code = self._generer_code_local()
 
+        # Mode OBR (TEST/PRODUCTION)
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+
         self.full_clean()   # Lance les validations
         super().save(*args, **kwargs)
 
@@ -214,17 +224,20 @@ class Produit(models.Model):
         from stock.models import EntreeStock, SortieStock
 
         statuts_valides = ['ENVOYE', 'NON_CONCERNE']
+        mode_production = self.societe.obr_mode_production
 
         total_entrees = EntreeStock.objects.filter(
             produit=self,
             societe=self.societe,
-            statut_obr__in=statuts_valides
+            statut_obr__in=statuts_valides,
+            obr_mode_envoye=mode_production
         ).aggregate(total=Coalesce(Sum('quantite'), Value(Decimal('0'))))['total']
 
         total_sorties = SortieStock.objects.filter(
             entree_stock__produit=self,
             entree_stock__societe=self.societe,
-            statut_obr__in=statuts_valides
+            statut_obr__in=statuts_valides,
+            obr_mode_envoye=mode_production
         ).aggregate(total=Coalesce(Sum('quantite'), Value(Decimal('0'))))['total']
 
         disponible = (total_entrees or Decimal('0')) - (total_sorties or Decimal('0'))
@@ -234,13 +247,14 @@ class Produit(models.Model):
     def stock_en_attente(self) -> Decimal:
         """Quantité bloquée en attente d'envoi à l'OBR"""
         from stock.models import EntreeStock, SortieStock
+        mode_production = self.societe.obr_mode_production
 
         total_entrees_attente = EntreeStock.objects.filter(
-            produit=self, societe=self.societe, statut_obr='EN_ATTENTE'
+            produit=self, societe=self.societe, statut_obr='EN_ATTENTE', obr_mode_envoye=mode_production
         ).aggregate(total=Coalesce(Sum('quantite'), Value(Decimal('0'))))['total']
 
         total_sorties_attente = SortieStock.objects.filter(
-            entree_stock__produit=self, entree_stock__societe=self.societe, statut_obr='EN_ATTENTE'
+            entree_stock__produit=self, entree_stock__societe=self.societe, statut_obr='EN_ATTENTE', obr_mode_envoye=mode_production
         ).aggregate(total=Coalesce(Sum('quantite'), Value(Decimal('0'))))['total']
 
         return (total_entrees_attente or Decimal('0')) - (total_sorties_attente or Decimal('0'))

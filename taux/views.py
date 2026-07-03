@@ -23,7 +23,8 @@ def taux_liste(request):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    liste = TauxTVA.objects.filter(societe=societe)   # ← Corrigé
+    mode_production = societe.obr_mode_production
+    liste = TauxTVA.objects.filter(societe=societe, obr_mode_envoye=mode_production)
     return render(request, 'taux/liste.html', {
         'taux':  liste,
         'total': liste.count(),
@@ -60,7 +61,8 @@ def taux_modifier(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe)   # ← Corrigé
+    mode_production = societe.obr_mode_production
+    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         form = TauxForm(request.POST, instance=taux, societe=societe)
@@ -86,7 +88,8 @@ def taux_supprimer(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe)   # ← Corrigé
+    mode_production = societe.obr_mode_production
+    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         # Protection : vérifier si des produits ou services utilisent ce taux

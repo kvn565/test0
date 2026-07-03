@@ -9,7 +9,8 @@ class TauxTVAManager(models.Manager):
         """Tous les taux de la société"""
         if not societe:
             return self.none()
-        return self.filter(societe=societe).order_by('valeur')
+        mode_production = getattr(societe, 'obr_mode_production', False)
+        return self.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
 
     def for_formulaire(self, societe):
         """Pour le formulaire : montre tous les taux (important pour OBR)"""
@@ -68,6 +69,7 @@ class TauxTVA(models.Model):
     )
     
     est_defaut = models.BooleanField(default=False, verbose_name="Taux par défaut")
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     objects = TauxTVAManager()
@@ -86,6 +88,11 @@ class TauxTVA(models.Model):
 
     def __str__(self):
         return f"{self.nom} ({self.valeur}%)"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
     # Méthodes existantes conservées
     @classmethod

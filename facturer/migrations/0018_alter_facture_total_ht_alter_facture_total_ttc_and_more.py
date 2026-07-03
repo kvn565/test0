@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('facturer', '0017_alter_facture_statut_obr'),
+        ('facturer', '0012_alter_facturependingobr_options_and_more'),
     ]
 
     operations = [

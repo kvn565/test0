@@ -153,12 +153,13 @@ class LigneFactureForm(forms.ModelForm):
         self.facture = facture   # ← Très important
 
         if societe:
-            self.fields['produit'].queryset = Produit.objects.filter(societe=societe).order_by('designation')
-            self.fields['service'].queryset = Service.objects.filter(societe=societe).order_by('designation')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            self.fields['produit'].queryset = Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation')
+            self.fields['service'].queryset = Service.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation')
 
             if not societe.assujeti_tva:
                 self.fields['taux_tva'].queryset = TauxTVA.objects.filter(
-                    societe=societe, valeur=Decimal('0.00')
+                    societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=getattr(societe, 'obr_mode_production', False)
                 )
             else:
                 self.fields['taux_tva'].queryset = TauxTVA.objects.for_societe(societe)

@@ -158,9 +158,9 @@ def facture_liste(request):
         'mode_actif': societe.obr_mode_production,
         'types': Facture.TYPE_CHOICES,
         'statuts': Facture.STATUT_OBR_CHOICES,
-        'produits_qs': Produit.objects.filter(societe=societe).order_by('designation'),
-        'services_qs': Service.objects.filter(societe=societe).order_by('designation'),
-        'has_facture_en_attente': Facture.objects.filter(societe=societe, statut_obr='EN_ATTENTE').exists(),
+        'produits_qs': Produit.objects.filter(societe=societe, obr_mode_envoye=mode == 'PRODUCTION').order_by('designation'),
+        'services_qs': Service.objects.filter(societe=societe, obr_mode_envoye=mode == 'PRODUCTION').order_by('designation'),
+        'has_facture_en_attente': Facture.objects.filter(societe=societe, statut_obr='EN_ATTENTE', obr_mode_envoye=mode == 'PRODUCTION').exists(),
     })
 
 
@@ -191,18 +191,20 @@ def facture_detail(request, pk):
 
     lignes = facture.lignes.select_related('produit', 'service', 'taux_tva').all()
 
+    mode_production = societe.obr_mode_production
     if facture.type_facture == 'FA' and facture.facture_originale:
         produits = Produit.objects.filter(
-            id__in=facture.facture_originale.lignes.values_list('produit_id', flat=True)
+            id__in=facture.facture_originale.lignes.values_list('produit_id', flat=True),
+            obr_mode_envoye=mode_production
         ).order_by('designation')
     else:
-        produits = Produit.objects.filter(societe=societe).order_by('designation')
+        produits = Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation')
 
     return render(request, 'facturer/detail.html', {
         'facture': facture,
         'lignes': lignes,
         'produits': produits,
-        'services': Service.objects.filter(societe=societe).order_by('designation'),
+        'services': Service.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation'),
     })
 
 
@@ -529,13 +531,14 @@ def get_taux_tva(request, produit_id):
         if err:
             return JsonResponse({'error': err}, status=403)
 
-        produit = get_object_or_404(Produit, id=produit_id, societe=societe)
+        mode_production = societe.obr_mode_production
+        produit = get_object_or_404(Produit, id=produit_id, societe=societe, obr_mode_envoye=mode_production)
         facture_id = request.GET.get('facture_id')
 
         if not facture_id:
             return JsonResponse({'error': 'facture_id manquant'}, status=400)
 
-        facture = get_object_or_404(Facture, id=facture_id, societe=societe)
+        facture = get_object_or_404(Facture, id=facture_id, societe=societe, obr_mode_envoye=mode_production)
         taux_obj = get_taux_tva_effectif(societe, produit, facture)
 
         return JsonResponse({
@@ -560,10 +563,11 @@ def ajax_info_produit(request, pk):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    produit = get_object_or_404(Produit, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    produit = get_object_or_404(Produit, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     facture_id = request.GET.get('facture_id')
-    facture = Facture.objects.filter(pk=facture_id, societe=societe).first() if facture_id else None
+    facture = Facture.objects.filter(pk=facture_id, societe=societe, obr_mode_envoye=mode_production).first() if facture_id else None
 
     taux_obj = get_taux_tva_effectif(societe, produit)
 
@@ -584,12 +588,13 @@ def ajax_info_service(request, pk):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    service = get_object_or_404(Service, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    service = get_object_or_404(Service, pk=pk, societe=societe, obr_mode_envoye=mode_production)
     facture_id = request.GET.get('facture_id')
 
     facture = None
     if facture_id:
-        facture = Facture.objects.filter(pk=facture_id, societe=societe).first()
+        facture = Facture.objects.filter(pk=facture_id, societe=societe, obr_mode_envoye=mode_production).first()
 
     taux_obj = get_taux_tva_effectif(societe, service, facture)
     prix_vente = Decimal(str(service.prix_vente or 0))
