@@ -21,14 +21,16 @@ def get_taux_tva_effectif(societe, objet=None, facture=None):
     if not getattr(societe, 'assujeti_tva', False):
         return TauxTVA.objects.filter(
             societe=societe,
-            valeur=Decimal('0.00')
+            valeur=Decimal('0.00'),
+            obr_mode_envoye=getattr(societe, 'obr_mode_production', False),
         ).first()
 
     # Si on passe une facture et qu'elle ne veut pas appliquer la TVA
     if facture and not getattr(facture, 'applique_tva', True):
         return TauxTVA.objects.filter(
             societe=societe,
-            valeur=Decimal('0.00')
+            valeur=Decimal('0.00'),
+            obr_mode_envoye=getattr(societe, 'obr_mode_production', False),
         ).first()
 
     # Priorité au taux défini sur le Produit ou le Service

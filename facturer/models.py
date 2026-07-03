@@ -95,7 +95,7 @@ class Facture(models.Model):
         verbose_name = "Facture"
         verbose_name_plural = "Factures"
         ordering = ['-date_creation']
-        unique_together = [('societe', 'numero')]
+        unique_together = [('societe', 'numero', 'obr_mode_envoye')]
 
     def __str__(self):
         return f"{self.numero or 'Nouvelle'} — {self.client.nom if self.client else '(client manquant)'}"
@@ -117,11 +117,14 @@ class Facture(models.Model):
     def get_last_sequence(self) -> int:
         year = self.date_facture.year if self.date_facture else timezone.now().year
 
+        mode_production = self.obr_mode_envoye
+
         candidats = Facture.objects.filter(
             societe=self.societe,
             type_facture=self.type_facture,
             date_facture__year=year,
             numero__isnull=False,
+            obr_mode_envoye=mode_production
         ).exclude(numero='').exclude(pk=self.pk).values_list('numero', flat=True)
 
         max_seq = self.get_starting_sequence() - 1
@@ -167,6 +170,10 @@ class Facture(models.Model):
     def save(self, *args, **kwargs):
         if not self.societe_id:
             raise ValueError("La société doit être définie avant sauvegarde.")
+
+        # Définir le mode OBR selon la société (TEST/PRODUCTION)
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
 
         with transaction.atomic():
             if not self.numero:
@@ -331,6 +338,7 @@ class LigneFacture(models.Model):
             return TauxTVA.objects.filter(
                 societe=societe,
                 valeur=Decimal('0.00'),
+                obr_mode_envoye=getattr(societe, 'obr_mode_production', False),
             ).first()
 
         # Si la facture elle-même ne veut pas appliquer la TVA
@@ -338,6 +346,7 @@ class LigneFacture(models.Model):
             return TauxTVA.objects.filter(
                 societe=societe,
                 valeur=Decimal('0.00'),
+                obr_mode_envoye=getattr(societe, 'obr_mode_production', False),
             ).first()
 
         # Priorité au taux défini sur le Produit ou le Service
@@ -349,6 +358,7 @@ class LigneFacture(models.Model):
         return TauxTVA.objects.filter(
             societe=societe,
             valeur=Decimal('0.00'),
+            obr_mode_envoye=getattr(societe, 'obr_mode_production', False),
         ).first()
 
     def clean(self):

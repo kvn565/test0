@@ -161,7 +161,7 @@ def facture_liste(request):
         'statuts':     Facture.STATUT_OBR_CHOICES,
         'mode':        mode,
         'mode_actif':  societe.obr_mode_production,
-        'produits_qs': Produit.objects.filter(societe=societe).order_by('designation'),
+        'produits_qs': Produit.objects.filter(societe=societe, obr_mode_envoye=societe.obr_mode_production).order_by('designation'),
         'services_qs': Service.objects.filter(societe=societe).order_by('designation'),
     })
 
@@ -202,12 +202,14 @@ def facture_detail(request, pk):
     lignes = facture.lignes.select_related('produit', 'service').all()
 
     # Produits pour facture d'avoir
+    mode_production = societe.obr_mode_production
     if facture.type_facture == 'FA' and facture.facture_originale:
         produits = Produit.objects.filter(
-            id__in=facture.facture_originale.lignes.values_list('produit_id', flat=True)
+            id__in=facture.facture_originale.lignes.values_list('produit_id', flat=True),
+            obr_mode_envoye=mode_production
         ).order_by('designation')
     else:
-        produits = Produit.objects.filter(societe=societe).order_by('designation')
+        produits = Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation')
 
     return render(request, 'facturer/detail.html', {
         'facture': facture,

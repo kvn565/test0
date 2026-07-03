@@ -43,6 +43,7 @@ class Devis(models.Model):
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='BROUILLON')
     notes = models.TextField(blank=True, verbose_name="Notes / Conditions")
     email_envoye = models.BooleanField(default=False, verbose_name="Email envoyé au client")
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
 
     cree_par = models.ForeignKey('superadmin.Utilisateur', on_delete=models.SET_NULL, null=True,
                                  related_name='devis_creees', verbose_name="Créé par", editable=False)
@@ -69,10 +70,12 @@ class Devis(models.Model):
 
     def get_last_sequence(self) -> int:
         year = self.date_devis.year if self.date_devis else timezone.now().year
+        mode_production = getattr(self, 'obr_mode_envoye', False)
         candidats = Devis.objects.filter(
             societe=self.societe,
             date_devis__year=year,
             numero__isnull=False,
+            obr_mode_envoye=mode_production,
         ).exclude(numero='').exclude(pk=self.pk).values_list('numero', flat=True)
         max_seq = self.get_starting_sequence() - 1
         for numero in candidats:
@@ -101,6 +104,8 @@ class Devis(models.Model):
     def save(self, *args, **kwargs):
         if not self.societe_id:
             raise ValueError("La société doit être définie avant sauvegarde.")
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
         with transaction.atomic():
             if not self.numero:
                 self.generate_numero()
@@ -171,13 +176,13 @@ class LigneDevis(models.Model):
     def _get_taux_effectif(self):
         societe = self.devis.societe
         if not getattr(societe, 'assujeti_tva', False):
-            return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00')).first()
+            return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=getattr(societe, 'obr_mode_production', False)).first()
         if not self.devis.applique_tva:
-            return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00')).first()
+            return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=getattr(societe, 'obr_mode_production', False)).first()
         objet = self.produit or self.service
         if objet and hasattr(objet, 'taux_tva') and objet.taux_tva:
             return objet.taux_tva
-        return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00')).first()
+        return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=getattr(societe, 'obr_mode_production', False)).first()
 
     def clean(self):
         from django.core.exceptions import ValidationError

@@ -53,9 +53,10 @@ def produit_liste(request):
     categorie_id  = request.GET.get('categorie', '')
     page_num      = request.GET.get('page', 1)
 
+    mode_production = societe.obr_mode_production
     produits = (
         Produit.objects
-        .filter(societe=societe)
+        .filter(societe=societe, obr_mode_envoye=mode_production)
         .select_related('categorie', 'taux_tva')
         .order_by('-date_creation', 'designation')
     )
@@ -83,7 +84,8 @@ def produit_liste(request):
         produits_page = paginator.page(paginator.num_pages)
 
     # ── Statistiques (sur tous les produits, pas seulement la page) ──────────
-    base_qs = Produit.objects.filter(societe=societe)
+    mode_production = societe.obr_mode_production
+    base_qs = Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production)
 
     # ✅ FIX 3 : OR au lieu de AND pour capturer tout produit importé
     #            avec AU MOINS un champ OBR manquant
@@ -291,7 +293,8 @@ def produit_detail(request, pk):
     produit = get_object_or_404(
         Produit.objects.select_related('categorie', 'taux_tva', 'societe'),
         pk=pk,
-        societe=societe
+        societe=societe,
+        obr_mode_envoye=societe.obr_mode_production
     )
 
     return render(request, 'produits/produit_detail.html', {

@@ -22,12 +22,12 @@ class Categorie(models.Model):
     description = models.TextField(blank=True, verbose_name="Description")
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
 
     class Meta:
         verbose_name = "Catégorie"
         verbose_name_plural = "Catégories"
         ordering = ['nom']
-        # Deux catégories ne peuvent pas avoir le même nom dans la même société
         unique_together = [('societe', 'nom')]
 
     def __str__(self):
@@ -35,5 +35,9 @@ class Categorie(models.Model):
 
     @property
     def nb_produits(self):
-        """Nombre de produits dans cette catégorie."""
         return self.produits.count()
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)

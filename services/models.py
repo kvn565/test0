@@ -31,6 +31,7 @@ class Service(models.Model):
     )
 
     statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default='ACTIF')
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -43,6 +44,11 @@ class Service(models.Model):
 
     def __str__(self):
         return f"{self.designation} ({self.prix_vente if self.prix_vente else '0.000'})"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
     @property
     def tva_montant(self) -> Decimal:

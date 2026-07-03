@@ -42,10 +42,9 @@ def liste_categories(request):
         messages.error(request, err)
         return redirect('accueil')
 
-    # ✅ Filtre par société — chef voit UNIQUEMENT ses catégories
-    categories = Categorie.objects.filter(societe=societe)
+    mode_production = societe.obr_mode_production
+    categories = Categorie.objects.filter(societe=societe, obr_mode_envoye=mode_production)
 
-    # Recherche rapide
     q = request.GET.get('q', '').strip()
     if q:
         categories = categories.filter(nom__icontains=q)
@@ -53,7 +52,7 @@ def liste_categories(request):
     return render(request, 'categories/liste.html', {
         'categories': categories,
         'q':          q,
-        'total':      Categorie.objects.filter(societe=societe).count(),
+        'total':      Categorie.objects.filter(societe=societe, obr_mode_envoye=mode_production).count(),
     })
 
 
@@ -97,7 +96,8 @@ def categorie_modifier(request, pk):
 
     # ✅ get_object_or_404 filtre aussi par société — empêche un chef
     # de modifier les catégories d'une autre société via l'URL
-    categorie = get_object_or_404(Categorie, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    categorie = get_object_or_404(Categorie, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         form = CategorieForm(societe=societe, data=request.POST, instance=categorie)
@@ -127,8 +127,8 @@ def categorie_supprimer(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    # ✅ Filtre par société — sécurité
-    categorie = get_object_or_404(Categorie, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    categorie = get_object_or_404(Categorie, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         nom = categorie.nom

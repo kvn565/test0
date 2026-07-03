@@ -1,0 +1,122 @@
+{% extends 'superadmin/base_superadmin.html' %}
+{% block title %}Import Factures — Administration{% endblock %}
+{% block breadcrumb %}<span class="sep">/</span> <span>Factures</span> <span class="sep">/</span> <span>Import Excel</span>{% endblock %}
+{% block nav_import_factures %}active{% endblock %}
+{% block page_title %}Import de Factures{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+  <div class="col-12 col-lg-8 mx-auto">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4 p-lg-5">
+        <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+          <i class="bi bi-upload me-2 text-primary"></i>Importer un fichier Excel
+        </h5>
+
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-medium">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <div class="form-text small">{{ field.help_text }}</div>
+              {% endif %}
+              {% if field.errors %}
+                <div class="text-danger small mt-1">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-upload me-1"></i> Importer
+            </button>
+            <a href="{% url 'superadmin:import_factures' %}" class="btn btn-outline-secondary px-4">
+              <i class="bi bi-x-lg me-1"></i> Réinitialiser
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if resultats %}
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-body p-4 p-lg-5">
+          <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+            <i class="bi bi-check-circle me-2 text-success"></i>Résultat de l'import
+          </h5>
+
+          <div class="d-flex gap-4 mb-4">
+            <div class="bg-success-subtle rounded-3 p-3 text-center flex-fill">
+              <div class="fs-3 fw-bold text-success">{{ resultats.total_factures }}</div>
+              <div class="text-muted small">Factures créées</div>
+            </div>
+            <div class="bg-primary-subtle rounded-3 p-3 text-center flex-fill">
+              <div class="fs-3 fw-bold text-primary">{{ resultats.total_lignes }}</div>
+              <div class="text-muted small">Lignes importées</div>
+            </div>
+          </div>
+
+          {% if resultats.erreurs %}
+            <div class="alert alert-warning">
+              <strong>{{ resultats.erreurs|length }} erreur(s) :</strong>
+              <ul class="mb-0 mt-2">
+                {% for err in resultats.erreurs %}
+                  <li>{{ err }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Colonnes attendues -->
+    <div class="card shadow-sm border-0 mt-4">
+      <div class="card-body p-4 p-lg-5">
+        <h5 class="mb-4 pb-3 border-bottom fw-semibold">
+          <i class="bi bi-table me-2 text-info"></i>Format du fichier Excel attendu
+        </h5>
+        <div class="table-responsive">
+          <table class="table table-bordered small">
+            <thead class="table-light">
+              <tr>
+                <th>Colonne</th>
+                <th>Obligatoire</th>
+                <th>Description</th>
+                <th>Exemple</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>type</td><td><span class="badge bg-danger">Oui</span></td><td>Type de facture</td><td>FN ou FA</td></tr>
+              <tr><td>date</td><td><span class="badge bg-danger">Oui</span></td><td>Date (JJ/MM/AAAA)</td><td>01/01/2026</td></tr>
+              <tr><td>client</td><td><span class="badge bg-danger">Oui</span></td><td>Nom du client</td><td>Jean Dupont</td></tr>
+              <tr><td>nif</td><td><span class="badge bg-secondary">Non</span></td><td>NIF du client</td><td>4000123456</td></tr>
+              <tr><td>designation</td><td><span class="badge bg-danger">Oui</span></td><td>Nom du produit/service</td><td>Article A</td></tr>
+              <tr><td>quantite</td><td><span class="badge bg-danger">Oui</span></td><td>Quantité</td><td>5</td></tr>
+              <tr><td>prix_unitaire</td><td><span class="badge bg-danger">Oui</span></td><td>Prix unitaire TTC</td><td>25000</td></tr>
+              <tr><td>tva</td><td><span class="badge bg-danger">Oui</span></td><td>Taux TVA en %</td><td>18</td></tr>
+              <tr><td>devise</td><td><span class="badge bg-secondary">Non</span></td><td>BIF (défaut)</td><td>BIF</td></tr>
+              <tr><td>mode_paiement</td><td><span class="badge bg-secondary">Non</span></td><td>CAISSE (défaut)</td><td>BANQUE</td></tr>
+              <tr><td>ref_facture_originale</td><td><span class="badge bg-secondary">Non</span></td><td>Pour FA : n° facture originale</td><td>FN/1/2026</td></tr>
+              <tr><td>motif</td><td><span class="badge bg-secondary">Non</span></td><td>Pour FA : motif de l'avoir</td><td>Retour marchandise</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-muted small mb-0 mt-3">
+          <i class="bi bi-info-circle me-1"></i>
+          Un même client + même type + même date = une seule facture avec plusieurs lignes.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

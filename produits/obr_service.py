@@ -102,16 +102,17 @@ class OBRService:
                 return taux_obj
 
             # Dernier recours
+            _mode = getattr(societe, 'obr_mode_production', False)
             return (
-                TauxTVA.objects.filter(societe=societe, valeur=Decimal('18.000')).first() or  # CORRECTION : 18.000% pas 0.18
-                TauxTVA.objects.filter(societe=societe).order_by('-valeur').first() or
-                TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00')).first()
+                TauxTVA.objects.filter(societe=societe, valeur=Decimal('18.000'), obr_mode_envoye=_mode).first() or
+                TauxTVA.objects.filter(societe=societe, obr_mode_envoye=_mode).order_by('-valeur').first() or
+                TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=_mode).first()
             )
 
         except Exception as e:
             print(f"[OBRService._get_taux_tva] Erreur : {e}")
-            # Sécurité : toujours retourner quelque chose
-            return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00')).first()
+            _mode = getattr(societe, 'obr_mode_production', False)
+            return TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=_mode).first()
 
     @staticmethod
     def get_dmc_info(societe, reference_dmc):

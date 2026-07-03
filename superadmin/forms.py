@@ -524,3 +524,20 @@ class AppConfigForm(forms.ModelForm):
         help_texts = {
             'logo': 'Format recommandé : PNG, 200x200px max. Laisser vide pour garder l\'icône par défaut.',
         }
+
+
+# ──────────────────────────────────────────────
+#  IMPORT FACTURES EXCEL
+# ──────────────────────────────────────────────
+class ImportFacturesExcelForm(forms.Form):
+    societe = forms.ModelChoiceField(
+        queryset=Societe.objects.all().order_by('nom'),
+        label="Société",
+        empty_label="Sélectionner une société",
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    fichier = forms.FileField(
+        label="Fichier Excel (.xlsx)",
+        help_text="Colonnes attendues : type, date, client, nif, designation, quantite, prix_unitaire, tva, devise, mode_paiement, ref_facture_originale, motif",
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx'}),
+    )

@@ -47,7 +47,8 @@ def devis_liste(request):
         messages.error(request, err)
         return redirect('accueil')
 
-    qs = Devis.objects.filter(societe=societe).select_related('client').order_by('-date_devis', '-id')
+    mode_production = societe.obr_mode_production
+    qs = Devis.objects.filter(societe=societe, obr_mode_envoye=mode_production).select_related('client').order_by('-date_devis', '-id')
     q = request.GET.get('q', '').strip()
     statut = request.GET.get('statut', '')
     if q:
@@ -55,7 +56,7 @@ def devis_liste(request):
     if statut:
         qs = qs.filter(statut=statut)
 
-    base = Devis.objects.filter(societe=societe)
+    base = Devis.objects.filter(societe=societe, obr_mode_envoye=mode_production)
     stats = {
         'total': base.count(),
         'brouillons': base.filter(statut='BROUILLON').count(),
@@ -75,8 +76,8 @@ def devis_liste(request):
         'q': q,
         'statut': statut,
         'statuts': Devis.STATUT_CHOICES,
-        'produits_qs': Produit.objects.filter(societe=societe).order_by('designation'),
-        'services_qs': Service.objects.filter(societe=societe).order_by('designation'),
+        'produits_qs': Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation'),
+        'services_qs': Service.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation'),
     })
 
 
@@ -87,10 +88,8 @@ def devis_detail(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    devis = get_object_or_404(Devis.objects.select_related('client'), pk=pk)
-    if devis.societe != societe and not request.user.is_superuser:
-        messages.error(request, "Vous n'avez pas accès à ce proforma.")
-        return redirect('devis:liste')
+    mode_production = societe.obr_mode_production
+    devis = get_object_or_404(Devis.objects.select_related('client'), pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     lignes = devis.lignes_devis.select_related('produit', 'service').all()
 
@@ -98,8 +97,8 @@ def devis_detail(request, pk):
         'devis': devis,
         'lignes': lignes,
         'email_form': EmailDevisForm(initial={'email_destinataire': devis.client.email or ''}),
-        'produits_qs': Produit.objects.filter(societe=societe).order_by('designation'),
-        'services_qs': Service.objects.filter(societe=societe).order_by('designation'),
+        'produits_qs': Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation'),
+        'services_qs': Service.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation'),
     })
 
 
@@ -111,7 +110,8 @@ def devis_supprimer(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    devis = get_object_or_404(Devis, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    devis = get_object_or_404(Devis, pk=pk, societe=societe, obr_mode_envoye=mode_production)
     if not devis.peut_etre_supprime:
         messages.error(request, "Impossible de supprimer un proforma validé ou transformé.")
         return redirect('devis:detail', pk=pk)
@@ -164,7 +164,8 @@ def ajax_ajouter_ligne_devis(request):
     if not devis_id:
         return JsonResponse({'ok': False, 'error': 'devis_id manquant'}, status=400)
 
-    devis = get_object_or_404(Devis, pk=devis_id, societe=societe)
+    mode_production = societe.obr_mode_production
+    devis = get_object_or_404(Devis, pk=devis_id, societe=societe, obr_mode_envoye=mode_production)
 
     try:
         quantite = Decimal(str(payload.get('quantite') or '0')).quantize(Decimal('0.001'))
@@ -184,14 +185,14 @@ def ajax_ajouter_ligne_devis(request):
             produit = None
             service = None
             if produit_id:
-                produit = get_object_or_404(Produit, pk=produit_id, societe=societe)
+                produit = get_object_or_404(Produit, pk=produit_id, societe=societe, obr_mode_envoye=mode_production)
                 if devis.lignes_devis.filter(produit_id=produit_id).exists():
                     return JsonResponse({'ok': False, 'error': 'Ce produit est déjà présent dans ce proforma.'}, status=400)
                 designation = produit.designation
                 prix_ttc = Decimal(str(produit.prix_vente_tvac or 0))
                 taux_tva = Decimal(str(produit.taux_tva_valeur or 18))
             else:
-                service = get_object_or_404(Service, pk=service_id, societe=societe)
+                service = get_object_or_404(Service, pk=service_id, societe=societe, obr_mode_envoye=mode_production)
                 designation = service.designation
                 prix_ttc = Decimal(str(service.prix or 0))
                 taux_tva = Decimal(str(service.taux_tva.valeur if getattr(service.taux_tva, 'valeur', None) else 18))
@@ -268,7 +269,8 @@ def ajax_modifier_ligne_devis(request):
     if not ligne_id:
         return JsonResponse({'ok': False, 'error': 'ligne_id manquant'}, status=400)
 
-    ligne = get_object_or_404(LigneDevis, pk=ligne_id, devis__societe=societe)
+    mode_production = societe.obr_mode_production
+    ligne = get_object_or_404(LigneDevis, pk=ligne_id, devis__societe=societe, devis__obr_mode_envoye=mode_production)
     devis = ligne.devis
 
     try:
@@ -312,7 +314,8 @@ def devis_valider(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    devis = get_object_or_404(Devis, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    devis = get_object_or_404(Devis, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if devis.statut != 'BROUILLON':
         messages.error(request, "Seul un proforma en brouillon peut être validé.")
@@ -336,7 +339,8 @@ def devis_transformer_en_facture(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    devis = get_object_or_404(Devis, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    devis = get_object_or_404(Devis, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if not devis.peut_etre_transformee:
         messages.error(request, "Seul un proforma validé peut être transformé en facture.")
@@ -387,7 +391,8 @@ def devis_imprimer(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    devis = get_object_or_404(Devis.objects.select_related('client', 'societe'), pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    devis = get_object_or_404(Devis.objects.select_related('client', 'societe'), pk=pk, societe=societe, obr_mode_envoye=mode_production)
     lignes = devis.lignes_devis.select_related('produit', 'service', 'taux_tva').all()
 
     montant_lettres = ''
@@ -433,7 +438,8 @@ def devis_envoyer_email(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    devis = get_object_or_404(Devis, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    devis = get_object_or_404(Devis, pk=pk, societe=societe, obr_mode_envoye=mode_production)
     form = EmailDevisForm(request.POST)
 
     if not form.is_valid():
@@ -472,7 +478,8 @@ def ajax_info_produit_devis(request, pk):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    produit = get_object_or_404(Produit, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    produit = get_object_or_404(Produit, pk=pk, societe=societe, obr_mode_envoye=mode_production)
     taux_tva = int(produit.taux_tva_valeur) if hasattr(produit, 'taux_tva_valeur') else 18
 
     return JsonResponse({
@@ -490,7 +497,8 @@ def ajax_info_service_devis(request, pk):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    service = get_object_or_404(Service, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    service = get_object_or_404(Service, pk=pk, societe=societe, obr_mode_envoye=mode_production)
     taux_tva = int(service.taux_tva.valeur) if service.taux_tva and service.taux_tva.valeur is not None else 18
 
     return JsonResponse({

@@ -117,6 +117,12 @@ class Produit(models.Model):
         help_text="Ex: carton de 12, sachet de 500g, boîte"
     )
 
+    obr_mode_envoye = models.BooleanField(
+        default=False,
+        verbose_name="Mode PRODUCTION",
+        editable=False
+    )
+
     # Champs de traçabilité
     date_creation     = models.DateTimeField(
         default=timezone.now,
@@ -202,6 +208,8 @@ class Produit(models.Model):
                 )
 
     def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
         self.full_clean()   # Déclenche la validation
         super().save(*args, **kwargs)
 
@@ -221,7 +229,8 @@ class Produit(models.Model):
         total_entrees = EntreeStock.objects.filter(
             produit=self,
             societe=self.societe,
-            statut_obr__in=statuts_confirmes
+            statut_obr__in=statuts_confirmes,
+            obr_mode_envoye=self.obr_mode_envoye
         ).aggregate(
             total=Coalesce(Sum('quantite'), Value(Decimal('0')))
         )['total']
@@ -229,7 +238,8 @@ class Produit(models.Model):
         total_sorties = SortieStock.objects.filter(
             entree_stock__produit=self,
             entree_stock__societe=self.societe,
-            statut_obr__in=statuts_confirmes
+            statut_obr__in=statuts_confirmes,
+            obr_mode_envoye=self.obr_mode_envoye
         ).aggregate(
             total=Coalesce(Sum('quantite'), Value(Decimal('0')))
         )['total']

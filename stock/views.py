@@ -42,7 +42,8 @@ def entree_liste(request):
     type_mvt = request.GET.get('type', '')
     page_num = request.GET.get('page', 1)   # ← Ajout pour la pagination
 
-    base = EntreeStock.objects.filter(societe=societe)\
+    mode_production = societe.obr_mode_production
+    base = EntreeStock.objects.filter(societe=societe, obr_mode_envoye=mode_production)\
         .select_related('produit', 'fournisseur')\
         .order_by('-date_creation')
 
@@ -147,7 +148,8 @@ def entree_modifier(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    entree = get_object_or_404(EntreeStock, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    entree = get_object_or_404(EntreeStock, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         form = EntreeStockForm(request.POST, instance=entree, societe=societe)
@@ -182,9 +184,10 @@ def entree_detail(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
+    mode_production = societe.obr_mode_production
     entree = get_object_or_404(
         EntreeStock.objects.select_related('produit', 'fournisseur'),
-        pk=pk, societe=societe
+        pk=pk, societe=societe, obr_mode_envoye=mode_production
     )
     return render(request, 'stock/entree_detail.html', {'entree': entree})
 
@@ -196,7 +199,8 @@ def entree_supprimer(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    entree = get_object_or_404(EntreeStock, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    entree = get_object_or_404(EntreeStock, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         if entree.sorties.exists():
@@ -217,7 +221,8 @@ def entree_reenvoyer_obr(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    entree = get_object_or_404(EntreeStock, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    entree = get_object_or_404(EntreeStock, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if entree.statut_obr == 'ENVOYE':
         messages.info(request, "Cette entrée a déjà été envoyée à l'OBR.")
@@ -249,7 +254,8 @@ def sortie_liste(request):
     type_mvt = request.GET.get('type', '')
     page_num = request.GET.get('page', 1)
 
-    base = SortieStock.objects.filter(societe=societe)\
+    mode_production = societe.obr_mode_production
+    base = SortieStock.objects.filter(societe=societe, obr_mode_envoye=mode_production)\
         .select_related('entree_stock__produit')\
         .order_by('-date_creation')
 
@@ -360,9 +366,10 @@ def sortie_detail(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
+    mode_production = societe.obr_mode_production
     sortie = get_object_or_404(
         SortieStock.objects.select_related('entree_stock__produit'),
-        pk=pk, societe=societe
+        pk=pk, societe=societe, obr_mode_envoye=mode_production
     )
     return render(request, 'stock/sortie_detail.html', {'sortie': sortie})
 
@@ -374,7 +381,8 @@ def sortie_supprimer(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    sortie = get_object_or_404(SortieStock, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    sortie = get_object_or_404(SortieStock, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         sortie.delete()
@@ -392,7 +400,8 @@ def sortie_reenvoyer_obr(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    sortie = get_object_or_404(SortieStock, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    sortie = get_object_or_404(SortieStock, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if sortie.statut_obr == 'ENVOYE':
         messages.info(request, "Cette sortie a déjà été envoyée à l'OBR.")
@@ -415,9 +424,10 @@ def stock_disponible(request):
     if not societe:
         return JsonResponse({'ok': False, 'error': 'Pas de société'})
 
+    mode_production = societe.obr_mode_production
     entree_id = request.GET.get('entree_id')
     try:
-        entree = EntreeStock.objects.get(pk=entree_id, societe=societe)
+        entree = EntreeStock.objects.get(pk=entree_id, societe=societe, obr_mode_envoye=mode_production)
         total_sorti = SortieStock.objects.filter(
             entree_stock=entree
         ).aggregate(total=Sum('quantite'))['total'] or 0

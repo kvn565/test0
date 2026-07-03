@@ -62,4 +62,7 @@ urlpatterns = [
     # ── Suivi Stock Global ────────────────────────────────────────
     path('transactions/entrees/',               views.stock_entrees,      name='stock_entrees'),
     path('transactions/sorties/',               views.stock_sorties,      name='stock_sorties'),
+
+    # ── Import Factures ───────────────────────────────────────────
+    path('import-factures/',       views.import_factures,       name='import_factures'),
 ]

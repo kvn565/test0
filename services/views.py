@@ -29,15 +29,15 @@ def service_liste(request):
     statut   = request.GET.get('statut', '')
     page_num = request.GET.get('page', 1)          # ← Ajout pagination
 
-    services = Service.objects.filter(societe=societe).order_by('-date_creation', 'designation')
+    mode_production = societe.obr_mode_production
+    services = Service.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('-date_creation', 'designation')
 
     if q:
         services = services.filter(designation__icontains=q)
     if statut:
         services = services.filter(statut=statut)
 
-    # ====================== PAGINATION ======================
-    paginator = Paginator(services, 5)   # 5 services par page
+    paginator = Paginator(services, 5)
 
     try:
         services_page = paginator.page(page_num)
@@ -47,10 +47,10 @@ def service_liste(request):
         services_page = paginator.page(paginator.num_pages)
 
     return render(request, 'services/liste.html', {
-        'services': services_page,          # ← Objet paginé
+        'services': services_page,
         'q':        q,
         'statut':   statut,
-        'total':    Service.objects.filter(societe=societe).count(),
+        'total':    Service.objects.filter(societe=societe, obr_mode_envoye=mode_production).count(),
         'paginator': paginator,             # Pour le template
         'page_obj':  services_page,         # Recommandé
     })
@@ -86,7 +86,8 @@ def service_modifier(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    service = get_object_or_404(Service, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    service = get_object_or_404(Service, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         form = ServiceForm(request.POST, instance=service, societe=societe)
@@ -112,7 +113,8 @@ def service_supprimer(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    service = get_object_or_404(Service, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    service = get_object_or_404(Service, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         # Protection : vérifier si des lignes de facture utilisent ce service

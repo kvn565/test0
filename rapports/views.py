@@ -82,6 +82,8 @@ def rapport_entrees(request):
         qs = qs.filter(date_entree__lte=f['date_fin'])
     if f['produit_id']:
         qs = qs.filter(produit__id=f['produit_id'])
+    
+    qs = filtrer_par_mode(qs, f['mode'])
 
     totaux = qs.aggregate(nb=Count('id'), total_qte=Sum('quantite'))
     totaux['total_valeur'] = sum(e.montant_total for e in qs)
@@ -129,6 +131,8 @@ def rapport_cout_stock(request):
     if f['service_id']:
         qs = qs.filter(service__id=f['service_id'])
 
+    qs = filtrer_par_mode(qs, f['mode'], facture_field='facture__')
+
     ll = list(qs)
 
     totaux_par_devise = {}
@@ -175,6 +179,8 @@ def rapport_sorties(request):
     if f['produit_id']:
         qs = qs.filter(entree_stock__produit__id=f['produit_id'])
 
+    qs = filtrer_par_mode(qs, f['mode'])
+
     totaux = qs.aggregate(nb=Count('id'), total_qte=Sum('quantite'))
     totaux['total_valeur'] = sum(s.montant_total for s in qs)
 
@@ -214,17 +220,20 @@ def rapport_stock_actuel(request):
     if f['produit_id']:
         produits_qs = produits_qs.filter(id=f['produit_id'])
 
+    produits_qs = filtrer_par_mode(produits_qs, f['mode'])
+
     lignes = []
 
     statuts_confirmes = ['ENVOYE', 'VALIDE']
 
+    mode_production = societe.obr_mode_production
     for p in produits_qs:
-        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(t=Sum('quantite'))['t'] or 0
 
         stock = qte_entree - qte_sortie
 
-        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(
+        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
 
@@ -352,15 +361,18 @@ def export_stock_excel(request):
 
     if f['produit_id']:
         produits_qs = produits_qs.filter(id=f['produit_id'])
+    
+    produits_qs = filtrer_par_mode(produits_qs, f['mode'])
 
+    mode_production = societe.obr_mode_production
     statuts_confirmes = ['ENVOYE', 'VALIDE']
     lignes = []
     for p in produits_qs:
-        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(t=Sum('quantite'))['t'] or 0
         stock = qte_entree - qte_sortie
 
-        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(
+        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
         prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
@@ -409,14 +421,17 @@ def export_stock_pdf(request):
     if f['produit_id']:
         produits_qs = produits_qs.filter(id=f['produit_id'])
 
+    produits_qs = filtrer_par_mode(produits_qs, f['mode'])
+
+    mode_production = societe.obr_mode_production
     statuts_confirmes = ['ENVOYE', 'VALIDE']
     lignes = []
     for p in produits_qs:
-        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
-        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_entree = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(t=Sum('quantite'))['t'] or 0
+        qte_sortie = SortieStock.objects.filter(societe=societe, entree_stock__produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(t=Sum('quantite'))['t'] or 0
         stock = qte_entree - qte_sortie
 
-        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes).aggregate(
+        agg = EntreeStock.objects.filter(societe=societe, produit=p, statut_obr__in=statuts_confirmes, obr_mode_envoye=mode_production).aggregate(
             total_qte=Sum('quantite'), total_valeur=Sum('prix_revient')
         )
         prix_moyen = (Decimal(agg['total_valeur'] or 0) / Decimal(agg['total_qte'] or 1)) if agg['total_qte'] else Decimal(p.prix_vente or 0)
@@ -479,6 +494,8 @@ def export_entrees_excel(request):
         qs = qs.filter(date_entree__lte=f['date_fin'])
     if f['produit_id']:
         qs = qs.filter(produit__id=f['produit_id'])
+    
+    qs = filtrer_par_mode(qs, f['mode'])
 
     colonnes = ['Date', 'Type', 'Produit', 'Code', 'Catégorie', 'Fournisseur', 'Quantité', 'Prix Revient', 'Montant Total', 'OBR']
     data = []
@@ -519,6 +536,8 @@ def export_entrees_pdf(request):
         qs = qs.filter(date_entree__lte=f['date_fin'])
     if f['produit_id']:
         qs = qs.filter(produit__id=f['produit_id'])
+    
+    qs = filtrer_par_mode(qs, f['mode'])
 
     colonnes = ['Date', 'Type', 'Produit', 'Code', 'Catégorie', 'Fournisseur', 'Quantité', 'Prix Revient', 'Montant Total', 'OBR']
     data = []
@@ -570,6 +589,8 @@ def export_sorties_excel(request):
     if f['produit_id']:
         qs = qs.filter(entree_stock__produit__id=f['produit_id'])
 
+    qs = filtrer_par_mode(qs, f['mode'])
+
     colonnes = ['Date', 'Type', 'Produit', 'Code', 'Quantité', 'Prix Unitaire', 'Montant Total', 'Commentaire', 'OBR']
     data = []
     for s in qs:
@@ -608,6 +629,8 @@ def export_sorties_pdf(request):
         qs = qs.filter(date_sortie__lte=f['date_fin'])
     if f['produit_id']:
         qs = qs.filter(entree_stock__produit__id=f['produit_id'])
+
+    qs = filtrer_par_mode(qs, f['mode'])
 
     colonnes = ['Date', 'Type', 'Produit', 'Code', 'Quantité', 'Prix Unitaire', 'Montant Total', 'Commentaire', 'OBR']
     
@@ -786,6 +809,8 @@ def export_cout_stock_excel(request):
     if f['service_id']:
         qs = qs.filter(service__id=f['service_id'])
 
+    qs = filtrer_par_mode(qs, f['mode'], facture_field='facture__')
+
     colonnes = ['Facture', 'Date', 'Client', 'Désignation', 'Type', 'Qté', 'PU HT', 'TVA %', 'Montant HT', 'Montant TTC']
     data = []
     for l in qs:
@@ -833,6 +858,8 @@ def export_cout_stock_pdf(request):
         qs = qs.filter(produit__id=f['produit_id'])
     if f['service_id']:
         qs = qs.filter(service__id=f['service_id'])
+
+    qs = filtrer_par_mode(qs, f['mode'], facture_field='facture__')
 
     colonnes = ['Facture', 'Date', 'Client', 'Désignation', 'Type', 'Qté', 'PU HT', 'TVA %', 'Montant HT', 'Montant TTC']
     data = []

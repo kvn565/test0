@@ -31,9 +31,10 @@ from .forms import (
     SocieteForm, CleActivationForm, RevoquerCleForm,
     InscriptionChefForm, ClePayanteForm,
     UtilisateurCreationForm, UtilisateurModificationForm, ChangerMotDePasseForm,
-    SocieteGeranceForm,          # ← Pour gérer gérant, email, numéro de départ
+    SocieteGeranceForm,
     SocieteAdminConfigForm,
     AppConfigForm,
+    ImportFacturesExcelForm,
 )
 
 
@@ -1433,3 +1434,211 @@ def stock_sorties(request):
         'types': SortieStock.TYPE_SORTIE_CHOICES,
         'statuts': SortieStock.STATUT_OBR_CHOICES,
     })
+
+
+# ═══════════════════════════════════════════════════════════════
+#  IMPORT FACTURES EXCEL
+# ═══════════════════════════════════════════════════════════════
+
+@superadmin_required
+def import_factures(request):
+    from decimal import Decimal
+    from datetime import datetime
+    from openpyxl import load_workbook
+    from clients.models import Client
+    from produits.models import Produit
+    from services.models import Service
+    from taux.models import TauxTVA
+    from facturer.models import Facture, LigneFacture
+
+    resultats = None
+
+    if request.method == 'POST':
+        form = ImportFacturesExcelForm(request.POST, request.FILES)
+        if form.is_valid():
+            societe = form.cleaned_data['societe']
+            fichier = form.cleaned_data['fichier']
+
+            try:
+                wb = load_workbook(fichier, read_only=True)
+                ws = wb.active
+                rows = list(ws.iter_rows(min_row=2, values_only=True))
+                headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+
+                col_map = {str(h).strip().lower(): i for i, h in enumerate(headers) if h}
+
+                required = ['type', 'date', 'client', 'designation', 'quantite', 'prix_unitaire', 'tva']
+                missing = [c for c in required if c not in col_map]
+                if missing:
+                    form.add_error('fichier', f"Colonnes manquantes : {', '.join(missing)}")
+                else:
+                    resultats = _traiter_import(societe, rows, col_map, request)
+                    wb.close()
+
+            except Exception as e:
+                form.add_error('fichier', f"Erreur de lecture : {e}")
+    else:
+        form = ImportFacturesExcelForm()
+
+    return render(request, 'superadmin/import_factures.html', {
+        'form': form,
+        'resultats': resultats,
+    })
+
+
+def _traiter_import(societe, rows, col_map, request):
+    from decimal import Decimal
+    from datetime import datetime, date
+    from collections import defaultdict
+    from django.db import transaction
+    from clients.models import Client, TypeClient
+    from produits.models import Produit
+    from services.models import Service
+    from taux.models import TauxTVA
+    from facturer.models import Facture, LigneFacture
+
+    mode_production = societe.obr_mode_production
+
+    def g(key):
+        return col_map.get(key)
+
+    type_client_defaut = TypeClient.objects.filter(societe=societe, est_defaut=True).first()
+    if not type_client_defaut:
+        type_client_defaut = TypeClient.objects.filter(societe=societe).first()
+
+    groupes = defaultdict(list)
+    for r_idx, row in enumerate(rows, start=2):
+        if not row or all(v is None for v in row):
+            continue
+        raw_type = str(row[g('type')] or 'FN').strip().upper()
+        if raw_type not in ['FN', 'FA']:
+            raw_type = 'FN'
+        raw_date = row[g('date')]
+        if isinstance(raw_date, datetime):
+            parsed_date = raw_date.date()
+        elif isinstance(raw_date, date):
+            parsed_date = raw_date
+        else:
+            try:
+                parsed_date = datetime.strptime(str(raw_date).strip(), '%d/%m/%Y').date()
+            except ValueError:
+                parsed_date = date.today()
+        raw_client = str(row[g('client')] or '').strip()
+        if not raw_client:
+            continue
+        cle = (raw_type, parsed_date.isoformat(), raw_client)
+        groupes[cle].append((r_idx, row))
+
+    total_factures = 0
+    total_lignes = 0
+    erreurs = []
+
+    for cle, lignes in groupes.items():
+        raw_type, _, _ = cle
+        try:
+            with transaction.atomic():
+                row0 = lignes[0][1]
+                client_nom = str(row0[g('client')] or '').strip()
+                client_nif = str(row0[g('nif')] or '').strip() if g('nif') is not None else ''
+                client = Client.objects.filter(societe=societe, nom=client_nom).first()
+                if not client and client_nif:
+                    client = Client.objects.filter(societe=societe, nif=client_nif).first()
+                if not client:
+                    client = Client.objects.create(
+                        societe=societe,
+                        nom=client_nom,
+                        nif=client_nif or '',
+                        type_client=type_client_defaut,
+                        assujeti_tva=True,
+                    )
+
+                raw_date_row = row0[g('date')]
+                if isinstance(raw_date_row, datetime):
+                    d = raw_date_row.date()
+                elif isinstance(raw_date_row, date):
+                    d = raw_date_row
+                else:
+                    d = date.today()
+
+                devise = 'BIF'
+                if g('devise') is not None and row0[g('devise')]:
+                    devise = str(row0[g('devise')]).strip().upper()
+
+                mode_raw = 'CAISSE'
+                if g('mode_paiement') is not None and row0[g('mode_paiement')]:
+                    mp = str(row0[g('mode_paiement')]).strip().upper()
+                    if mp in ['CAISSE', 'BANQUE', 'CREDIT', 'AUTRES']:
+                        mode_raw = mp
+
+                ref_originale = ''
+                if g('ref_facture_originale') is not None and row0[g('ref_facture_originale')]:
+                    ref_originale = str(row0[g('ref_facture_originale')]).strip()
+                motif = ''
+                if g('motif') is not None and row0[g('motif')]:
+                    motif = str(row0[g('motif')]).strip()
+
+                facture = Facture(
+                    societe=societe,
+                    type_facture=raw_type,
+                    date_facture=d,
+                    client=client,
+                    devise=devise,
+                    mode_paiement=mode_raw,
+                    bon_commande=ref_originale if raw_type == 'FA' and ref_originale else '',
+                    motif_avoir=motif if raw_type == 'FA' else '',
+                    cree_par=request.user if request.user.is_authenticated else None,
+                )
+                if raw_type == 'FA' and ref_originale:
+                    originale = Facture.objects.filter(societe=societe, numero=ref_originale).first()
+                    if originale:
+                        facture.facture_originale = originale
+                facture.save()
+
+                for _, row_data in lignes:
+                    designation = str(row_data[g('designation')] or '').strip()
+                    if not designation:
+                        continue
+                    try:
+                        quantite = Decimal(str(row_data[g('quantite')] or '1'))
+                    except Exception:
+                        quantite = Decimal('1')
+                    try:
+                        pu = Decimal(str(row_data[g('prix_unitaire')] or '0'))
+                    except Exception:
+                        pu = Decimal('0')
+                    try:
+                        tva_val = int(float(str(row_data[g('tva')] or '0')))
+                    except Exception:
+                        tva_val = 0
+
+                    produit = Produit.objects.filter(societe=societe, designation=designation).first()
+                    service = None
+                    if not produit:
+                        service = Service.objects.filter(societe=societe, designation=designation).first()
+                        if not service:
+                            service = Service.objects.create(
+                                societe=societe, designation=designation, prix=pu,
+                            )
+
+                    taux = (TauxTVA.objects.filter(societe=societe, valeur=Decimal(str(tva_val)), obr_mode_envoye=mode_production).first()
+                            or TauxTVA.objects.filter(societe=societe, valeur=Decimal(str(tva_val))).first()
+                            or TauxTVA.objects.filter(societe=societe, valeur=Decimal('0'), obr_mode_envoye=mode_production).first())
+
+                    LigneFacture.objects.create(
+                        facture=facture,
+                        produit=produit,
+                        service=service if not produit else None,
+                        designation=designation,
+                        quantite=quantite,
+                        prix_vente_tvac=pu,
+                        taux_tva=taux,
+                    )
+                    total_lignes += 1
+
+                facture.recalculer_totaux()
+                total_factures += 1
+
+        except Exception as e:
+            erreurs.append(f"Ligne {lignes[0][0]} : {e}")
+
+    return {'total_factures': total_factures, 'total_lignes': total_lignes, 'erreurs': erreurs}

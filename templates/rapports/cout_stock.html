@@ -18,18 +18,16 @@
 
     <!-- Boutons d'export -->
     <div class="d-flex gap-2 align-items-center">
-        {% if lignes %}
-            {% with request.GET.urlencode as querystring %}
-                <button type="button" class="btn btn-success"
-                    onclick="window.open('{% url 'rapports:export_cout_stock_excel' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
-                    <i class="bi bi-file-earmark-excel"></i> Excel
-                </button>
-                <button type="button" class="btn btn-danger"
-                    onclick="window.open('{% url 'rapports:export_cout_stock_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF
-                </button>
-            {% endwith %}
-        {% endif %}
+        {% with request.GET.urlencode as querystring %}
+            <button type="button" class="btn btn-success"
+                onclick="window.open('{% url 'rapports:export_cout_stock_excel' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button type="button" class="btn btn-danger"
+                onclick="window.open('{% url 'rapports:export_cout_stock_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+        {% endwith %}
 
         <button type="button" class="btn btn-outline-secondary"
             onclick="window.location.href='{% url 'rapports:facturation' %}'">
