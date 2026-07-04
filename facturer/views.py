@@ -220,7 +220,8 @@ def facture_supprimer(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    facture = get_object_or_404(Facture, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    facture = get_object_or_404(Facture, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if facture.statut_obr not in ('EN_ATTENTE', 'ECHEC'):
         messages.error(request, "Impossible de supprimer une facture déjà envoyée ou annulée à l'OBR.")
@@ -244,7 +245,8 @@ def facture_annuler(request, pk):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    facture = get_object_or_404(Facture, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    facture = get_object_or_404(Facture, pk=pk, societe=societe, obr_mode_envoye=mode_production)
     statut = (facture.statut_obr or '').strip().upper()
     motif = request.POST.get('motif', '').strip()
 
@@ -320,7 +322,8 @@ def ajax_creer_facture(request):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    anciennes = Facture.objects.filter(societe=societe, statut_obr='EN_ATTENTE')
+    mode_production = societe.obr_mode_production
+    anciennes = Facture.objects.filter(societe=societe, statut_obr='EN_ATTENTE', obr_mode_envoye=mode_production)
     for anc in anciennes:
         try:
             anc.nettoyer_mouvements_stock()
@@ -378,7 +381,8 @@ def ajax_envoyer_obr(request, pk):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    facture = get_object_or_404(Facture, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    facture = get_object_or_404(Facture, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if facture.statut_obr != 'EN_ATTENTE':
         return JsonResponse({'ok': False, 'error': f"Statut actuel : {facture.get_statut_obr_display()}"}, status=400)
@@ -435,10 +439,12 @@ def ajax_get_factures_client(request, client_id):
     if not client_id:
         return JsonResponse({'ok': True, 'factures': []})
 
+    mode_production = societe.obr_mode_production
     factures = Facture.objects.filter(
         societe=societe,
         client_id=client_id,
-        type_facture='FN'
+        type_facture='FN',
+        obr_mode_envoye=mode_production
     ).select_related('client').order_by('-date_facture', '-numero')
 
     data = [
@@ -463,7 +469,8 @@ def ajax_get_produits_facture_originale(request, facture_id):
     if err:
         return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    facture_originale = get_object_or_404(Facture, pk=facture_id, societe=societe, type_facture='FN')
+    mode_production = societe.obr_mode_production
+    facture_originale = get_object_or_404(Facture, pk=facture_id, societe=societe, type_facture='FN', obr_mode_envoye=mode_production)
     lignes = facture_originale.lignes.filter(produit__isnull=False).select_related('produit', 'taux_tva')
 
     societe_assujettie = getattr(societe, 'assujeti_tva', False)
@@ -486,7 +493,8 @@ def ajax_get_produits_facture_originale(request, facture_id):
     fa_ids_ignore = request.GET.get('exclude_fa_id')
     avoirs = Facture.objects.filter(
         facture_originale=facture_originale,
-        type_facture='FA'
+        type_facture='FA',
+        obr_mode_envoye=mode_production
     )
     if fa_ids_ignore:
         avoirs = avoirs.exclude(pk=int(fa_ids_ignore))
@@ -626,7 +634,8 @@ def ajax_ajouter_ligne(request):
         return JsonResponse({'ok': False, 'error': 'Données invalides'}, status=400)
 
     facture_id = payload.get('facture_id')
-    facture = get_object_or_404(Facture, pk=facture_id, societe=societe)
+    mode_production = societe.obr_mode_production
+    facture = get_object_or_404(Facture, pk=facture_id, societe=societe, obr_mode_envoye=mode_production)
 
     form = LigneFactureForm(
         data={

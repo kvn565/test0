@@ -52,8 +52,9 @@ class ProduitForm(forms.ModelForm):
 
         # ── Queryset catégories ───────────────────────────────────────────────
         if societe:
+            mode_production = getattr(societe, 'obr_mode_production', False)
             self.fields['categorie'].queryset = (
-                Categorie.objects.filter(societe=societe).order_by('nom')
+                Categorie.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
             )
 
             # Gestion taux TVA

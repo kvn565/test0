@@ -54,13 +54,15 @@ class FactureHeaderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if societe:
+            mode_production = getattr(societe, 'obr_mode_production', False)
             self.fields['client'].queryset = Client.objects.filter(
-                societe=societe
+                societe=societe, obr_mode_envoye=mode_production
             ).order_by('nom')
 
             self.fields['facture_originale'].queryset = Facture.objects.filter(
                 societe=societe,
-                type_facture='FN'
+                type_facture='FN',
+                obr_mode_envoye=mode_production
             ).select_related('client').order_by('-date_facture', '-numero')
         else:
             self.fields['client'].queryset = Client.objects.none()
