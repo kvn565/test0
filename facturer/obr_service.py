@@ -337,7 +337,8 @@ def traiter_stock_pour_avoir(facture):
 @require_POST
 def ajax_envoyer_obr(request, pk):
     """Envoi de la facture à l'OBR"""
-    facture = get_object_or_404(Facture, pk=pk, societe=request.user.societe)
+    mode_production = request.user.societe.obr_mode_production
+    facture = get_object_or_404(Facture, pk=pk, societe=request.user.societe, obr_mode_envoye=mode_production)
 
     if facture.statut_obr != 'EN_ATTENTE':
         return JsonResponse({

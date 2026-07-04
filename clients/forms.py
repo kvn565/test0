@@ -108,7 +108,8 @@ class ClientForm(forms.ModelForm):
 
         # Filtrage critique : Afficher uniquement les types de la société courante
         if societe:
-            queryset = TypeClient.objects.filter(societe=societe).order_by('nom')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            queryset = TypeClient.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
             
             # Optionnel : Mettre en évidence le type par défaut
             default_type = queryset.filter(est_defaut=True).first()

@@ -30,7 +30,8 @@ class DevisHeaderForm(forms.ModelForm):
         self.societe = societe
         super().__init__(*args, **kwargs)
         if societe:
-            self.fields['client'].queryset = Client.objects.filter(societe=societe).order_by('nom')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            self.fields['client'].queryset = Client.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
         else:
             self.fields['client'].queryset = Client.objects.none()
         self.fields['client'].empty_label = '-- Choisir un client --'
@@ -68,10 +69,11 @@ class LigneDevisForm(forms.ModelForm):
         self.societe = societe
         self.devis = devis
         if societe:
-            self.fields['produit'].queryset = Produit.objects.filter(societe=societe).order_by('designation')
-            self.fields['service'].queryset = Service.objects.filter(societe=societe).order_by('designation')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            self.fields['produit'].queryset = Produit.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation')
+            self.fields['service'].queryset = Service.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('designation')
             if not societe.assujeti_tva:
-                self.fields['taux_tva'].queryset = TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=getattr(societe, 'obr_mode_production', False))
+                self.fields['taux_tva'].queryset = TauxTVA.objects.filter(societe=societe, valeur=Decimal('0.00'), obr_mode_envoye=mode_production)
             else:
                 self.fields['taux_tva'].queryset = TauxTVA.objects.for_societe(societe)
         self.fields['produit'].required = False
