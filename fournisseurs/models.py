@@ -15,7 +15,7 @@ class Fournisseur(models.Model):
         verbose_name        = "Fournisseur"
         verbose_name_plural = "Fournisseurs"
         ordering            = ['nom']
-        unique_together     = [('societe', 'nom')]
+        unique_together     = [('societe', 'nom', 'obr_mode_envoye')]
 
     def __str__(self):
         return self.nom

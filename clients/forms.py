@@ -31,7 +31,8 @@ class TypeClientForm(forms.ModelForm):
             raise forms.ValidationError("Le nom du type est obligatoire.")
 
         if self.societe:
-            qs = TypeClient.objects.filter(societe=self.societe, nom__iexact=nom)
+            mode_production = getattr(self.societe, 'obr_mode_production', False)
+            qs = TypeClient.objects.filter(societe=self.societe, nom__iexact=nom, obr_mode_envoye=mode_production)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():

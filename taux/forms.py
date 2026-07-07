@@ -46,7 +46,8 @@ class TauxForm(forms.ModelForm):
     def clean_nom(self):
         nom = self.cleaned_data.get('nom')
         if self.societe:
-            qs = TauxTVA.objects.filter(societe=self.societe, nom__iexact=nom)
+            mode_production = getattr(self.societe, 'obr_mode_production', False)
+            qs = TauxTVA.objects.filter(societe=self.societe, nom__iexact=nom, obr_mode_envoye=mode_production)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():

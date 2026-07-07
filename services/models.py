@@ -40,7 +40,7 @@ class Service(models.Model):
         verbose_name = "Service"
         verbose_name_plural = "Services"
         ordering = ['designation']
-        unique_together = [('societe', 'designation')]
+        unique_together = [('societe', 'designation', 'obr_mode_envoye')]
 
     def __str__(self):
         return f"{self.designation} ({self.prix_vente if self.prix_vente else '0.000'})"

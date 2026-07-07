@@ -55,7 +55,7 @@ class Devis(models.Model):
         verbose_name = "Proforma"
         verbose_name_plural = "Proformas"
         ordering = ['-date_creation']
-        unique_together = [('societe', 'numero')]
+        unique_together = [('societe', 'numero', 'obr_mode_envoye')]
         db_table = 'facturer_devis'
 
     def __str__(self):

@@ -138,7 +138,7 @@ class Produit(models.Model):
         verbose_name        = "Produit"
         verbose_name_plural = "Produits"
         ordering            = ['code', 'designation']
-        unique_together     = [('societe', 'code')]
+        unique_together     = [('societe', 'code', 'obr_mode_envoye')]
         indexes = [
             models.Index(fields=['societe', 'code']),
             models.Index(fields=['societe', 'origine']),

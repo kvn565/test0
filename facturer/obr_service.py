@@ -45,12 +45,15 @@ ENDPOINT_ADD_STOCK_MOVE = "/AddStockMovement/"
 
 # ─── URL OBR ───────────────────────────────────────────────────────────────
 def get_obr_base_url(societe):
+    from urllib.parse import urlparse
+    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
     url = getattr(societe, 'obr_base_url', None)
     if url and str(url).strip():
-        return str(url).strip().rstrip('/')
-    host = "ebms.obr.gov.bi"
-    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
-    return f"https://{host}:{port}/ebms_api"
+        parsed = urlparse(str(url).strip())
+        host = parsed.hostname or "ebms.obr.gov.bi"
+        path = parsed.path.rstrip('/') or "/ebms_api"
+        return f"{parsed.scheme}://{host}:{port}{path}"
+    return f"https://ebms.obr.gov.bi:{port}/ebms_api"
 
 
 # ─── TOKEN ─────────────────────────────────────────────────────────────────
@@ -400,34 +403,49 @@ def annuler_facture_obr(facture, motif: str):
             }
 
             url = f"{get_obr_base_url(societe)}{ENDPOINT_CANCEL_INVOICE}"
-            headers = get_obr_headers(societe)
 
             logger.info(f"[OBR Cancel] Tentative annulation facture {facture.numero} (ENVOYE)")
 
-            resp = requests.post(
-                url, 
-                json=payload, 
-                headers=headers, 
-                timeout=TIMEOUT, 
-                verify=VERIFY_CERT
-            )
-
-            if resp.status_code != 200:
+            for attempt in range(1, MAX_RETRIES + 1):
                 try:
+                    headers = get_obr_headers(societe)
+                    resp = requests.post(
+                        url, json=payload, headers=headers,
+                        timeout=TIMEOUT, verify=VERIFY_CERT
+                    )
+
+                    # Token expiré → refresh et réessai
+                    if resp.status_code in (401, 403):
+                        logger.warning(f"[OBR Cancel] Token invalide (tentative {attempt}) → refresh")
+                        cache.delete(CACHE_TOKEN_KEY_TEMPLATE.format(societe_pk=societe.pk))
+                        if attempt == MAX_RETRIES:
+                            raise ValueError("Token OBR invalide après plusieurs tentatives de rafraîchissement")
+                        continue
+
+                    if resp.status_code != 200:
+                        try:
+                            data = resp.json()
+                            error_msg = data.get("msg", f"HTTP {resp.status_code}")
+                        except Exception:
+                            error_msg = resp.text[:300]
+                        raise ValueError(f"Échec OBR : {error_msg}")
+
                     data = resp.json()
-                    error_msg = data.get("msg", f"HTTP {resp.status_code}")
-                except Exception:
-                    error_msg = resp.text[:300]
-                raise ValueError(f"Échec OBR : {error_msg}")
 
-            data = resp.json()
+                    if not data.get("success"):
+                        raise ValueError(data.get("msg") or "Annulation refusée par l'OBR")
 
-            if not data.get("success"):
-                raise ValueError(data.get("msg") or "Annulation refusée par l'OBR")
+                    facture.message_obr = "✓ OBR : " + (data.get("msg", "") or resp.text[:500])
+                    logger.info(f"[OBR Cancel] Succès pour facture {facture.numero}")
+                    break
 
-            facture.message_obr = data.get("msg", "Annulée avec succès par l'OBR")
-
-            logger.info(f"[OBR Cancel] Succès pour facture {facture.numero}")
+                except requests.RequestException as e:
+                    msg = f"Tentative {attempt} - Erreur réseau: {str(e)}"
+                    logger.error(msg)
+                    if attempt < MAX_RETRIES:
+                        time.sleep(BASE_RETRY_DELAY)
+                    else:
+                        raise ValueError(msg)
 
         else:
             # === CAS 2 : Facture EN_ATTENTE ou ECHEC → annulation locale ===
@@ -515,78 +533,6 @@ def annuler_facture_obr(facture, motif: str):
         pending.message = str(e)[:500]
         pending.save(update_fields=['statut', 'message'])
         raise
-
-# ─── REVERSEMENT STOCK OBR (contre-passation) ──────────────────────────────
-
-@transaction.atomic
-def _envoyer_mouvement_obr(mouvement, mouvement_type, facture, societe):
-    """
-    Envoie un mouvement de stock à l'OBR pour la contre-passation.
-    mouvement_type : 'ER' (EntreeStock) ou 'SN' (SortieStock)
-    Succès → ENVOYE, Échec → suppression de l'enregistrement.
-    """
-    is_entree = mouvement_type == 'ER'
-    produit = mouvement.produit if is_entree else mouvement.entree_stock.produit
-
-    if is_entree:
-        envoyer_entree_stock(mouvement)
-    else:
-        envoyer_sortie_stock(mouvement)
-
-    mouvement.refresh_from_db()
-
-    if mouvement.statut_obr != 'ENVOYE':
-        mouvement.delete()
-        raise ValueError(f"Échec envoi OBR {mouvement_type} pour {produit.designation}")
-
-
-def envoyer_reversement_stock_obr(facture):
-    """
-    Contre-passation OBR pour une facture annulée.
-    - FN → EntreeStock (ER) pour remettre en stock
-    - FA → SortieStock (SN) pour enlever le retour
-    """
-    societe = facture.societe
-    lignes = facture.lignes.select_related('produit').all()
-
-    for ligne in lignes:
-        if not ligne.produit:
-            continue
-
-        produit = ligne.produit
-
-        if facture.type_facture == 'FN':
-            entree = EntreeStock.objects.create(
-                societe=societe,
-                produit=produit,
-                quantite=ligne.quantite,
-                prix_revient=produit.prix_moyen_pondere,
-                date_mouvement=timezone.now(),
-                statut_obr='EN_ATTENTE',
-                type_mouvement='ER',
-                description=f"Retour stock FN annulée #{facture.numero}",
-            )
-            try:
-                _envoyer_mouvement_obr(entree, 'ER', facture, societe)
-            except Exception:
-                raise
-
-        elif facture.type_facture == 'FA':
-            sortie = SortieStock.objects.create(
-                societe=societe,
-                entree_stock=EntreeStock.objects.filter(
-                    produit=produit, societe=societe
-                ).order_by('-date_mouvement').first(),
-                quantite=ligne.quantite,
-                date_mouvement=timezone.now(),
-                statut_obr='EN_ATTENTE',
-                type_mouvement='SN',
-                description=f"Contre-passation avoir FA annulée #{facture.numero}",
-            )
-            try:
-                _envoyer_mouvement_obr(sortie, 'SN', facture, societe)
-            except Exception:
-                raise
 
 
 # ─── NETTOYAGE DES DOUBLONS (à utiliser une seule fois) ─────────────────────

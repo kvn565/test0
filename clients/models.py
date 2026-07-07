@@ -25,7 +25,7 @@ class TypeClient(models.Model):
         verbose_name = "Type de client"
         verbose_name_plural = "Types de clients"
         ordering = ['nom']
-        unique_together = [('societe', 'nom')]
+        unique_together = [('societe', 'nom', 'obr_mode_envoye')]
 
     def __str__(self):
         return self.nom
@@ -107,7 +107,7 @@ class Client(models.Model):
         verbose_name = "Client"
         verbose_name_plural = "Clients"
         ordering = ['nom']
-        unique_together = [('societe', 'nif')]
+        unique_together = [('societe', 'nif', 'obr_mode_envoye')]
 
     def __str__(self):
         return f"{self.nom} ({self.type_client.nom if self.type_client else 'Sans type'})"

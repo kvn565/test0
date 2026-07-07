@@ -2,6 +2,7 @@
 import requests
 import logging
 from typing import Tuple, Optional
+from urllib.parse import urlparse, urlunparse
 
 logger = logging.getLogger(__name__)
 
@@ -14,15 +15,17 @@ ENDPOINT_CHECK_TIN = "/checkTIN/"
 def get_obr_base_url(societe) -> str:
     """
     Retourne l'URL de base OBR de la société.
-    Lève une ValueError explicite si non configurée.
+    Utilise toujours le port correspondant au mode actif (TEST=9443, PROD=8443),
+    même si une URL personnalisée est configurée dans obr_base_url.
     """
+    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
     url = getattr(societe, 'obr_base_url', None)
-    if not url or not str(url).strip():
-        raise ValueError(
-            f"URL Base OBR non configurée pour la société '{societe}'. "
-            f"Veuillez renseigner le champ obr_base_url."
-        )
-    return str(url).strip().rstrip('/')
+    if url and str(url).strip():
+        parsed = urlparse(str(url).strip())
+        host = parsed.hostname or "ebms.obr.gov.bi"
+        path = parsed.path.rstrip('/') or "/ebms_api"
+        return f"{parsed.scheme}://{host}:{port}{path}"
+    return f"https://ebms.obr.gov.bi:{port}/ebms_api"
 
 
 def build_obr_url(societe, endpoint: str) -> str:

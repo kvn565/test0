@@ -78,10 +78,10 @@ class TauxTVA(models.Model):
         verbose_name = "Taux TVA"
         verbose_name_plural = "Taux TVA"
         ordering = ['valeur']
-        unique_together = [('societe', 'nom')]
+        unique_together = [('societe', 'nom', 'obr_mode_envoye')]
         constraints = [
             models.UniqueConstraint(
-                fields=['societe', 'valeur'],
+                fields=['societe', 'valeur', 'obr_mode_envoye'],
                 name='unique_taux_valeur_par_societe'
             )
         ]

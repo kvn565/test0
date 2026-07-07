@@ -33,7 +33,7 @@ from weasyprint import HTML
 
 from .models import Facture, LigneFacture, FacturePendingOBR
 from .forms import FactureHeaderForm
-from .obr_service import envoyer_facture_obr, annuler_facture_obr, envoyer_reversement_stock_obr
+from .obr_service import envoyer_facture_obr, annuler_facture_obr
 from produits.models import Produit
 from services.models import Service
 from stock.models import SortieStock, EntreeStock
@@ -275,14 +275,19 @@ def facture_annuler(request, pk):
             if not motif:
                 return JsonResponse({'ok': False, 'error': "Le motif d'annulation est obligatoire."}, status=400)
 
-            annuler_facture_obr(facture, motif=motif)
+            result = annuler_facture_obr(facture, motif=motif)
             facture.refresh_from_db()
 
             if request.session.get('facture_en_cours') == pk:
                 del request.session['facture_en_cours']
                 request.session.modified = True
 
-            return JsonResponse({'ok': True, 'message': f"Facture {facture.display_numero} annulée auprès de l'OBR."})
+            obr_msg = facture.message_obr or ""
+            return JsonResponse({
+                'ok': True,
+                'message': f"Facture {facture.display_numero} annulée avec succès.",
+                'obr_message': obr_msg
+            })
 
         elif statut in ('EN_ATTENTE', 'ECHEC'):
             if request.session.get('facture_en_cours') == pk:
@@ -300,6 +305,88 @@ def facture_annuler(request, pk):
     except Exception as e:
         logger.exception(f"Erreur annulation facture {pk}")
         return JsonResponse({'ok': False, 'error': str(e) or "Erreur interne lors de l'annulation."}, status=500)
+
+
+@login_required
+@require_POST
+def facture_renvoyer_annulation(request, pk):
+    """Réessaie l'annulation OBR pour une facture marquée ANNULE localement mais pas chez OBR"""
+    societe, err = _check_droit(request)
+    if err:
+        return JsonResponse({'ok': False, 'error': err}, status=403)
+
+    mode_production = societe.obr_mode_production
+    try:
+        facture = Facture.objects.get(pk=pk, societe=societe, obr_mode_envoye=mode_production)
+    except Facture.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': "Facture introuvable."}, status=404)
+
+    statut = (facture.statut_obr or '').strip().upper()
+    if statut != 'ANNULE':
+        return JsonResponse({'ok': False, 'error': "Seules les factures annulées localement peuvent être resynchronisées."}, status=400)
+
+    if not facture.invoice_identifier:
+        return JsonResponse({'ok': False, 'error': "Identifiant OBR manquant."}, status=400)
+
+    motif = request.POST.get('motif', '').strip()
+    if not motif:
+        return JsonResponse({'ok': False, 'error': "Le motif d'annulation est obligatoire."}, status=400)
+
+    from django.core.cache import cache
+    import requests
+
+    try:
+        from .obr_service import get_obr_base_url, get_obr_headers, ENDPOINT_CANCEL_INVOICE, CACHE_TOKEN_KEY_TEMPLATE
+        from django.conf import settings
+
+        payload = {
+            "invoice_identifier": facture.invoice_identifier,
+            "cn_motif": motif
+        }
+        url = f"{get_obr_base_url(societe)}{ENDPOINT_CANCEL_INVOICE}"
+
+        for attempt in range(1, 3):
+            headers = get_obr_headers(societe)
+            resp = requests.post(url, json=payload, headers=headers, timeout=45, verify=not settings.DEBUG)
+
+            if resp.status_code in (401, 403):
+                cache.delete(CACHE_TOKEN_KEY_TEMPLATE.format(societe_pk=societe.pk))
+                if attempt == 2:
+                    return JsonResponse({'ok': False, 'error': "Token OBR invalide après rafraîchissement."}, status=400)
+                continue
+            break
+
+        data = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else {}
+        msg_obr = data.get("msg", "") or resp.text[:500]
+
+        # Déjà annulée chez OBR → mise à jour locale
+        if resp.status_code == 400 and "déjà annulée" in msg_obr.lower():
+            facture.message_obr = "✓ OBR : " + msg_obr
+            facture.save(update_fields=['message_obr'])
+            return JsonResponse({
+                'ok': True,
+                'message': "Facture déjà annulée chez OBR. Statut local mis à jour.",
+                'obr_message': "✓ OBR : " + msg_obr
+            })
+
+        if resp.status_code != 200 or not data.get("success"):
+            return JsonResponse({'ok': False, 'error': msg_obr or f"Erreur HTTP {resp.status_code}"}, status=400)
+
+        facture.message_obr = "✓ OBR : " + msg_obr
+        facture.save(update_fields=['message_obr'])
+
+        return JsonResponse({
+            'ok': True,
+            'message': "Annulation synchronisée avec succès.",
+            'obr_message': msg_obr
+        })
+
+    except requests.RequestException as e:
+        return JsonResponse({'ok': False, 'error': f"Erreur réseau: {str(e)}"}, status=500)
+    except Exception as e:
+        logger.exception(f"Erreur renvoi annulation facture {pk}")
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
 
 # ──────────────────────────────────────────────
 #  AJAX — ENVOYER À OBR (corrigé + logs améliorés)
@@ -474,43 +561,51 @@ def ajax_get_produits_facture_originale(request, facture_id):
 @require_http_methods(["GET"])
 @login_required
 def ajax_info_produit(request, pk):
-    societe, err = _check_droit(request)
-    if err:
-        return JsonResponse({'ok': False, 'error': err}, status=403)
+    try:
+        societe, err = _check_droit(request)
+        if err:
+            return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    mode_production = getattr(societe, 'obr_mode_production', False)
-    produit = get_object_or_404(Produit, pk=pk, societe=societe, obr_mode_envoye=mode_production)
+        mode_production = getattr(societe, 'obr_mode_production', False)
+        produit = get_object_or_404(Produit, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
-    taux_tva = int(produit.taux_tva_valeur) if hasattr(produit, 'taux_tva_valeur') else 18
+        taux_tva = int(produit.taux_tva_valeur) if hasattr(produit, 'taux_tva_valeur') else 18
 
-    return JsonResponse({
-        'ok': True,
-        'designation': produit.designation or '—',
-        'prix_ttc': float(produit.prix_vente_tvac or 0),
-        'taux_tva': taux_tva,
-        'stock': float(produit.stock_disponible),        # ← SANS parenthèses !
-    })
+        return JsonResponse({
+            'ok': True,
+            'designation': produit.designation or '—',
+            'prix_ttc': float(produit.prix_vente_tvac or 0),
+            'taux_tva': taux_tva,
+            'stock': float(produit.stock_disponible),
+        })
+    except Exception as e:
+        logger.exception("Erreur info produit")
+        return JsonResponse({'ok': False, 'error': f"Erreur : {str(e)[:200]}"}, status=500)
 
 
 @require_http_methods(["GET"])
 @login_required
 def ajax_info_service(request, pk):
-    societe, err = _check_droit(request)
-    if err:
-        return JsonResponse({'ok': False, 'error': err}, status=403)
+    try:
+        societe, err = _check_droit(request)
+        if err:
+            return JsonResponse({'ok': False, 'error': err}, status=403)
 
-    mode_production = getattr(societe, 'obr_mode_production', False)
-    service = get_object_or_404(Service, pk=pk, societe=societe, obr_mode_envoye=mode_production)
+        mode_production = getattr(societe, 'obr_mode_production', False)
+        service = get_object_or_404(Service, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
-    taux_tva = int(service.taux_tva.valeur) if service.taux_tva and service.taux_tva.valeur is not None else 18
+        taux_tva = int(service.taux_tva.valeur) if service.taux_tva and service.taux_tva.valeur is not None else 18
 
-    return JsonResponse({
-        'ok': True,
-        'designation': service.designation or '—',
-        'prix_ttc': float(service.prix or 0),
-        'taux_tva': taux_tva,
-        'stock': '—',
-    })
+        return JsonResponse({
+            'ok': True,
+            'designation': service.designation or '—',
+            'prix_ttc': float(service.prix or 0),
+            'taux_tva': taux_tva,
+            'stock': '—',
+        })
+    except Exception as e:
+        logger.exception("Erreur info service")
+        return JsonResponse({'ok': False, 'error': f"Erreur : {str(e)[:200]}"}, status=500)
 
 
 # ──────────────────────────────────────────────

@@ -71,7 +71,7 @@ class EntreeStock(models.Model):
         verbose_name        = "Entrée stock"
         verbose_name_plural = "Entrées stock"
         ordering            = ['-date_creation']
-        unique_together     = [('societe', 'produit', 'facture', 'type_entree')]
+        unique_together     = [('societe', 'produit', 'facture', 'type_entree', 'obr_mode_envoye')]
         indexes = [
             models.Index(fields=['societe', 'produit', 'date_entree']),
             models.Index(fields=['statut_obr']),

@@ -29,12 +29,15 @@ def truncate3(value):
 
 
 def get_obr_base_url(societe):
+    from urllib.parse import urlparse
+    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
     url = getattr(societe, 'obr_base_url', None)
     if url and str(url).strip():
-        return str(url).strip().rstrip('/')
-    host = "ebms.obr.gov.bi"
-    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
-    return f"https://{host}:{port}/ebms_api"
+        parsed = urlparse(str(url).strip())
+        host = parsed.hostname or "ebms.obr.gov.bi"
+        path = parsed.path.rstrip('/') or "/ebms_api"
+        return f"{parsed.scheme}://{host}:{port}{path}"
+    return f"https://ebms.obr.gov.bi:{port}/ebms_api"
 
 
 def build_obr_url(societe, endpoint):
