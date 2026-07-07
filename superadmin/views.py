@@ -1530,6 +1530,7 @@ def _traiter_import(societe, rows, col_map, request):
         groupes[cle].append((r_idx, row))
 
     total_factures = 0
+    total_envoyes = 0
     total_lignes = 0
     erreurs = []
 
@@ -1577,6 +1578,27 @@ def _traiter_import(societe, rows, col_map, request):
                 if g('motif') is not None and row0[g('motif')]:
                     motif = str(row0[g('motif')]).strip()
 
+                prefixe = ''
+                if g('prefixe') is not None and row0[g('prefixe')]:
+                    prefixe = str(row0[g('prefixe')]).strip().upper()
+                obr_reg_number = ''
+                obr_reg_date = None
+                if g('obr_registered_number') is not None and row0[g('obr_registered_number')]:
+                    obr_reg_number = str(row0[g('obr_registered_number')]).strip()
+                if g('obr_registered_date') is not None and row0[g('obr_registered_date')]:
+                    try:
+                        dt_naive = datetime.strptime(str(row0[g('obr_registered_date')]).strip(), '%d/%m/%Y %H:%M')
+                    except ValueError:
+                        try:
+                            dt_naive = datetime.strptime(str(row0[g('obr_registered_date')]).strip(), '%d/%m/%Y')
+                        except ValueError:
+                            dt_naive = None
+                    if dt_naive:
+                        try:
+                            obr_reg_date = timezone.make_aware(dt_naive)
+                        except Exception:
+                            obr_reg_date = dt_naive
+
                 facture = Facture(
                     societe=societe,
                     type_facture=raw_type,
@@ -1586,6 +1608,9 @@ def _traiter_import(societe, rows, col_map, request):
                     mode_paiement=mode_raw,
                     bon_commande=ref_originale if raw_type == 'FA' and ref_originale else '',
                     motif_avoir=motif if raw_type == 'FA' else '',
+                    statut_obr='ENVOYE',
+                    obr_registered_number=obr_reg_number or None,
+                    obr_registered_date=obr_reg_date,
                     cree_par=request.user if request.user.is_authenticated else None,
                 )
                 if raw_type == 'FA' and ref_originale:
@@ -1593,6 +1618,14 @@ def _traiter_import(societe, rows, col_map, request):
                     if originale:
                         facture.facture_originale = originale
                 facture.save()
+                final_numero = f"{prefixe}-{facture.numero}" if prefixe else facture.numero
+                if Facture.objects.filter(
+                    societe=societe, numero=final_numero, obr_mode_envoye=facture.obr_mode_envoye
+                ).exclude(pk=facture.pk).exists():
+                    raise ValueError(f"Facture {final_numero} existe déjà (doublon ignoré)")
+                if prefixe and final_numero != facture.numero:
+                    facture.numero = final_numero
+                    facture.save(update_fields=['numero'])
 
                 for _, row_data in lignes:
                     designation = str(row_data[g('designation')] or '').strip()
@@ -1611,18 +1644,21 @@ def _traiter_import(societe, rows, col_map, request):
                     except Exception:
                         tva_val = 0
 
+                    taux = (TauxTVA.objects.filter(societe=societe, valeur=Decimal(str(tva_val)), obr_mode_envoye=mode_production).first()
+                            or TauxTVA.objects.filter(societe=societe, valeur=Decimal(str(tva_val))).first()
+                            or TauxTVA.objects.filter(societe=societe, valeur=Decimal('0'), obr_mode_envoye=mode_production).first())
+
                     produit = Produit.objects.filter(societe=societe, designation=designation).first()
                     service = None
                     if not produit:
                         service = Service.objects.filter(societe=societe, designation=designation).first()
                         if not service:
                             service = Service.objects.create(
-                                societe=societe, designation=designation, prix=pu,
+                                societe=societe, designation=designation, prix_vente=pu, taux_tva=taux,
                             )
-
-                    taux = (TauxTVA.objects.filter(societe=societe, valeur=Decimal(str(tva_val)), obr_mode_envoye=mode_production).first()
-                            or TauxTVA.objects.filter(societe=societe, valeur=Decimal(str(tva_val))).first()
-                            or TauxTVA.objects.filter(societe=societe, valeur=Decimal('0'), obr_mode_envoye=mode_production).first())
+                        elif not service.taux_tva:
+                            service.taux_tva = taux
+                            service.save(update_fields=['taux_tva'])
 
                     LigneFacture.objects.create(
                         facture=facture,
@@ -1637,8 +1673,61 @@ def _traiter_import(societe, rows, col_map, request):
 
                 facture.recalculer_totaux()
                 total_factures += 1
+                total_envoyes += 1
 
         except Exception as e:
             erreurs.append(f"Ligne {lignes[0][0]} : {e}")
 
-    return {'total_factures': total_factures, 'total_lignes': total_lignes, 'erreurs': erreurs}
+    return {'total_factures': total_factures, 'total_envoyes': total_envoyes, 'total_lignes': total_lignes, 'erreurs': erreurs}
+
+
+# ═══════════════════════════════════════════════════════════════
+#  GESTION FACTURES IMPORTÉES (suppression)
+# ═══════════════════════════════════════════════════════════════
+
+@superadmin_required
+def liste_factures_importees(request):
+    from facturer.models import Facture, LigneFacture
+    prefixe = request.GET.get('prefixe', '').strip().upper() or None
+    societe_id = request.GET.get('societe', '').strip()
+
+    qs = Facture.objects.filter(numero__startswith='IMP-').select_related('societe', 'client')
+    if prefixe:
+        qs = qs.filter(numero__startswith=f'{prefixe}-')
+    if societe_id and societe_id.isdigit():
+        qs = qs.filter(societe_id=int(societe_id))
+
+    societes = Societe.objects.all().order_by('nom')
+    paginator = Paginator(qs.order_by('-date_creation'), 10)
+    page = paginator.get_page(request.GET.get('page', 1))
+
+    return render(request, 'superadmin/liste_importees.html', {
+        'factures': page,
+        'societes': societes,
+        'prefixe_courant': prefixe or '',
+        'societe_id_courant': societe_id,
+    })
+
+
+@superadmin_required
+@require_POST
+def supprimer_facture_importee(request, pk):
+    from facturer.models import Facture
+    facture = get_object_or_404(Facture, pk=pk, numero__startswith='IMP-')
+    facture.delete()
+    messages.success(request, f"Facture {facture.numero} supprimée.")
+    return redirect('superadmin:liste_factures_importees')
+
+
+@superadmin_required
+@require_POST
+def vider_factures_importees(request):
+    from facturer.models import Facture
+    societe_id = request.POST.get('societe', '').strip()
+    qs = Facture.objects.filter(numero__startswith='IMP-')
+    if societe_id and societe_id.isdigit():
+        qs = qs.filter(societe_id=int(societe_id))
+    count = qs.count()
+    qs.delete()
+    messages.success(request, f"{count} facture(s) importée(s) supprimée(s).")
+    return redirect('superadmin:liste_factures_importees')

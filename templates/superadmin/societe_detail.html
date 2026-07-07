@@ -1,4 +1,4 @@
-{% extends 'base_superadmin.html' %}
+{% extends 'superadmin/base_superadmin.html' %}
 {% block title %}{{ societe.nom }} — Détail société{% endblock %}
 {% block page_title %}{{ societe.nom }}{% endblock %}
 {% block page_subtitle %}<p style="color:#8a9aaa;font-size:0.82rem;margin:2px 0 0;">NIF : {{ societe.nif }} — <span class="badge-{{ statut_classe }}">{{ statut_affichage }}</span></p>{% endblock %}
@@ -351,3 +351,4 @@
 {% endblock extra_js %}
 
 {% endblock %}
+

@@ -538,6 +538,6 @@ class ImportFacturesExcelForm(forms.Form):
     )
     fichier = forms.FileField(
         label="Fichier Excel (.xlsx)",
-        help_text="Colonnes attendues : type, date, client, nif, designation, quantite, prix_unitaire, tva, devise, mode_paiement, ref_facture_originale, motif",
+        help_text="Colonnes attendues : type, date, client, nif, designation, quantite, prix_unitaire, tva, devise, mode_paiement, ref_facture_originale, motif, prefixe, obr_registered_number, obr_registered_date",
         widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx'}),
     )

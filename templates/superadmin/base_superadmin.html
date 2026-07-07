@@ -324,6 +324,9 @@
         <a href="{% url 'superadmin:import_factures' %}" class="nav-link-item {% block nav_import_factures %}{% endblock %}">
             <i class="bi bi-upload"></i> Import Excel
         </a>
+        <a href="{% url 'superadmin:liste_factures_importees' %}" class="nav-link-item {% block nav_liste_importees %}{% endblock %}">
+            <i class="bi bi-files"></i> Factures importées
+        </a>
 
         <div class="nav-section">Monitoring Stocks</div>
         <a href="{% url 'superadmin:stock_entrees' %}" class="nav-link-item {% block nav_entrees_admin %}{% endblock %}">

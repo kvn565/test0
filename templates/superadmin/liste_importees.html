@@ -1,0 +1,100 @@
+{% extends 'superadmin/base_superadmin.html' %}
+{% block title %}Factures importées — Administration{% endblock %}
+{% block breadcrumb %}<span class="sep">/</span> <span>Factures</span> <span class="sep">/</span> <span>Factures importées</span>{% endblock %}
+{% block nav_liste_importees %}active{% endblock %}
+{% block page_title %}Gestion des factures importées{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4 p-lg-5">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+          <h5 class="fw-semibold mb-0">
+            <i class="bi bi-files me-2 text-primary"></i>Factures importées
+          </h5>
+          <div class="d-flex gap-2">
+            <form method="get" class="d-flex gap-2 align-items-center">
+              <select name="societe" class="form-select form-select-sm" style="width:auto;">
+                <option value="">Toutes sociétés</option>
+                {% for s in societes %}
+                  <option value="{{ s.pk }}" {% if societe_id_courant|stringformat:'s' == s.pk|stringformat:'s' %}selected{% endif %}>{{ s.nom }}</option>
+                {% endfor %}
+              </select>
+              <input type="text" name="prefixe" class="form-control form-control-sm" placeholder="Préfixe" value="{{ prefixe_courant }}" style="width:100px;">
+              <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-funnel"></i></button>
+            </form>
+            <form method="post" action="{% url 'superadmin:vider_factures_importees' %}" onsubmit="return confirm('Supprimer toutes les factures importées ?');">
+              {% csrf_token %}
+              <input type="hidden" name="societe" value="{{ societe_id_courant }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i> Tout supprimer</button>
+            </form>
+          </div>
+        </div>
+
+        {% if messages %}
+          {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags }} alert-dismissible fade show">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover small align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>N° Facture</th>
+                <th>Société</th>
+                <th>Client</th>
+                <th>Date</th>
+                <th>Total TTC</th>
+                <th>Statut</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in factures %}
+                <tr>
+                  <td><code>{{ f.numero }}</code></td>
+                  <td>{{ f.societe.nom }}</td>
+                  <td>{{ f.client.nom }}</td>
+                  <td>{{ f.date_facture|date:'d/m/Y' }}</td>
+                  <td class="text-end">{{ f.total_ttc|floatformat:0 }} {{ f.devise }}</td>
+                  <td><span class="badge bg-secondary">ENVOYE</span></td>
+                  <td class="text-center">
+                    <form method="post" action="{% url 'superadmin:supprimer_facture_importee' f.pk %}" onsubmit="return confirm('Supprimer {{ f.numero }} ?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-x-lg"></i></button>
+                    </form>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">Aucune facture importée.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if factures.has_other_pages %}
+          <nav class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+              {% if factures.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1{% if societe_id_courant %}&societe={{ societe_id_courant }}{% endif %}{% if prefixe_courant %}&prefixe={{ prefixe_courant }}{% endif %}">&laquo;</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ factures.previous_page_number }}{% if societe_id_courant %}&societe={{ societe_id_courant }}{% endif %}{% if prefixe_courant %}&prefixe={{ prefixe_courant }}{% endif %}">{{ factures.previous_page_number }}</a></li>
+              {% endif %}
+              <li class="page-item active"><span class="page-link">{{ factures.number }}</span></li>
+              {% if factures.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ factures.next_page_number }}{% if societe_id_courant %}&societe={{ societe_id_courant }}{% endif %}{% if prefixe_courant %}&prefixe={{ prefixe_courant }}{% endif %}">{{ factures.next_page_number }}</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ factures.paginator.num_pages }}{% if societe_id_courant %}&societe={{ societe_id_courant }}{% endif %}{% if prefixe_courant %}&prefixe={{ prefixe_courant }}{% endif %}">&raquo;</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

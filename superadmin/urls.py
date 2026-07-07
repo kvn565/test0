@@ -64,5 +64,8 @@ urlpatterns = [
     path('transactions/sorties/',               views.stock_sorties,      name='stock_sorties'),
 
     # ── Import Factures ───────────────────────────────────────────
-    path('import-factures/',       views.import_factures,       name='import_factures'),
+    path('import-factures/',                  views.import_factures,              name='import_factures'),
+    path('import-factures/liste/',            views.liste_factures_importees,     name='liste_factures_importees'),
+    path('import-factures/<int:pk>/supprimer/', views.supprimer_facture_importee, name='supprimer_facture_importee'),
+    path('import-factures/vider/',            views.vider_factures_importees,     name='vider_factures_importees'),
 ]
