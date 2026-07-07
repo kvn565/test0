@@ -6,6 +6,9 @@
 {% block content %}
 <div class="row g-4">
 
+    {# Toast container pour notifications OBR #}
+    <div id="obr-toast-container" class="position-fixed top-0 start-50 translate-middle-x pt-4" style="z-index: 9999; pointer-events: none;"></div>
+
     {# En-tête + bouton créer #}
     <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <div>
@@ -200,6 +203,18 @@
                                             data-facture-id="{{ f.pk }}"
                                             data-facture-numero="{{ f.display_numero }}"
                                             data-facture-statut="{{ f.statut_obr }}">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                    {% endif %}
+                                    {% if f.statut_obr == 'ANNULE' %}
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-warning"
+                                            title="Annuler cette facture"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalAnnulerFacture"
+                                            data-facture-id="{{ f.pk }}"
+                                            data-facture-numero="{{ f.display_numero }}"
+                                            data-facture-statut="RENVOYER">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                     {% endif %}
@@ -445,11 +460,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const infoBox    = document.getElementById('info-annulation');
             const required   = document.getElementById('motifRequired');
 
-            if (statut === 'ENVOYE') {
+            if (statut === 'RENVOYER') {
+                motifGroup.style.display = 'block';
+                required.style.display = 'inline';
+                infoBox.innerHTML = '<strong>Facture annulée localement mais pas chez OBR.</strong><br>Renvoyez l\'annulation pour synchroniser avec OBR.';
+                motifField.required = true;
+            } else if (statut === 'ENVOYE') {
                 // Facture envoyée OBR → motif obligatoire
                 motifGroup.style.display = 'block';
                 required.style.display = 'inline';
-                infoBox.innerHTML = '<strong>Facture déjà envoyée à l’OBR.</strong><br>Le motif est obligatoire pour conformité réglementaire.';
+                infoBox.innerHTML = '<strong>Facture déjà envoyée à l\'OBR.</strong><br>Le motif est obligatoire pour conformité réglementaire.';
                 motifField.required = true;
             } else {
                 // EN_ATTENTE ou ECHEC → suppression directe sans motif
@@ -479,25 +499,77 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            if (statut === 'RENVOYER' && !motif) {
+                alert("Le motif est obligatoire pour la synchronisation OBR.");
+                return;
+            }
+
             const formData = new FormData();
             formData.append('motif', motif);
 
-            fetch(`/facturer/${id}/annuler/`, {
+            const url = statut === 'RENVOYER'
+                ? `/facturer/${id}/renvoyer-annulation/`
+                : `/facturer/${id}/annuler/`;
+
+            fetch(url, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}'
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
+            .then(response => response.json().then(data => ({status: response.status, data})))
+            .then(({status, data}) => {
+                if (data.ok) {
+                    showObrToast({
+                        message: data.obr_message || data.message || "Facture annulée avec succès"
+                    });
+                    setTimeout(() => window.location.reload(), 3500);
                 } else {
-                    alert("Une erreur est survenue lors de l'annulation.");
+                    alert(data.error || "Erreur lors de l'opération.");
                 }
             })
             .catch(() => alert("Erreur réseau. Veuillez réessayer."));
         });
+    }
+
+    // ==================== TOAST OBR ====================
+    function showObrToast(data) {
+        const container = document.getElementById('obr-toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            padding: 0; max-width: 520px; width: 90vw; margin-bottom: 12px;
+            border-left: 5px solid #27ae60; overflow: hidden; pointer-events: auto;
+            animation: slideDown 0.4s ease;
+        `;
+
+        toast.innerHTML = `
+            <div style="padding: 16px 20px 12px; display: flex; align-items: flex-start; gap: 12px;">
+                <div style="flex-shrink:0; width: 40px; height: 40px; background: #e8f8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-check-circle-fill" style="color:#27ae60; font-size:1.2rem;"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight: 600; color: #1a6b3a; font-size: 0.95rem; margin-bottom: 4px;">
+                        ${data.message || 'Opération réussie'}
+                    </div>
+                    <div style="font-size: 0.8rem; color: #5a6a7a; line-height: 1.5;">
+                        La facture a été annulée. La page va se recharger...
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.4s, transform 0.4s';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-20px)';
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
     }
 
     // ====================== MODAL CRÉATION (code existant conservé) ======================

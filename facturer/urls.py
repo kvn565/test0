@@ -11,6 +11,7 @@ urlpatterns = [
 
     # ─── Annulation de facture ────────────────────────────────────────────────
     path('<int:pk>/annuler/',             views.facture_annuler,        name='annuler'),
+    path('<int:pk>/renvoyer-annulation/', views.facture_renvoyer_annulation, name='renvoyer-annulation'),
 
     # ─── Impression et PDF ─────────────────────────────────────────────────────
     path('<int:pk>/imprimer/a4/',         views.facture_imprimer_a4,    name='imprimer-a4'),

@@ -84,6 +84,17 @@
                                 <i class="bi bi-x-circle me-1"></i>Annuler la facture
                             </button>
                             {% endif %}
+                            {% if facture.statut_obr == 'ANNULE' %}
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalAnnulerFacture"
+                                    data-facture-id="{{ facture.pk }}"
+                                    data-facture-numero="{{ facture.display_numero }}"
+                                    data-facture-statut="RENVOYER">
+                                <i class="bi bi-x-circle me-1"></i>Annuler la facture
+                            </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -115,6 +126,44 @@
                             &nbsp;|&nbsp; <span class="badge bg-primary" style="font-size:0.65rem;">TEST</span>
                             {% endif %}
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Message OBR pour les factures annulées #}
+    {% if facture.statut_obr == 'ANNULE' and facture.message_obr %}
+    <div class="col-12">
+        <div class="card shadow-sm border-0 border-start border-warning border-4">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="flex-shrink-0" style="width:36px;height:36px;background:#fef3e2;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-info-circle-fill text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2 text-warning fw-bold">Annulation OBR</h6>
+                        <div class="small">{{ facture.message_obr }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Message OBR pour les autres statuts #}
+    {% if facture.statut_obr != 'ENVOYE' and facture.statut_obr != 'ANNULE' and facture.message_obr %}
+    <div class="col-12">
+        <div class="card shadow-sm border-0 border-start border-info border-4">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="flex-shrink-0" style="width:36px;height:36px;background:#e8f4fd;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-chat-dots-fill text-info"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2 text-info fw-bold">Message OBR</h6>
+                        <div class="small">{{ facture.message_obr }}</div>
                     </div>
                 </div>
             </div>
@@ -157,7 +206,7 @@
                             <td><div class="fw-medium">{{ ligne.designation }}</div></td>
                             <td class="text-center small" data-stock-id="{{ ligne.produit.pk|default:'0' }}">
                                 {% if ligne.produit %}
-                                    {{ ligne.produit.stock_projete|truncate3 }}
+                                    {{ ligne.produit.stock_disponible|truncate3 }}
                                 {% else %}
                                     —
                                 {% endif %}
@@ -447,7 +496,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const required   = document.getElementById('motifRequired');
             const infoBox    = document.getElementById('info-annulation');
 
-            if (statut === 'ENVOYE') {
+            if (statut === 'RENVOYER') {
+                motifGroup.style.display = 'block';
+                required.style.display   = 'inline';
+                infoBox.innerHTML = '<strong>Annulation locale uniquement.</strong><br>Renvoyez pour synchroniser avec l\'OBR.';
+            } else if (statut === 'ENVOYE') {
                 motifGroup.style.display = 'block';
                 required.style.display   = 'inline';
                 infoBox.innerHTML = '<strong>Facture déjà envoyée à l\'OBR.</strong><br>Le motif est obligatoire pour l\'annulation.';
@@ -954,8 +1007,8 @@ async function confirmerAnnulation() {
     const motif  = document.getElementById('motifAnnulation').value.trim();
     const statut = (btn.dataset.statut || '').toUpperCase();
 
-    if (statut === 'ENVOYE' && !motif) {
-        alert("Le motif est obligatoire pour une facture envoyée à l'OBR.");
+    if ((statut === 'ENVOYE' || statut === 'RENVOYER') && !motif) {
+        alert("Le motif est obligatoire pour cette opération.");
         return;
     }
 
@@ -967,8 +1020,12 @@ async function confirmerAnnulation() {
     const formData = new FormData();
     formData.append('motif', motif);
 
+    const annulerUrl = statut === 'RENVOYER'
+        ? "{% url 'facturer:renvoyer-annulation' facture.pk %}"
+        : BASE_URLS.annuler;
+
     try {
-        const response = await fetch(BASE_URLS.annuler, {
+        const response = await fetch(annulerUrl, {
             method:  'POST',
             headers: { 'X-CSRFToken': CSRF_TOKEN },
             body:    formData
@@ -977,8 +1034,15 @@ async function confirmerAnnulation() {
         const data = await response.json();
 
         if (data.ok) {
-            alert(data.message || "Opération réussie.");
-            window.location.href = "{% url 'facturer:liste' %}";
+            showObrToast({
+                message: data.obr_message || data.message || "Facture annulée avec succès",
+                registered_number: '',
+                registered_date: '',
+                signature: ''
+            });
+            setTimeout(() => {
+                window.location.href = "{% url 'facturer:liste' %}";
+            }, 4000);
         } else {
             alert(data.error || "Erreur lors de l'opération.");
         }

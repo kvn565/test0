@@ -79,7 +79,7 @@ class Produit(models.Model):
         verbose_name        = "Produit"
         verbose_name_plural = "Produits"
         ordering            = ['code']
-        unique_together     = [('societe', 'code')]   # ✅ unicité par société uniquement
+        unique_together     = [('societe', 'code', 'obr_mode_envoye')]   # ✅ unicité par société et mode
         indexes = [
             models.Index(fields=['societe', 'code']),
             models.Index(fields=['societe', 'origine']),
@@ -265,18 +265,21 @@ class Produit(models.Model):
         Stock visible en temps réel pendant la saisie.
         = stock confirmé (ENVOYE) - lignes FN EN_ATTENTE + lignes FA EN_ATTENTE
         Ne dépend PAS des mouvements SortieStock/EntreeStock (créés seulement après OBR).
+        Filtre par mode TEST/PROD pour éviter les mélanges.
         """
         from django.db.models import Sum, Value
         from django.db.models.functions import Coalesce
 
-        # Import local pour éviter les imports circulaires
         from facturer.models import LigneFacture
+
+        mode_production = self.societe.obr_mode_production
 
         sorties_prevues = LigneFacture.objects.filter(
             produit=self,
             facture__societe=self.societe,
             facture__type_facture='FN',
             facture__statut_obr='EN_ATTENTE',
+            facture__obr_mode_envoye=mode_production,
         ).aggregate(total=Coalesce(Sum('quantite'), Value(Decimal('0'))))['total'] or Decimal('0')
 
         retours_prevus = LigneFacture.objects.filter(
@@ -284,6 +287,7 @@ class Produit(models.Model):
             facture__societe=self.societe,
             facture__type_facture='FA',
             facture__statut_obr='EN_ATTENTE',
+            facture__obr_mode_envoye=mode_production,
         ).aggregate(total=Coalesce(Sum('quantite'), Value(Decimal('0'))))['total'] or Decimal('0')
 
         projete = self.stock_disponible - sorties_prevues + retours_prevus

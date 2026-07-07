@@ -300,31 +300,42 @@ def annuler_facture_obr(facture, motif: str):
 
             logger.info(f"[OBR] Annulation facture {facture.numero} | Société: {societe.nom}")
 
-            resp = requests.post(
-                url, json=payload, headers=get_obr_headers(societe),
-                timeout=TIMEOUT, verify=VERIFY_CERT
-            )
-
-            if resp.status_code in (401, 403):
-                invalidate_obr_token(societe)
-                resp = requests.post(
-                    url, json=payload, headers=get_obr_headers(societe),
-                    timeout=TIMEOUT, verify=VERIFY_CERT
-                )
-
-            if resp.status_code != 200:
+            for attempt in range(1, MAX_RETRIES + 1):
                 try:
+                    resp = requests.post(
+                        url, json=payload, headers=get_obr_headers(societe),
+                        timeout=TIMEOUT, verify=VERIFY_CERT
+                    )
+
+                    if resp.status_code in (401, 403):
+                        logger.warning(f"[OBR Cancel] Token invalide (tentative {attempt}) → refresh")
+                        invalidate_obr_token(societe)
+                        if attempt == MAX_RETRIES:
+                            return {'success': False, 'message': "Token OBR invalide après plusieurs tentatives"}
+                        continue
+
+                    if resp.status_code != 200:
+                        try:
+                            data = resp.json()
+                            msg = data.get("msg", f"HTTP {resp.status_code}")
+                        except:
+                            msg = resp.text[:300]
+                        return {'success': False, 'message': msg}
+
                     data = resp.json()
-                    msg = data.get("msg", f"HTTP {resp.status_code}")
-                except:
-                    msg = resp.text[:300]
-                return {'success': False, 'message': msg}
+                    if not data.get("success"):
+                        return {'success': False, 'message': data.get("msg", "Refus OBR")}
 
-            data = resp.json()
-            if not data.get("success"):
-                return {'success': False, 'message': data.get("msg", "Refus OBR")}
+                    message_obr = "✓ OBR : " + (data.get("msg", "") or resp.text[:500])
+                    break
 
-            message_obr = data.get("msg", "Annulation OBR réussie")
+                except requests.RequestException as e:
+                    msg = f"Tentative {attempt} - Erreur réseau: {str(e)}"
+                    logger.error(msg)
+                    if attempt < MAX_RETRIES:
+                        time.sleep(BASE_RETRY_DELAY)
+                    else:
+                        return {'success': False, 'message': msg}
         else:
             message_obr = f"Annulée localement - Motif : {motif}"
 

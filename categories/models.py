@@ -28,7 +28,7 @@ class Categorie(models.Model):
         verbose_name = "Catégorie"
         verbose_name_plural = "Catégories"
         ordering = ['nom']
-        unique_together = [('societe', 'nom')]
+        unique_together = [('societe', 'nom', 'obr_mode_envoye')]
 
     def __str__(self):
         return self.nom
