@@ -35,6 +35,7 @@ urlpatterns = [
     path('cles/creer/',                         views.creer_cle_activation,  name='creer_cle'),
     path('cles/<int:pk>/',                      views.cle_detail,            name='cle_detail'),
     path('cles/<int:pk>/revoquer/',             views.cle_revoquer,          name='cle_revoquer'),
+    path('cles/<int:pk>/reactiver/',            views.cle_reactiver,         name='cle_reactiver'),
 
     # ── Utilisateurs ──────────────────────────────────────────────
     path('utilisateurs/',                       views.utilisateurs_liste,         name='utilisateurs'),

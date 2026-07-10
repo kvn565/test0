@@ -659,6 +659,31 @@ def cle_revoquer(request, pk):
     return render(request, 'superadmin/cle_revoquer.html', {'cle': cle, 'form': form})
 
 
+@superadmin_required
+@require_POST
+def cle_reactiver(request, pk):
+    """
+    ✅ Irrévocation : réactive une clé révoquée (active=False → active=True → statut=ACTIVE).
+    Inverse de cle_revoquer. Redirige vers la société ou la liste des clés.
+    """
+    cle = get_object_or_404(CleActivation, pk=pk)
+    if cle.statut != 'REVOQUEE':
+        messages.error(request, f"La clé {cle.cle_visible} n'est pas révoquée.")
+        return redirect('superadmin:cle_detail', pk=cle.pk)
+
+    cle.active           = True   # save() recalcule statut → ACTIVE (si utilisee) ou DISPONIBLE
+    cle.motif_revocation = ''
+    cle.save()
+    AuditCle.objects.create(
+        societe=cle.societe, cle=cle, action='REACTIVEE',
+        message=f"Réactivée par {request.user.username}.",
+        ip_address=request.META.get('REMOTE_ADDR'),
+    )
+    messages.success(request, f"Clé {cle.cle_visible} réactivée.")
+    if cle.societe:
+        return redirect('superadmin:societe_detail', pk=cle.societe.pk)
+    return redirect('superadmin:liste_cles')
+
 
 @superadmin_required
 def liste_cles(request):
