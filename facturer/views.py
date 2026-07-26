@@ -440,6 +440,28 @@ def ajax_creer_facture(request):
 # ──────────────────────────────────────────────
 
 @login_required
+@require_http_methods(["GET"])
+def ajax_preview_obr_payload(request, pk):
+    """Retourne le payload JSON qui sera envoyé à l'OBR (sans l'envoyer)"""
+    societe, err = _check_droit(request)
+    if err:
+        return JsonResponse({'ok': False, 'error': err}, status=403)
+
+    facture = get_object_or_404(Facture, pk=pk, societe=societe)
+
+    if facture.lignes.count() == 0:
+        return JsonResponse({'ok': False, 'error': 'Facture vide'}, status=400)
+
+    try:
+        from .obr_service import build_invoice_payload
+        payload = build_invoice_payload(facture)
+        return JsonResponse({'ok': True, 'payload': payload})
+    except Exception as e:
+        logger.exception(f"Erreur preview payload OBR facture {pk}")
+        return JsonResponse({'ok': False, 'error': 'Erreur interne serveur'}, status=500)
+
+
+@login_required
 @require_POST
 def ajax_envoyer_obr(request, pk):
     societe, err = _check_droit(request)
@@ -464,14 +486,22 @@ def ajax_envoyer_obr(request, pk):
                 del request.session['facture_en_cours']
                 request.session.modified = True
 
-            return JsonResponse({
+            response_data = {
                 'ok': True,
                 'message': result.get('message', 'Facture envoyée avec succès à l\'OBR'),
                 'registered_number': facture.obr_registered_number or '',
                 'registered_date': facture.obr_registered_date.isoformat() if facture.obr_registered_date else '',
                 'signature': (facture.electronic_signature or '')[:50] + '...' if facture.electronic_signature and len(facture.electronic_signature) > 50 else (facture.electronic_signature or ''),
                 'date_envoi': facture.date_envoi_obr.isoformat() if facture.date_envoi_obr else '',
-            })
+            }
+
+            # Inclure le payload et la réponse OBR pour l'affichage frontend
+            if 'payload_sent' in result:
+                response_data['payload_sent'] = result['payload_sent']
+            if 'obr_response' in result:
+                response_data['obr_response'] = result['obr_response']
+
+            return JsonResponse(response_data)
         else:
             return JsonResponse({'ok': False, 'error': result.get('message', 'Échec de l\'envoi')}, status=400)
 

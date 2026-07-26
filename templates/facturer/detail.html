@@ -299,6 +299,54 @@
         {% endif %}
     </div>
 
+    {# OBR Payload Preview - Affiché avant envoi pour confirmation #}
+    <div class="col-12" id="obr-preview-section" style="display:none;">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-eye me-2"></i>Aperçu du payload OBR</h6>
+                <button class="btn btn-sm btn-outline-light" onclick="cacherPreviewOBR()"><i class="bi bi-x"></i></button>
+            </div>
+            <div class="card-body p-0">
+                <pre id="obr-preview-content" class="bg-dark text-light p-3 mb-0" style="font-size:0.75rem;max-height:400px;overflow:auto;margin:0;"></pre>
+            </div>
+            <div class="card-footer bg-light d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-secondary" onclick="cacherPreviewOBR()"><i class="bi bi-x me-1"></i>Annuler</button>
+                <button id="btn-confirmer-envoi" class="btn btn-sm btn-primary" onclick="confirmerEnvoiOBR()">
+                    <i class="bi bi-send me-1"></i>Confirmer l'envoi à OBR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# Debug OBR - Affiché après envoi réussi #}
+    <div class="col-12 mt-4" id="obr-debug-section" style="display:none;">
+        <div class="card border-info">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-bug me-2"></i>Debug OBR - Échange complet</h6>
+                <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('obr-debug-section').style.display='none'">
+                    <i class="bi bi-x"></i> Masquer
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="nav nav-tabs" role="tablist">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-payload" role="tab">Payload envoyé</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-response" role="tab">Réponse OBR</button>
+                </div>
+                <div class="tab-content p-3">
+                    <div class="tab-pane fade show active" id="tab-payload" role="tabpanel">
+                        <pre id="obr-payload-content" class="bg-dark text-light p-3 rounded-0 mb-0" style="font-size:0.7rem;max-height:400px;overflow:auto;margin:0;"></pre>
+                    </div>
+                    <div class="tab-pane fade" id="tab-response" role="tabpanel">
+                        <div class="mb-2">
+                            <span id="obr-status-badge" class="badge"></span>
+                        </div>
+                        <pre id="obr-response-content" class="bg-dark text-light p-3 rounded-0 mb-0" style="font-size:0.7rem;max-height:400px;overflow:auto;margin:0;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 {# ====================== MODAL AJOUT LIGNE ====================== #}
@@ -447,6 +495,7 @@ const BASE_URLS = {
     supprimer:            "{% url 'facturer:ajax-supprimer-ligne' %}",
     annuler:              "{% url 'facturer:annuler' facture.pk %}",
     envoyer_obr:          "{% url 'facturer:ajax-envoyer-obr' facture.pk %}",
+    preview_obr:          "{% url 'facturer:ajax-preview-obr-payload' facture.pk %}",
     supprimer_en_attente: "{% url 'facturer:ajax-supprimer-facture-en-attente' %}",
     produits_originale: "{% url 'facturer:ajax_get_produits_facture_originale' 0 %}".replace('0/', '')
 };
@@ -988,9 +1037,22 @@ async function supprimerLigne(ligneId, btn) {
 }
 
 // ==================== TOAST OBR ====================
+let obrDebugData = null; // Stockage global pour le modal debug
+
 function showObrToast(data) {
     const container = document.getElementById('obr-toast-container');
     if (!container) return;
+
+    // Stocker les données debug globalement
+    if (data.payload_sent || data.obr_response) {
+        obrDebugData = {
+            payload_sent: data.payload_sent,
+            obr_response: data.obr_response
+        };
+        
+        // Remplir le panneau debug en bas de page
+        fillObrDebugPanel(data.payload_sent, data.obr_response);
+    }
 
     const toast = document.createElement('div');
     toast.style.cssText = `
@@ -999,6 +1061,13 @@ function showObrToast(data) {
         border-left: 5px solid #27ae60; overflow: hidden; pointer-events: auto;
         animation: slideDown 0.4s ease;
     `;
+
+    const hasDebug = data.payload_sent || data.obr_response;
+    const debugBtn = hasDebug 
+        ? `<button class="btn btn-sm btn-outline-primary ms-2" onclick="showObrDebugModal()">
+                <i class="bi bi-bug me-1"></i>Voir payload/réponse
+           </button>`
+        : '';
 
     toast.innerHTML = `
         <div style="padding: 16px 20px 12px; display: flex; align-items: flex-start; gap: 12px;">
@@ -1017,8 +1086,8 @@ function showObrToast(data) {
             </div>
         </div>
         <div style="padding: 8px 20px; background: #f9fafb; font-size: 0.75rem; color: #8a9aaa; display: flex; justify-content: space-between; align-items: center;">
-            <span>Redirection vers la liste des factures...</span>
-            <i class="bi bi-arrow-right"></i>
+            <span>Redirection vers la liste dans 5s...</span>
+            ${debugBtn}
         </div>
     `;
 
@@ -1032,14 +1101,119 @@ function showObrToast(data) {
     }, 5000);
 }
 
-// ==================== ENVOYER OBR ====================
-async function envoyerOBR() {
-    if (!confirm("Confirmez-vous l'envoi à l'OBR ?")) return;
+function fillObrDebugPanel(payloadSent, obrResponse) {
+    const section = document.getElementById('obr-debug-section');
+    if (!section) return;
+    
+    section.style.display = 'block';
+    
+    // Payload
+    const payloadEl = document.getElementById('obr-payload-content');
+    if (payloadEl && payloadSent) {
+        payloadEl.textContent = JSON.stringify(payloadSent, null, 2);
+    }
+    
+    // Réponse
+    const responseEl = document.getElementById('obr-response-content');
+    const badgeEl = document.getElementById('obr-status-badge');
+    if (responseEl && obrResponse) {
+        responseEl.textContent = JSON.stringify(obrResponse, null, 2);
+        if (badgeEl) {
+            const status = obrResponse.status_code;
+            badgeEl.textContent = 'HTTP ' + (status || 'N/A');
+            badgeEl.className = 'badge ' + (status === 200 ? 'bg-success' : 'bg-danger');
+        }
+    }
+    
+    // Scroll to debug section
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
+// ==================== DEBUG OBR MODAL ====================
+function showObrDebugModal() {
+    const data = window.obrDebugData;
+    if (!data) return;
+    
+    const modalHtml = `
+    <div class="modal fade" id="obrDebugModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title"><i class="bi bi-bug me-2"></i>Debug OBR - Facture envoyée</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="tab-container">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-payload">Payload envoyé</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-response">Réponse OBR</button></li>
+                        </ul>
+                        <div class="tab-content p-3">
+                            <div class="tab-pane fade show active" id="tab-payload">
+                                <pre class="bg-dark text-light p-3 rounded mb-0" style="font-size:0.75rem;max-height:500px;overflow:auto;">${JSON.stringify(data.payload_sent, null, 2)}</pre>
+                            </div>
+                            <div class="tab-pane fade" id="tab-response">
+                                <div class="mb-2">
+                                    <span class="badge bg-${data.obr_response?.status_code === 200 ? 'success' : 'danger'} me-2">HTTP ${data.obr_response?.status_code || 'N/A'}</span>
+                                </div>
+                                <pre class="bg-dark text-light p-3 rounded mb-0" style="font-size:0.75rem;max-height:500px;overflow:auto;">${JSON.stringify(data.obr_response, null, 2)}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    
+    // Remove existing modal if any
+    const existing = document.getElementById('obrDebugModal');
+    if (existing) existing.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('obrDebugModal'));
+    modal.show();
+    
+    // Clean up on hide
+    document.getElementById('obrDebugModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// ==================== ENVOYER OBR (deux étapes : preview → confirmation) ====================
+async function envoyerOBR() {
     const btn = document.getElementById('btn-envoyer-obr');
-    isSubmitting  = true;
     btn.disabled  = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Préparation...';
+
+    try {
+        const response = await fetch(BASE_URLS.preview_obr);
+        const data = await response.json();
+
+        if (data.ok) {
+            const previewEl = document.getElementById('obr-preview-content');
+            previewEl.textContent = JSON.stringify(data.payload, null, 2);
+            document.getElementById('obr-preview-section').style.display = 'block';
+            document.getElementById('obr-preview-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            alert(data.error || "Erreur de prévisualisation du payload OBR");
+        }
+    } catch (e) {
+        alert("Erreur réseau lors de la préparation");
+    } finally {
+        btn.disabled  = false;
+        btn.innerHTML = '<i class="bi bi-send me-2"></i>Envoyer à OBR';
+    }
+}
+
+function cacherPreviewOBR() {
+    document.getElementById('obr-preview-section').style.display = 'none';
+}
+
+async function confirmerEnvoiOBR() {
+    const btnConfirm = document.getElementById('btn-confirmer-envoi');
+    isSubmitting  = true;
+    btnConfirm.disabled  = true;
+    btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
 
     try {
         const response = await fetch(BASE_URLS.envoyer_obr, {
@@ -1048,22 +1222,31 @@ async function envoyerOBR() {
         });
         const data = await response.json();
 
+        console.log('[DEBUG OBR] Réponse AJAX:', data);
+        console.log('[DEBUG OBR] payload_sent:', data.payload_sent);
+        console.log('[DEBUG OBR] obr_response:', data.obr_response);
+
         if (data.ok) {
+            cacherPreviewOBR();
+            window.obrDebugData = {
+                payload_sent: data.payload_sent,
+                obr_response: data.obr_response
+            };
             showObrToast(data);
+            fillObrDebugPanel(data.payload_sent, data.obr_response);
             setTimeout(() => {
                 window.location.href = "{% url 'facturer:liste' %}";
-            }, 4000);
+            }, 3000);
         } else {
             isSubmitting  = false;
-            btn.disabled  = false;
-            btn.innerHTML = '<i class="bi bi-send me-2"></i>Envoyer à OBR';
             alert(data.error || "Erreur d'envoi");
         }
     } catch (e) {
         isSubmitting = false;
-        btn.disabled  = false;
-        btn.innerHTML = '<i class="bi bi-send me-2"></i>Envoyer à OBR';
         alert("Erreur réseau");
+    } finally {
+        btnConfirm.disabled  = false;
+        btnConfirm.innerHTML = '<i class="bi bi-send me-1"></i>Confirmer l\'envoi à OBR';
     }
 }
 

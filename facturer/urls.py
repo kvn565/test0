@@ -39,7 +39,8 @@ urlpatterns = [
          name='ajax_get_produits_facture_originale'),
 
     # ─── Intégration OBR ───────────────────────────────────────────────────────
-    path('ajax/envoyer-obr/<int:pk>/',    views.ajax_envoyer_obr,       name='ajax-envoyer-obr'),
+    path('ajax/envoyer-obr/<int:pk>/',    views.ajax_envoyer_obr,          name='ajax-envoyer-obr'),
+    path('ajax/preview-obr-payload/<int:pk>/', views.ajax_preview_obr_payload, name='ajax-preview-obr-payload'),
 
      path('ajax/supprimer-facture-en-attente/', 
          views.ajax_supprimer_facture_en_attente, 

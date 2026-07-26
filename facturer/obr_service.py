@@ -117,7 +117,7 @@ def build_invoice_payload(facture):
         "invoice_number": str(facture.numero_obr)[:30],
         "invoice_date": datetime_str,
         "invoice_type": str(facture.type_facture)[:2],
-        "tp_type": str(getattr(societe, 'tp_type', '2'))[:2],
+        "tp_type": societe.get_tp_type(),
         "tp_name": str(getattr(societe, 'nom', ''))[:100],
         "tp_TIN": str(getattr(societe, 'nif', ''))[:30],
         "tp_trade_number": str(getattr(societe, 'registre_commerce', ''))[:20],
@@ -132,7 +132,7 @@ def build_invoice_payload(facture):
         "vat_taxpayer": "1" if getattr(societe, 'assujeti_tva', False) else "0",
         "ct_taxpayer": "0",
         "tl_taxpayer": "0",
-        "tp_fiscal_center": str(getattr(societe, 'centre_fiscal', 'DGC'))[:20],
+        "tp_fiscal_center": societe.get_tp_fiscal_center(),
         "tp_activity_sector": str(getattr(societe, 'secteur_activite', 'SERVICE MARCHAND'))[:250],
         "tp_legal_form": str(getattr(societe, 'forme_juridique', 'SARL'))[:50],
         "payment_type": payment_type_obr,
@@ -199,6 +199,8 @@ def envoyer_facture_obr(facture):
 
         url = f"{get_obr_base_url(societe)}{ENDPOINT_ADD_INVOICE}"
 
+        response_data = None
+
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 resp = requests.post(
@@ -208,6 +210,19 @@ def envoyer_facture_obr(facture):
                     timeout=TIMEOUT,
                     verify=VERIFY_CERT
                 )
+
+                # ─── DEBUG: Afficher la réponse OBR dans la console ───
+                logger.info(f"\n{'='*60}\n[OBR RESPONSE] Facture: {facture.numero} | Attempt: {attempt}\n{'='*60}")
+                logger.info(f"Status: {resp.status_code}")
+                logger.info(f"Headers: {dict(resp.headers)}")
+                logger.info(f"Body:\n{resp.text}")
+                logger.info(f"{'='*60}\n")
+
+                response_data = {
+                    'status_code': resp.status_code,
+                    'body': resp.text,
+                    'headers': dict(resp.headers)
+                }
 
                 if resp.status_code in (401, 403):
                     logger.warning("Token invalide → refresh")
@@ -238,37 +253,12 @@ def envoyer_facture_obr(facture):
                         pending.message = data.get("msg", "OK")
                         pending.save()
 
-                        # ====================== SYNCHRO STOCK (sans duplication) ======================
-                        try:
-                            if facture.type_facture == 'FN':
-                                # Mise à jour des sorties SN existantes
-                                sorties = SortieStock.objects.filter(
-                                    facture=facture,
-                                    statut_obr='EN_ATTENTE'
-                                ).select_related('entree_stock', 'entree_stock__produit')
-
-                                for sortie in sorties:
-                                    result = envoyer_sortie_stock(sortie)
-                                    success = result[0] if isinstance(result, tuple) else result.get('success', False)
-                                    msg = result[1] if isinstance(result, tuple) else result.get('message', '')
-
-                                    if success:
-                                        sortie.statut_obr = 'ENVOYE'
-                                        sortie.message_obr = msg or 'Envoyé avec succès'
-                                        sortie.save(update_fields=['statut_obr', 'message_obr'])
-                                    else:
-                                        sortie.statut_obr = 'ECHEC'
-                                        sortie.message_obr = msg or 'Échec envoi'
-                                        sortie.save(update_fields=['statut_obr', 'message_obr'])
-
-                            elif facture.type_facture == 'FA':
-                                # Mise à jour des entrées ER existantes (celles créées dans ajuster_stock)
-                                traiter_stock_pour_avoir(facture)
-
-                        except Exception as stock_err:
-                            logger.warning(f"Facture envoyée mais erreur synchro stock: {stock_err}", exc_info=True)
-
-                        return {'success': True, 'message': data.get("msg", "Facture envoyée avec succès")}
+                        return {
+                            'success': True, 
+                            'message': data.get("msg", "Facture envoyée avec succès"),
+                            'payload_sent': payload,
+                            'obr_response': response_data
+                        }
 
                 # Gestion erreur
                 data = resp.json() if resp.headers.get('content-type', '').startswith('application/json') else {}
@@ -286,7 +276,12 @@ def envoyer_facture_obr(facture):
 
         pending.statut = "FAILED"
         pending.save()
-        return {'success': False, 'message': f"Échec après {MAX_RETRIES} tentatives"}
+        return {
+            'success': False, 
+            'message': f"Échec après {MAX_RETRIES} tentatives",
+            'payload_sent': payload,
+            'obr_response': response_data
+        }
 
     except Exception as e:
         logger.exception(f"[OBR] Erreur critique facture {facture.numero}")
@@ -355,13 +350,21 @@ def ajax_envoyer_obr(request, pk):
     try:
         result = envoyer_facture_obr(facture)
         
-        return JsonResponse({
+        response_data = {
             'ok': True,
             'message': result.get('message', 'Facture envoyée avec succès à l’OBR'),
             'signature': facture.electronic_signature,
             'registered_number': facture.obr_registered_number,
             'date_envoi': facture.date_envoi_obr.isoformat() if facture.date_envoi_obr else None,
-        })
+        }
+        
+        # Inclure le payload et la réponse OBR pour debug (console navigateur)
+        if 'payload_sent' in result:
+            response_data['payload_sent'] = result['payload_sent']
+        if 'obr_response' in result:
+            response_data['obr_response'] = result['obr_response']
+            
+        return JsonResponse(response_data)
     except ValueError as ve:
         return JsonResponse({'ok': False, 'error': str(ve)}, status=400)
     except Exception as e:
