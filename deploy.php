@@ -9,7 +9,25 @@ function log_msg($msg) {
     file_put_contents(LOG_FILE, date('[Y-m-d H:i:s] ') . $msg . "\n", FILE_APPEND);
 }
 
+// -- Durcissement SAFE : aucune commande modifiee ci-dessous --
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+    http_response_code(405);
+    log_msg('ERREUR: Methode non autorisee (' . ($_SERVER['REQUEST_METHOD'] ?? '?') . ')');
+    die('Methode non autorisee');
+}
+
+if (SECRET === 'METTEZ_VOTRE_CLE_ICI' || SECRET === '') {
+    http_response_code(500);
+    log_msg('ERREUR: SECRET webhook non configure dans deploy.php');
+    die('Webhook non configure');
+}
+
 $payload = file_get_contents('php://input');
+if ($payload === false || $payload === '') {
+    http_response_code(400);
+    log_msg('ERREUR: Payload vide');
+    die('Payload vide');
+}
 $sig = 'sha256=' . hash_hmac('sha256', $payload, SECRET);
 
 if (!hash_equals($sig, $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '')) {
