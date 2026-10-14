@@ -57,3 +57,6 @@ coverage.xml
 *.sqlite3
 local_settings.py
 EOFrestart.txt
+
+wibabidb.sql
+*.sql
