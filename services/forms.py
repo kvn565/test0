@@ -37,7 +37,8 @@ class ServiceForm(forms.ModelForm):
                 # Société NON assujettie → Seulement taux 0%
                 self.fields['taux_tva'].queryset = TauxTVA.objects.filter(
                     societe=societe,
-                    valeur=Decimal('0.000')          # ← Mis à jour à 3 décimales
+                    valeur=Decimal('0.000'),          # ← Mis à jour à 3 décimales
+                    obr_mode_envoye=getattr(societe, 'obr_mode_production', False),
                 ).order_by('valeur')
 
                 if self.fields['taux_tva'].queryset.exists():
@@ -46,7 +47,8 @@ class ServiceForm(forms.ModelForm):
             else:
                 # Société assujettie → Tous les taux
                 self.fields['taux_tva'].queryset = TauxTVA.objects.filter(
-                    societe=societe
+                    societe=societe,
+                    obr_mode_envoye=getattr(societe, 'obr_mode_production', False),
                 ).order_by('valeur')
 
             self.fields['taux_tva'].empty_label = '— Sélectionner un taux TVA —'
@@ -58,9 +60,11 @@ class ServiceForm(forms.ModelForm):
     def clean_designation(self):
         designation = self.cleaned_data.get('designation')
         if designation and self.societe:
+            mode_production = getattr(self.societe, 'obr_mode_production', False)
             qs = Service.objects.filter(
                 societe=self.societe,
-                designation__iexact=designation.strip()
+                designation__iexact=designation.strip(),
+                obr_mode_envoye=mode_production
             )
             if self.instance and self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)

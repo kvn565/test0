@@ -14,6 +14,10 @@
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
+            /* Forcer WeasyPrint à respecter les couleurs de fond (background) */
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         @page { size: A4 portrait; margin: 0; }
@@ -37,12 +41,16 @@
 
         .title-bar {
             background: var(--bleu);
+            background-color: var(--bleu);
             color: white;
             padding: 7px 0;
             text-align: center;
             font-size: 13.5pt;
             font-weight: bold;
             margin-bottom: 6mm;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         .parties { display: flex; gap: 10mm; margin-bottom: 7mm; }
@@ -77,8 +85,12 @@
         }
         .main-table th { 
             background: var(--bleu); 
+            background-color: var(--bleu);
             color: white; 
             font-size: 8.8pt; 
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
         }
         .main-table td:nth-child(2), 
         .main-table th:nth-child(2) { 
@@ -96,7 +108,11 @@
         .total-row td { 
             font-weight: bold; 
             background: var(--gris-leger); 
+            background-color: var(--gris-leger);
             font-size: 9pt; 
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         .footer {
@@ -135,7 +151,7 @@
     {% endif %}
 
     <div class="title-bar">
-        FACTURE N° {{ facture.display_numero }} — {{ facture.date_facture|date:"d/m/Y" }} à {{ facture.heure_facture|time:"H:i" }}
+        FACTURE N° {{ facture.display_numero }} — {% if date_identifier %}{{ date_identifier|date:"d/m/Y" }} à {{ date_identifier|date:"H:i" }}{% else %}{{ facture.date_facture|date:"d/m/Y" }} à {{ facture.heure_facture|time:"H:i" }}{% endif %}
     </div>
 
     <div class="parties">
@@ -164,6 +180,7 @@
                 <caption>B. IDENTIFICATEUR DU CLIENT</caption>
                 <tr><td><span class="lbl">Nom du client</span></td><td>: {{ facture.client.nom|default:"Client divers" }}</td></tr>
                 <tr><td><span class="lbl">NIF</span></td><td>: {{ facture.client.nif|default:"—" }}</td></tr>
+                <tr><td><span class="lbl">Téléphone</span></td><td>: {{ facture.client.telephone|default:"—" }}</td></tr>
                 <tr><td><span class="lbl">Résident à</span></td><td>: {{ facture.client.adresse|default:facture.client.adresse_complete|default:"—" }}</td></tr>
                 <tr><td><span class="lbl">Assujetti à la TVA</span></td><td>: {% if facture.client.assujeti_tva %}Oui{% else %}Non{% endif %}</td></tr>
             </table>
@@ -178,10 +195,12 @@
                 <th style="width:4%;">N°</th>
                 <th style="width:34%;">DÉSIGNATION</th>
                 <th style="width:8%;">QTÉ</th>
-                <th style="width:13%;">P.U HTVA</th>
-                <th style="width:13%;">P.T HTVA</th>
+                <th style="width:13%;">P.U</th>
+                <th style="width:13%;">P.T</th>
+                {% if societe.assujeti_tc %}<th>TC</th>{% endif %}
                 <th style="width:14%;">TVA ({{ facture.devise }})</th>
-                <th style="width:14%;">P.T TVAC</th>
+                <th style="width:14%;">P.V TVAC</th>
+                {% if societe.assujeti_pfl %}<th>PFL</th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -197,12 +216,14 @@
                 <td>{{ ligne.quantite|truncate3 }}</td>
                 <td>{{ ligne.prix_unitaire_ht|truncate3 }}</td>
                 <td>{{ ligne.montant_ht|truncate3 }}</td>
+                {% if societe.assujeti_tc %}<td>{{ ligne.montant_ct|truncate3 }}</td>{% endif %}
                 <td>{{ ligne.montant_tva|truncate3 }}</td>
                 <td>{{ ligne.montant_ttc|truncate3 }}</td>
+                {% if societe.assujeti_pfl %}<td>{{ ligne.montant_tl|truncate3 }}</td>{% endif %}
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" style="padding:20px; text-align:center; font-style:italic; color:#666;">
+                <td colspan="{% if societe.assujeti_tc %}{% if societe.assujeti_pfl %}9{% else %}8{% endif %}{% else %}{% if societe.assujeti_pfl %}8{% else %}7{% endif %}{% endif %}" style="padding:20px; text-align:center; font-style:italic; color:#666;">
                     Aucune ligne enregistrée.
                 </td>
             </tr>
@@ -212,8 +233,10 @@
             <tr class="total-row">
                 <td colspan="4" style="text-align:right; padding-right:8px;">TOTAL GÉNÉRAL</td>
                 <td>{{ facture.total_ht|truncate3 }}</td>
+                {% if societe.assujeti_tc %}<td>{{ facture.total_ct|truncate3 }}</td>{% endif %}
                 <td>{{ facture.total_tva|truncate3 }}</td>
                 <td>{{ facture.total_ttc|truncate3 }}</td>
+                {% if societe.assujeti_pfl %}<td>{{ facture.total_tl|truncate3 }}</td>{% endif %}
             </tr>
         </tfoot>
     </table>

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}Taux TVA{% endblock %}
+{% block title %}Taux{% endblock %}
 {% block breadcrumb_parent %}Paramètres{% endblock %}
-{% block breadcrumb_current %}Taux TVA{% endblock %}
+{% block breadcrumb_current %}Taux{% endblock %}
 
 {% block content %}
 
@@ -9,13 +9,13 @@
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="page-title mb-1">
-            <i class="bi bi-percent me-2"></i>Taux TVA
+            <i class="bi bi-percent me-2"></i>Taux
         </h1>
         <p class="text-muted mb-0">
-            {{ total }} taux enregistré{{ total|pluralize:"s" }}
+            {{ total }} taux enregistré{{ total|pluralize:"s" }} (TVA, TC, PFL)
         </p>
     </div>
-    
+
     <a href="{% url 'taux:nouveau' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg"></i> Nouveau taux
     </a>
@@ -31,7 +31,7 @@
     {% endfor %}
 {% endif %}
 
-<!-- Tableau des taux TVA -->
+<!-- Tableau unique de tous les taux -->
 <div class="card shadow-sm border-0">
     {% if taux %}
         <div class="table-responsive">
@@ -39,6 +39,7 @@
                 <thead class="table-light">
                     <tr>
                         <th style="width: 50px;">#</th>
+                        <th>Type</th>
                         <th>Libellé</th>
                         <th>Valeur</th>
                         <th>Créé le</th>
@@ -46,20 +47,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for t in taux %}
+                    {% for ligne in taux %}
                     <tr>
                         <td class="text-muted">{{ forloop.counter }}</td>
-                        <td class="fw-medium">{{ t.nom }}</td>
+                        <td>
+                            {% if ligne.type == 'TVA' %}
+                                <span class="badge bg-primary">TVA</span>
+                            {% elif ligne.type == 'TC' %}
+                                <span class="badge bg-success">TC</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">PFL</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-medium">{{ ligne.obj.nom }}</td>
                         <td>
                             <span class="badge bg-primary-subtle text-primary fw-bold">
-                                {{ t.valeur }} %
+                                {{ ligne.obj.valeur }} %
                             </span>
                         </td>
                         <td class="text-muted small">
-                            {{ t.date_creation|date:"d/m/Y" }}
+                            {{ ligne.obj.date_creation|date:"d/m/Y" }}
                         </td>
                         <td class="text-end">
-                            <a href="{% url 'taux:modifier' t.pk %}" 
+                            <a href="{% url 'taux:modifier_type' ligne.type ligne.obj.pk %}"
                                class="btn btn-sm btn-outline-primary me-1" title="Modifier">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -79,9 +89,9 @@
         <!-- État vide -->
         <div class="text-center py-5 my-5">
             <i class="bi bi-percent display-1 text-muted opacity-50 mb-3 d-block"></i>
-            <h5 class="text-muted mb-2">Aucun taux TVA enregistré</h5>
+            <h5 class="text-muted mb-2">Aucun taux enregistré</h5>
             <p class="text-muted mb-4">
-                Commencez par ajouter votre premier taux de TVA.
+                Commencez par ajouter votre premier taux.
             </p>
             <a href="{% url 'taux:nouveau' %}" class="btn btn-primary">
                 <i class="bi bi-plus-lg"></i> Ajouter un taux

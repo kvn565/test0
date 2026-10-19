@@ -18,25 +18,25 @@
 
     <!-- Boutons Export + Navigation -->
     <div class="d-flex gap-2 align-items-center">
-        {% if lignes %}
-            {% with request.GET.urlencode as querystring %}
-                <a href="{% url 'rapports:export_entrees_excel' %}{% if querystring %}?{{ querystring }}{% endif %}" 
-                   class="btn btn-success" target="_blank">
-                    <i class="bi bi-file-earmark-excel"></i> Excel
-                </a>
-                <a href="{% url 'rapports:export_entrees_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}" 
-                   class="btn btn-danger" target="_blank">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF
-                </a>
-            {% endwith %}
-        {% endif %}
+        {% with request.GET.urlencode as querystring %}
+            <button type="button" class="btn btn-success"
+                onclick="window.open('{% url 'rapports:export_entrees_excel' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button type="button" class="btn btn-danger"
+                onclick="window.open('{% url 'rapports:export_entrees_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}', '_blank')">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+        {% endwith %}
 
-        <a href="{% url 'rapports:sorties' %}" class="btn btn-outline-secondary">
+        <button type="button" class="btn btn-outline-secondary"
+            onclick="window.location.href='{% url 'rapports:sorties' %}'">
             <i class="bi bi-box-arrow-up"></i> Sorties
-        </a>
-        <a href="{% url 'rapports:stock_actuel' %}" class="btn btn-outline-secondary">
+        </button>
+        <button type="button" class="btn btn-outline-secondary"
+            onclick="window.location.href='{% url 'rapports:stock_actuel' %}'">
             <i class="bi bi-archive"></i> Stock actuel
-        </a>
+        </button>
     </div>
 </div>
 
@@ -103,13 +103,13 @@
                             </span>
                         </td>
                         <td>
-                            <div class="fw-medium">{{ e.produit.designation }}</div>
-                            <small class="text-muted">{{ e.produit.code|default:"—" }}</small>
+                            <span class="fw-medium">{{ e.produit.designation }}</span>
+                            <small class="text-muted ms-1">{{ e.produit.code|default:"—" }}</small>
                         </td>
                         <td class="text-muted">{{ e.produit.categorie.nom|default:"—" }}</td>
                         <td class="text-muted">{{ e.fournisseur.nom|default:"—" }}</td>
                         <td class="text-end fw-medium">
-                            {{ e.quantite|default:0 }} {{ e.produit.unite|default:"—" }}
+                            {{ e.quantite|floatformat:3 }} {{ e.produit.unite|default:"—" }}
                         </td>
                         <td class="text-end">
                             {{ e.prix_revient|floatformat:3|default:0 }} 

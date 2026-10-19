@@ -19,12 +19,17 @@ class TypeClient(models.Model):
     )
     nom = models.CharField(max_length=100, verbose_name="Type de client")
     est_defaut = models.BooleanField(default=False, verbose_name="Type par défaut")
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
+
+    # ── Synchronisation locale <-> online ──
+    sync_uuid = models.CharField(max_length=36, unique=True, null=True, blank=True, editable=False)
+    sync_updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
         verbose_name = "Type de client"
         verbose_name_plural = "Types de clients"
         ordering = ['nom']
-        unique_together = [('societe', 'nom')]   # Un type par société
+        unique_together = [('societe', 'nom', 'obr_mode_envoye')]
 
     def __str__(self):
         return self.nom
@@ -32,6 +37,11 @@ class TypeClient(models.Model):
     @property
     def nb_clients(self):
         return self.clients.count()
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
 
 class Client(models.Model):
@@ -78,6 +88,7 @@ class Client(models.Model):
     numero = models.CharField(max_length=20, blank=True, null=True)
 
     telephone = models.CharField(max_length=30, blank=True, null=True, verbose_name="Téléphone")
+    email = models.EmailField(max_length=254, blank=True, null=True, verbose_name="Email")
 
     # ── Champs OBR ───────────────────────────────────────────────────────
     verifie_obr = models.BooleanField(default=False, verbose_name="Vérifié par OBR")
@@ -85,6 +96,12 @@ class Client(models.Model):
     nom_obr_officiel = models.CharField(max_length=150, blank=True, null=True)
 
     # ── Traçabilité ──────────────────────────────────────────────────────
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
+
+    # ── Synchronisation locale <-> online ──
+    sync_uuid = models.CharField(max_length=36, unique=True, null=True, blank=True, editable=False)
+    sync_updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
     cree_par = models.ForeignKey(
         'superadmin.Utilisateur',
         on_delete=models.SET_NULL,
@@ -99,10 +116,15 @@ class Client(models.Model):
         verbose_name = "Client"
         verbose_name_plural = "Clients"
         ordering = ['nom']
-        unique_together = [('societe', 'nif')]
+        unique_together = [('societe', 'nif', 'obr_mode_envoye')]
 
     def __str__(self):
         return f"{self.nom} ({self.type_client.nom if self.type_client else 'Sans type'})"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
     @property
     def vat_customer_payer(self):

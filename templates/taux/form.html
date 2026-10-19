@@ -57,6 +57,23 @@
 
                     <div class="row g-4">
 
+                        <!-- Type de taux -->
+                        {% if creation %}
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Type de taux <span class="text-danger">*</span></label>
+                            <select name="type_taux" class="form-select" onchange="window.location.href='{% url 'taux:nouveau' %}?type='+this.value">
+                                {% for val, lib in types_taux %}
+                                    <option value="{{ val }}" {% if val == type_taux %}selected{% endif %}>{{ lib }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Choisissez TVA, TC ou PFL selon l'assujettissement de la société.</div>
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <span class="badge bg-secondary">Type : {{ type_taux }}</span>
+                        </div>
+                        {% endif %}
+
                         <!-- Libellé -->
                         <div class="col-12">
                             <label class="form-label fw-medium">Libellé <span class="text-danger">*</span></label>

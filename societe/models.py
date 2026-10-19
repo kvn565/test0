@@ -53,12 +53,7 @@ class Societe(models.Model):
 
     # Champs métier
     secteur = models.CharField(max_length=250, blank=True, default='', verbose_name="Secteur d'activité")
-    forme = models.CharField(
-    max_length=120,                    # ← Augmenté
-    blank=True, 
-    default='', 
-    verbose_name="Forme juridique"
-    )
+    forme   = models.CharField(max_length=50,  blank=True, default='', verbose_name="Forme juridique")
 
     # Adresse
     province = models.CharField(max_length=100, blank=True, default='', verbose_name="Province")
@@ -89,8 +84,7 @@ class Societe(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        default="https://ebms.obr.gov.bi:9443/ebms_api",
-        help_text="Laisser vide pour utiliser par défaut"
+        help_text="Laisser vide pour utiliser le port par défaut selon le mode (TEST=9443, PRODUCTION=8443)"
     )
 
     obr_actif = models.BooleanField(default=False, verbose_name="Intégration OBR activée")
@@ -130,15 +124,20 @@ class Societe(models.Model):
         return ', '.join(parts)
 
     # ── Licence ─────────────────────────────────────────────────────────
-    # APRÈS
     @property
     def cle_active(self):
-        today = timezone.localdate()
+        # ✅ CORRECTION : on compare date_fin à timezone.now() (datetime) au lieu de
+        # date_fin__date__gte=localdate. La forme ``__date`` génère un SQL
+        # ``DATE(CONVERT_TZ(date_fin, UTC, <fuseau>))`` qui renvoie NULL si les
+        # tables de fuseaux MySQL ne sont pas chargées (cas par défaut XAMPP/MariaDB),
+        # ce qui rendait TOUTES les sociétés bloquées ("licence tombe en panne /
+        # impossible de se connecter"). La comparaison directe datetime évite ce piège.
+        now = timezone.now()
         return self.cles_activation.filter(
-            statut='ACTIVE',          # ← uniquement les clés déjà saisies par le chef
-            utilisee=True,            # ← double vérification : le chef a bien activé
+            statut='ACTIVE',
             active=True,
-            date_fin__date__gte=today,
+            date_debut__lte=now,
+            date_fin__gte=now,
         ).order_by('-date_creation').first()
 
     @property
@@ -206,6 +205,8 @@ class Societe(models.Model):
         return "1" if self.assujeti_pfl else "0"
 
     def get_tp_fiscal_center(self):
+        if not self.centre_fiscale:
+            return ''
         mapping = {
             'DGC':    'DGC',
             'DMC':    'DMC',
@@ -213,4 +214,4 @@ class Societe(models.Model):
             'PRIVEE': 'DMC',
             'SU':     'DPMC',
         }
-        return mapping.get(self.centre_fiscale, 'DMC')
+        return mapping.get(self.centre_fiscale, self.centre_fiscale)

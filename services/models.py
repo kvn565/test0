@@ -31,6 +31,11 @@ class Service(models.Model):
     )
 
     statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default='ACTIF')
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
+
+    # ── Synchronisation locale <-> online ──
+    sync_uuid = models.CharField(max_length=36, unique=True, null=True, blank=True, editable=False)
+    sync_updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
@@ -39,10 +44,15 @@ class Service(models.Model):
         verbose_name = "Service"
         verbose_name_plural = "Services"
         ordering = ['designation']
-        unique_together = [('societe', 'designation')]
+        unique_together = [('societe', 'designation', 'obr_mode_envoye')]
 
     def __str__(self):
         return f"{self.designation} ({self.prix_vente if self.prix_vente else '0.000'})"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
     @property
     def tva_montant(self) -> Decimal:

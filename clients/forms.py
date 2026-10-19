@@ -31,7 +31,8 @@ class TypeClientForm(forms.ModelForm):
             raise forms.ValidationError("Le nom du type est obligatoire.")
 
         if self.societe:
-            qs = TypeClient.objects.filter(societe=self.societe, nom__iexact=nom)
+            mode_production = getattr(self.societe, 'obr_mode_production', False)
+            qs = TypeClient.objects.filter(societe=self.societe, nom__iexact=nom, obr_mode_envoye=mode_production)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
@@ -54,12 +55,14 @@ class ClientForm(forms.ModelForm):
     """
     class Meta:
         model = Client
-        fields = ['nom', 'nif', 'type_client', 'adresse', 'assujeti_tva']
+        fields = ['nom', 'nif', 'type_client', 'adresse', 'telephone', 'email', 'assujeti_tva']
         labels = {
             'nom': 'Nom / Raison sociale du client',
             'nif': 'NIF',
             'type_client': 'Type de client',
             'adresse': 'Adresse complète',
+            'telephone': 'Téléphone',
+            'email': 'Email',
             'assujeti_tva': 'Assujetti à la TVA',
         }
         widgets = {
@@ -75,6 +78,14 @@ class ClientForm(forms.ModelForm):
                 'class': 'form-control',
                 'rows': 2,
                 'placeholder': 'Ex : Avenue de l\'Indépendance, Quartier Rohero, Bujumbura',
+            }),
+            'telephone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex : +257 79 XX XX XX',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex : client@exemple.com',
             }),
             'type_client': forms.Select(attrs={
                 'class': 'form-select'
@@ -98,7 +109,8 @@ class ClientForm(forms.ModelForm):
 
         # Filtrage critique : Afficher uniquement les types de la société courante
         if societe:
-            queryset = TypeClient.objects.filter(societe=societe).order_by('nom')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            queryset = TypeClient.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
             
             # Optionnel : Mettre en évidence le type par défaut
             default_type = queryset.filter(est_defaut=True).first()

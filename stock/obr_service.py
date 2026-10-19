@@ -30,12 +30,11 @@ def truncate3(value):
 
 def get_obr_base_url(societe):
     url = getattr(societe, 'obr_base_url', None)
-    if not url or not str(url).strip():
-        raise ValueError(
-            f"URL Base OBR non configurée pour la société '{societe}'. "
-            "Veuillez renseigner le champ obr_base_url dans l'administration."
-        )
-    return str(url).strip().rstrip('/')
+    if url and str(url).strip():
+        return str(url).strip().rstrip('/')
+    host = "ebms.obr.gov.bi"
+    port = 8443 if getattr(societe, 'obr_mode_production', False) else 9443
+    return f"https://{host}:{port}/ebms_api"
 
 
 def build_obr_url(societe, endpoint):
@@ -114,6 +113,7 @@ def envoyer_entree_stock(entree):
 
     configured, config_msg = check_obr_configuration(societe)
     if not configured:
+        # Rejet OBR (config manquante) → suppression comme avant
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
         return False, f"❌ {config_msg}"
@@ -123,6 +123,7 @@ def envoyer_entree_stock(entree):
 
     system_id = getattr(societe, "obr_system_id", "").strip()
     if not system_id:
+        # Rejet OBR (System ID manquant) → suppression comme avant
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
         return False, "System ID OBR non configuré."
@@ -180,14 +181,22 @@ def envoyer_entree_stock(entree):
 
         msg = data.get("msg", f"Erreur HTTP {status}")
         logger.warning(f"[OBR FAILED] Entrée #{entree.pk}")
-        
+        # Rejet OBR → suppression comme avant
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
-        
         return False, f"Échec OBR - Enregistrement supprimé ({msg})"
 
+    except requests.exceptions.RequestException as e:
+        # Hors-ligne (réseau) → garder EN_ATTENTE pour reprise automatique
+        logger.error(f"[OBR OFFLINE] Entrée #{entree.pk} - gardée en attente : {e}")
+        EntreeStock.objects.filter(pk=entree.pk).update(
+            statut_obr='EN_ATTENTE',
+            message_obr=f"Hors-ligne - en attente de réenvoi : {str(e)[:100]}",
+        )
+        return False, f"Hors-ligne - mise en attente pour réessai : {str(e)[:100]}"
     except Exception as e:
         logger.error(f"[OBR EXCEPTION] Entrée #{entree.pk}", exc_info=True)
+        # Autre erreur → suppression comme avant
         with transaction.atomic():
             EntreeStock.objects.filter(pk=entree.pk).delete()
         return False, f"Erreur technique - Enregistrement supprimé ({str(e)[:100]})"
@@ -202,6 +211,7 @@ def envoyer_sortie_stock(sortie):
 
     configured, config_msg = check_obr_configuration(societe)
     if not configured:
+        # Rejet OBR (config manquante) → suppression comme avant
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
         return False, f"❌ {config_msg}"
@@ -211,6 +221,7 @@ def envoyer_sortie_stock(sortie):
 
     system_id = getattr(societe, "obr_system_id", "").strip()
     if not system_id:
+        # Rejet OBR (System ID manquant) → suppression comme avant
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
         return False, "System ID OBR non configuré."
@@ -251,14 +262,22 @@ def envoyer_sortie_stock(sortie):
 
         msg = data.get("msg", f"Erreur HTTP {status}")
         logger.warning(f"[OBR FAILED] Sortie #{sortie.pk}")
-        
+        # Rejet OBR → suppression comme avant
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
-        
         return False, f"Échec OBR - Enregistrement supprimé ({msg})"
 
+    except requests.exceptions.RequestException as e:
+        # Hors-ligne (réseau) → garder EN_ATTENTE pour reprise automatique
+        logger.error(f"[OBR OFFLINE] Sortie #{sortie.pk} - gardée en attente : {e}")
+        SortieStock.objects.filter(pk=sortie.pk).update(
+            statut_obr='EN_ATTENTE',
+            message_obr=f"Hors-ligne - en attente de réenvoi : {str(e)[:100]}",
+        )
+        return False, f"Hors-ligne - mise en attente pour réessai : {str(e)[:100]}"
     except Exception as e:
         logger.error(f"[OBR EXCEPTION] Sortie #{sortie.pk}", exc_info=True)
+        # Autre erreur → suppression comme avant
         with transaction.atomic():
             SortieStock.objects.filter(pk=sortie.pk).delete()
         return False, f"Erreur technique - Enregistrement supprimé ({str(e)[:100]})"

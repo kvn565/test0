@@ -46,12 +46,13 @@ class EntreeStockForm(forms.ModelForm):
                     'style': 'background-color:#e9ecef; font-weight:bold; cursor:not-allowed;',
                 })
 
-        # Filtrage par société
+        # Filtrage par société et mode
         if societe:
-            self.fields['fournisseur'].queryset = Fournisseur.objects.filter(societe=societe).order_by('nom')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            self.fields['fournisseur'].queryset = Fournisseur.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
 
             self.fields['produit'].queryset = Produit.objects.filter(
-                societe=societe, statut='ACTIF'
+                societe=societe, statut='ACTIF', obr_mode_envoye=mode_production
             ).order_by('designation')
             
             self.fields['produit'].empty_label = '-- Sélectionner un produit --'
@@ -162,9 +163,11 @@ class SortieStockForm(forms.ModelForm):
 
         # Filtrage des produits en stock
         if societe:
+            mode_production = getattr(societe, 'obr_mode_production', False)
             queryset = EntreeStock.objects.filter(
                 societe=societe,
-                quantite__gt=0
+                quantite__gt=0,
+                obr_mode_envoye=mode_production
             ).select_related('produit')
 
             # Label propre du select (Produit + Quantité disponible)

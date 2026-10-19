@@ -151,6 +151,32 @@
                             {% endif %}
                         </div>
 
+                        <!-- Taux TC (seulement si assujetti TC) -->
+                        {% if assujeti_tc %}
+                        <div class="col-md-6">
+                            <label class="form-label">Taux TC (%)</label>
+                            {{ form.taux_tc }}
+                            {% if form.taux_tc.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.taux_tc.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Taux PFL (seulement si assujetti PFL) -->
+                        {% if assujeti_pfl %}
+                        <div class="col-md-6">
+                            <label class="form-label">Taux PFL (%)</label>
+                            {{ form.taux_pfl }}
+                            {% if form.taux_pfl.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i>{{ form.taux_pfl.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
                         <!-- Statut -->
                         <div class="col-md-6">
                             <label class="form-label">Statut <span class="text-danger">*</span></label>

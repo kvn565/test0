@@ -18,30 +18,30 @@
 
     <!-- Boutons Export -->
     <div class="d-flex gap-2 align-items-center">
-        {% if factures %}
-            {% with request.GET.urlencode as querystring %}
-                <a href="{% url 'rapports:export_facturation_excel' %}{% if querystring %}?{{ querystring }}{% endif %}" 
-                   class="btn btn-success" target="_blank">
-                    <i class="bi bi-file-earmark-excel"></i> Excel
-                </a>
-                <a href="{% url 'rapports:export_facturation_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}" 
-                   class="btn btn-danger" target="_blank">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF
-                </a>
-            {% endwith %}
-        {% endif %}
+        {% with request.GET.urlencode as querystring %}
+            <a class="btn btn-success" target="_blank" rel="noopener"
+                href="{% url 'rapports:export_facturation_excel' %}{% if querystring %}?{{ querystring }}{% endif %}">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a class="btn btn-danger" target="_blank" rel="noopener"
+                href="{% url 'rapports:export_facturation_pdf' %}{% if querystring %}?{{ querystring }}{% endif %}">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </a>
+        {% endwith %}
 
-        <a href="{% url 'rapports:cout_stock' %}" class="btn btn-outline-secondary">
+        <button type="button" class="btn btn-outline-secondary"
+            onclick="window.location.href='{% url 'rapports:cout_stock' %}'">
             <i class="bi bi-calculator"></i> Coût stock vendu
-        </a>
-        <a href="{% url 'rapports:stock_actuel' %}" class="btn btn-outline-secondary">
+        </button>
+        <button type="button" class="btn btn-outline-secondary"
+            onclick="window.location.href='{% url 'rapports:stock_actuel' %}'">
             <i class="bi bi-archive"></i> Stock actuel
-        </a>
+        </button>
     </div>
 </div>
 
 <!-- Filtres -->
-{% with show_service_filter=True %}
+{% with show_service_filter=True show_mode_filter=True %}
     {% include 'rapports/_filtres.html' %}
 {% endwith %}
 
@@ -142,81 +142,82 @@
 </div>
 {% endif %}
 
-<!-- Tableau des Factures -->
+<!-- Tableau des Factures — 22 colonnes niveau ligne (identique à l'Excel) -->
 <div class="card shadow-sm border-0">
-    {% if factures %}
+    {% if lignes_rapport %}
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 small">
                 <thead class="table-light">
                     <tr>
-                        <th>N° Facture</th>
-                        <th>Date</th>
-                        <th>Client</th>
-                        <th>Type</th>
-                        <th>Statut</th>
-                        <th class="text-end">Total HT</th>
+                        <th>No.</th>
+                        <th>Numero</th>
+                        <th>Type de factures</th>
+                        <th>Type de paiement</th>
+                        <th>Status</th>
+                        <th>Code</th>
+                        <th>Produit</th>
+                        <th class="text-end">Qtés</th>
+                        <th class="text-end">P.U HTT</th>
+                        <th class="text-end">TC</th>
+                        <th class="text-end">PHTVA</th>
                         <th class="text-end">TVA</th>
-                        <th class="text-end">Total TTC</th>
-                        <th>Statut OBR</th>
+                        <th class="text-end">PTVAC</th>
+                        <th class="text-end">PF</th>
+                        <th class="text-end">OTT</th>
+                        <th class="text-end">TSCE</th>
+                        <th class="text-end">TOTAL</th>
+                        <th>Date</th>
+                        <th>Auteur</th>
+                        <th>Client</th>
+                        <th>NIF du Client</th>
+                        <th>Devise</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for f in factures %}
+                    {% for r in lignes_rapport %}
                     <tr>
-                        <td>
-                            <a href="{% url 'facturer:detail' f.pk %}" class="fw-semibold text-primary text-decoration-none">
-                                {{ f.numero|default:"—" }}
-                            </a>
-                        </td>
-                        <td class="text-muted small">{{ f.date_facture|date:"d/m/Y"|default:"—" }}</td>
-                        <td class="fw-medium">{{ f.client.nom|default:"—" }}</td>
-                        <td>
-                            <span class="badge {% if f.type_facture == 'FN' %}bg-success-subtle text-success{% else %}bg-warning text-dark{% endif %}">
-                                {{ f.get_type_facture_display|default:f.type_facture }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if f.statut == 'PAYEE' %}
-                                <span class="badge bg-success">Payée</span>
-                            {% elif f.statut == 'IMPAYEE' %}
-                                <span class="badge bg-danger">Impayée</span>
-                            {% elif f.statut == 'PARTIEL' %}
-                                <span class="badge bg-warning text-dark">Partielle</span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ f.statut|default:"—" }}</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end">
-                            {{ f.total_ht|floatformat:3|default:0 }} 
-                            <small class="text-muted">{{ f.devise|default:'BIF' }}</small>
-                        </td>
-                        <td class="text-end text-warning">
-                            {{ f.total_tva|floatformat:3|default:0 }} 
-                            <small class="text-muted">{{ f.devise|default:'BIF' }}</small>
-                        </td>
-                        <td class="text-end fw-bold" style="color:{{ rapport_clr }}">
-                            {{ f.total_ttc|floatformat:3|default:0 }} 
-                            <small class="text-muted">{{ f.devise|default:'BIF' }}</small>
-                            {% if f.type_facture == 'FA' %}<small class="text-danger"> (avoir)</small>{% endif %}
-                        </td>
-                        <td>
-                            {% if f.statut_obr == 'ENVOYE' %}<span class="badge bg-success">Envoyé</span>
-                            {% elif f.statut_obr == 'ECHEC' %}<span class="badge bg-danger">Échec</span>
-                            {% elif f.statut_obr == 'EN_ATTENTE' %}<span class="badge bg-warning text-dark">Attente</span>
-                            {% elif f.statut_obr == 'ANNULE' %}<span class="badge bg-secondary">Annulé</span>
-                            {% else %}<span class="badge bg-secondary">—</span>{% endif %}
-                        </td>
+                        <td class="text-muted">{{ r.no }}</td>
+                        <td class="fw-semibold text-primary">{{ r.numero }}</td>
+                        <td>{{ r.type_facture }}</td>
+                        <td>{{ r.paiement }}</td>
+                        <td><span class="badge bg-secondary">{{ r.statut }}</span></td>
+                        <td class="text-muted">{{ r.code }}</td>
+                        <td class="fw-medium">{{ r.produit }}</td>
+                        <td class="text-end">{{ r.qte|floatformat:3 }}</td>
+                        <td class="text-end">{{ r.pu|floatformat:3 }}</td>
+                        <td class="text-end">{{ r.tc|floatformat:3 }}</td>
+                        <td class="text-end">{{ r.phtva|floatformat:3 }}</td>
+                        <td class="text-end text-warning">{{ r.tva|floatformat:3 }}</td>
+                        <td class="text-end">{{ r.ptvac|floatformat:3 }}</td>
+                        <td class="text-end">{{ r.pfl|floatformat:3 }}</td>
+                        <td class="text-end">{{ r.ott|floatformat:3 }}</td>
+                        <td class="text-end">{{ r.tsce|floatformat:3 }}</td>
+                        <td class="text-end fw-bold" style="color:{{ rapport_clr }}">{{ r.total|floatformat:3 }}</td>
+                        <td class="text-muted small">{{ r.date }}</td>
+                        <td>{{ r.auteur }}</td>
+                        <td class="fw-medium">{{ r.client }}</td>
+                        <td class="text-muted">{{ r.nif_client|default:"—" }}</td>
+                        <td>{{ r.devise }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr class="table-light fw-bold">
-                        <td colspan="5" class="text-end py-3">Totaux Nets (FN - FA) :</td>
-                        <td class="text-end py-3">{{ totaux.total_ht|default:0|floatformat:3 }}</td>
-                        <td class="text-end py-3 text-warning">{{ totaux.total_tva|default:0|floatformat:3 }}</td>
-                        <td class="text-end py-3" style="color:{{ rapport_clr }}">
-                            {{ totaux.total_ttc|default:0|floatformat:3 }}
-                        </td>
+                        <td colspan="7" class="text-end py-3">TOTAUX :</td>
+                        <td class="text-end py-3">{{ tot_lignes.qte|floatformat:3 }}</td>
+                        <td></td>
+                        <td class="text-end py-3">{{ tot_lignes.tc|floatformat:3 }}</td>
+                        <td class="text-end py-3">{{ tot_lignes.phtva|floatformat:3 }}</td>
+                        <td class="text-end py-3 text-warning">{{ tot_lignes.tva|floatformat:3 }}</td>
+                        <td class="text-end py-3">{{ tot_lignes.ptvac|floatformat:3 }}</td>
+                        <td class="text-end py-3">{{ tot_lignes.pfl|floatformat:3 }}</td>
+                        <td class="text-end py-3">{{ tot_lignes.ott|floatformat:3 }}</td>
+                        <td class="text-end py-3">{{ tot_lignes.tsce|floatformat:3 }}</td>
+                        <td class="text-end py-3" style="color:{{ rapport_clr }}">{{ tot_lignes.total|floatformat:3 }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
                         <td></td>
                     </tr>
                 </tfoot>

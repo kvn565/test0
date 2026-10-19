@@ -5,6 +5,8 @@
 
 {% block content %}
 
+<div id="obr-toast-container" class="position-fixed top-0 start-50 translate-middle-x pt-4" style="z-index: 9999; pointer-events: none;"></div>
+
 <div class="row g-4">
 
     {# Fil d'Ariane #}
@@ -82,12 +84,92 @@
                                 <i class="bi bi-x-circle me-1"></i>Annuler la facture
                             </button>
                             {% endif %}
+                            {% if facture.statut_obr == 'ANNULE' %}
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-warning"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalAnnulerFacture"
+                                    data-facture-id="{{ facture.pk }}"
+                                    data-facture-numero="{{ facture.display_numero }}"
+                                    data-facture-statut="RENVOYER">
+                                <i class="bi bi-arrow-repeat me-1"></i>Sync annulation OBR
+                            </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    {# Confirmation OBR #}
+    {% if facture.statut_obr == 'ENVOYE' and facture.obr_registered_number %}
+    <div class="col-12">
+        <div class="card shadow-sm border-0 border-start border-success border-4">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="flex-shrink-0" style="width:32px;height:32px;background:#e8f8f0;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 text-success fw-bold">Confirmé par l'OBR</h6>
+                        <div class="small">
+                            <span class="text-muted">N° enregistrement :</span>
+                            <strong>{{ facture.obr_registered_number }}</strong>
+                            {% if facture.obr_registered_date %}
+                            &nbsp;|&nbsp; <span class="text-muted">Date :</span>
+                            <strong>{{ facture.obr_registered_date|date:"d/m/Y H:i" }}</strong>
+                            {% endif %}
+                            {% if facture.obr_mode_envoye %}
+                            &nbsp;|&nbsp; <span class="badge bg-danger" style="font-size:0.65rem;">PRODUCTION</span>
+                            {% else %}
+                            &nbsp;|&nbsp; <span class="badge bg-primary" style="font-size:0.65rem;">TEST</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Message OBR pour les factures annulées #}
+    {% if facture.statut_obr == 'ANNULE' and facture.message_obr %}
+    <div class="col-12">
+        <div class="card shadow-sm border-0 border-start border-warning border-4">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="flex-shrink-0" style="width:36px;height:36px;background:#fef3e2;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-info-circle-fill text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2 text-warning fw-bold">Annulation OBR</h6>
+                        <div class="small">{{ facture.message_obr }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Message OBR pour les autres statuts #}
+    {% if facture.statut_obr != 'ENVOYE' and facture.statut_obr != 'ANNULE' and facture.message_obr %}
+    <div class="col-12">
+        <div class="card shadow-sm border-0 border-start border-info border-4">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="flex-shrink-0" style="width:36px;height:36px;background:#e8f4fd;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-chat-dots-fill text-info"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2 text-info fw-bold">Message OBR</h6>
+                        <div class="small">{{ facture.message_obr }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     {# Lignes de la facture #}
     <div class="col-12">
@@ -114,7 +196,7 @@
                             <th class="text-end">HT</th>
                             <th class="text-end">TVA</th>
                             <th class="text-end">TTC</th>
-                            {% if facture.statut_obr == 'EN_ATTENTE' %}<th>Actions</th>{% endif %}
+                            {% if facture.statut_obr == 'EN_ATTENTE' %}<th></th>{% endif %}
                         </tr>
                     </thead>
                     <tbody id="tbody-lignes">
@@ -122,8 +204,6 @@
                         <tr id="ligne-{{ ligne.pk }}">
                             <td class="text-muted small">{{ forloop.counter }}</td>
                             <td><div class="fw-medium">{{ ligne.designation }}</div></td>
-                            
-                            <!-- Stock actuel -->
                             <td class="text-center small" data-stock-id="{{ ligne.produit.pk|default:'0' }}">
                                 {% if ligne.produit %}
                                     {{ ligne.produit.stock_disponible|truncate3 }}
@@ -131,38 +211,25 @@
                                     —
                                 {% endif %}
                             </td>
-                            
-                            <!-- TVA % -->
                             <td class="text-center small">
-                                {{ ligne.taux_tva_valeur|default:0|floatformat:2 }}%
+                                {{ ligne.taux_tva_valeur|default:0|floatformat:3 }}%
                             </td>
-                            
-                            <!-- Prix TVAC -->
                             <td class="text-end small">{{ ligne.prix_vente_tvac|truncate3 }}</td>
-                            
-                            <!-- Quantité -->
                             <td class="text-end fw-medium">{{ ligne.quantite|truncate3 }}</td>
-                            
-                            <!-- Montant HT -->
                             <td class="text-end small">{{ ligne.montant_ht|truncate3 }}</td>
-                            
-                            <!-- Montant TVA -->
                             <td class="text-end small">{{ ligne.montant_tva|truncate3 }}</td>
-                            
-                            <!-- Montant TTC -->
                             <td class="text-end fw-bold text-primary">{{ ligne.montant_ttc|truncate3 }}</td>
-                            
                             {% if facture.statut_obr == 'EN_ATTENTE' %}
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary me-1" 
-                                        onclick="ouvrirEdition({{ ligne.pk }}, '{{ ligne.produit_id|default:'' }}', '{{ ligne.service_id|default:'' }}', {{ ligne.quantite|stringformat:'.2f' }}, {{ ligne.prix_vente_tvac|stringformat:'.2f' }}, {{ ligne.taux_tva_valeur|stringformat:'.2f' }})"
-                                        title="Modifier">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="supprimerLigne({{ ligne.pk }}, this)" title="Supprimer">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
+                             <td class="text-end">
+                                 <button class="btn btn-sm btn-outline-primary me-1" 
+                                         onclick="ouvrirEdition({{ ligne.pk }}, '{{ ligne.produit_id|default:'' }}', '{{ ligne.service_id|default:'' }}', {{ ligne.quantite|stringformat:'.2f' }}, {{ ligne.prix_vente_tvac|stringformat:'.2f' }}, {{ ligne.taux_tva|stringformat:'.2f' }})"
+                                         title="Modifier">
+                                     <i class="bi bi-pencil"></i>
+                                 </button>
+                                 <button class="btn btn-sm btn-outline-danger" onclick="supprimerLigne({{ ligne.pk }}, this)" title="Supprimer">
+                                     <i class="bi bi-trash"></i>
+                                 </button>
+                             </td>
                             {% endif %}
                         </tr>
                         {% empty %}
@@ -173,7 +240,6 @@
                         </tr>
                         {% endfor %}
                     </tbody>
-                    
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="6" class="text-end fw-medium">Sous-totaux</td>
@@ -197,9 +263,57 @@
         {% if facture.statut_obr == 'EN_ATTENTE' %}
         <small class="text-muted align-self-center">
             <i class="bi bi-exclamation-triangle-fill text-warning"></i> 
-            Quitter cette page sans valider supprimera automatiquement la facture.
+            Quitter cette page sans valider supprimera automatiquement uniquement un brouillon vide (sans ligne). Une facture contenant des lignes ou déjà en file d'attente d'envoi OBR est conservée.
         </small>
         {% endif %}
+    </div>
+
+    {# OBR Payload Preview - Affiché avant envoi pour confirmation #}
+    <div class="col-12" id="obr-preview-section" style="display:none;">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-eye me-2"></i>Aperçu du payload OBR</h6>
+                <button class="btn btn-sm btn-outline-light" onclick="cacherPreviewOBR()"><i class="bi bi-x"></i></button>
+            </div>
+            <div class="card-body p-0">
+                <pre id="obr-preview-content" class="bg-dark text-light p-3 mb-0" style="font-size:0.75rem;max-height:400px;overflow:auto;margin:0;"></pre>
+            </div>
+            <div class="card-footer bg-light d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-secondary" onclick="cacherPreviewOBR()"><i class="bi bi-x me-1"></i>Annuler</button>
+                <button id="btn-confirmer-envoi" class="btn btn-sm btn-primary" onclick="confirmerEnvoiOBR()">
+                    <i class="bi bi-send me-1"></i>Confirmer l'envoi à OBR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# Debug OBR - Affiché après envoi réussi #}
+    <div class="col-12 mt-4" id="obr-debug-section" style="display:none;">
+        <div class="card border-info">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-bug me-2"></i>Debug OBR - Échange complet</h6>
+                <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('obr-debug-section').style.display='none'">
+                    <i class="bi bi-x"></i> Masquer
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="nav nav-tabs" role="tablist">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-payload" role="tab">Payload envoyé</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-response" role="tab">Réponse OBR</button>
+                </div>
+                <div class="tab-content p-3">
+                    <div class="tab-pane fade show active" id="tab-payload" role="tabpanel">
+                        <pre id="obr-payload-content" class="bg-dark text-light p-3 rounded-0 mb-0" style="font-size:0.7rem;max-height:400px;overflow:auto;margin:0;"></pre>
+                    </div>
+                    <div class="tab-pane fade" id="tab-response" role="tabpanel">
+                        <div class="mb-2">
+                            <span id="obr-status-badge" class="badge"></span>
+                        </div>
+                        <pre id="obr-response-content" class="bg-dark text-light p-3 rounded-0 mb-0" style="font-size:0.7rem;max-height:400px;overflow:auto;margin:0;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -350,6 +464,7 @@ const BASE_URLS = {
     supprimer:            "{% url 'facturer:ajax-supprimer-ligne' %}",
     annuler:              "{% url 'facturer:annuler' facture.pk %}",
     envoyer_obr:          "{% url 'facturer:ajax-envoyer-obr' facture.pk %}",
+    preview_obr:          "{% url 'facturer:ajax-preview-obr-payload' facture.pk %}",
     supprimer_en_attente: "{% url 'facturer:ajax-supprimer-facture-en-attente' %}",
     produits_originale: "{% url 'facturer:ajax_get_produits_facture_originale' 0 %}".replace('0/', '')
 };
@@ -430,7 +545,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const required   = document.getElementById('motifRequired');
             const infoBox    = document.getElementById('info-annulation');
 
-            if (statut === 'ENVOYE') {
+            if (statut === 'RENVOYER') {
+                motifGroup.style.display = 'block';
+                required.style.display   = 'inline';
+                infoBox.innerHTML = '<strong>Annulation locale uniquement.</strong><br>Renvoyez pour synchroniser avec l\'OBR.';
+            } else if (statut === 'ENVOYE') {
                 motifGroup.style.display = 'block';
                 required.style.display   = 'inline';
                 infoBox.innerHTML = '<strong>Facture déjà envoyée à l\'OBR.</strong><br>Le motif est obligatoire pour l\'annulation.';
@@ -493,8 +612,10 @@ function reinitModalLigne() {
     document.getElementById('sel-service').disabled = false;
 
     document.getElementById('input-prix').value = '';
-    document.getElementById('input-qte').value  = '';
-    document.getElementById('input-qte').max    = '';
+    const inputQte = document.getElementById('input-qte');
+    inputQte.value  = '';
+    inputQte.max    = '';
+    inputQte.dataset.stock = '';
 
     document.getElementById('details-ligne').style.display  = 'none';
     document.getElementById('btn-ajouter-ligne').disabled   = true;
@@ -528,6 +649,9 @@ function ouvrirEdition(pk, produitId, serviceId, qte, prix, tva) {
     document.getElementById('btn-ajouter-ligne').disabled  = false;
 
     modalLigne.show();
+    if (produitId) {
+        chargerInfoProduit();
+    }
     calculerPreview();
 }
 
@@ -543,7 +667,8 @@ async function chargerProduitsFactureOriginale() {
     selectProduit.innerHTML = '<option value="">-- Chargement...</option>';
     produitsOriginaux = {};
 
-    const url = BASE_URLS.produits_originale + FACTURE_ORIGINALE_ID + '/';
+    let url = BASE_URLS.produits_originale + FACTURE_ORIGINALE_ID + '/';
+    if (FACTURE_ID) url += '?exclude_fa_id=' + FACTURE_ID;
     console.log('[FA] Chargement produits FA depuis :', url);
 
     try {
@@ -610,6 +735,7 @@ async function chargerInfoProduit() {
                     const inputQte = document.getElementById('input-qte');
                     inputQte.value = qteVendue.toFixed(3);
                     inputQte.max   = qteVendue;
+                    inputQte.dataset.stock = qteVendue;
                     calculerPreview();
                 }
             }
@@ -642,6 +768,15 @@ function afficherDetails(data) {
     document.getElementById('input-prix').value = Number(data.prix_ttc || 0).toFixed(3);
     document.getElementById('details-ligne').style.display = 'block';
     document.getElementById('btn-ajouter-ligne').disabled  = false;
+    const inputQte = document.getElementById('input-qte');
+    const stockVal = parseFloat(data.stock);
+    if (!isNaN(stockVal)) {
+        inputQte.max = stockVal;
+        inputQte.dataset.stock = stockVal;
+    } else {
+        inputQte.removeAttribute('max');
+        inputQte.dataset.stock = '';
+    }
     calculerPreview();
 }
 
@@ -650,11 +785,22 @@ function calculerPreview() {
     const prixTvac = parseFloat(document.getElementById('input-prix').value) || 0;
     const qte      = parseFloat(document.getElementById('input-qte').value)  || 0;
     const tauxTva  = _getTva();
+    const stockMax = parseFloat(document.getElementById('input-qte').dataset.stock);
 
     if (qte <= 0 || prixTvac <= 0) {
         document.getElementById('preview').style.display = 'none';
         return;
     }
+
+    if (!isNaN(stockMax) && qte > stockMax) {
+        const label = FACTURE_TYPE === 'FA' ? 'quantité vendue' : 'stock disponible';
+        showError(`Quantité (${qte.toFixed(3)}) dépasse la ${label} (${stockMax.toFixed(3)})`);
+        document.getElementById('btn-ajouter-ligne').disabled = true;
+        document.getElementById('preview').style.display = 'none';
+        return;
+    }
+    showError('');
+    document.getElementById('btn-ajouter-ligne').disabled = false;
 
     let ht = prixTvac * qte;
     let montantTva = 0;
@@ -684,6 +830,11 @@ async function ajouterLigne() {
     }
     if (!prixTvac || prixTvac <= 0) return showError('Prix TVAC obligatoire');
     if (!qte || qte <= 0)           return showError('Quantité obligatoire et supérieure à 0');
+    const stockMax = parseFloat(document.getElementById('input-qte').dataset.stock);
+    if (!isNaN(stockMax) && qte > stockMax) {
+        const label = FACTURE_TYPE === 'FA' ? 'quantité vendue' : 'stock disponible';
+        return showError(`Quantité (${qte.toFixed(3)}) dépasse la ${label} (${stockMax.toFixed(3)})`);
+    }
 
     const url     = editingLigneId ? BASE_URLS.modifier : BASE_URLS.ajouter;
     const payload = {
@@ -737,9 +888,9 @@ async function ajouterLigne() {
 
 // ==================== DOM LIGNE ====================
 function updateLigneInTable(data, isEdit) {
-    const tbody = document.getElementById('tbody-lignes');
-    const rowId = `ligne-${data.ligne_id}`;
-    let tr = document.getElementById(rowId);
+    const tbody  = document.getElementById('tbody-lignes');
+    const rowId  = `ligne-${data.ligne_id}`;
+    let tr       = document.getElementById(rowId);
 
     if (!tr) {
         const emptyRow = document.getElementById('ligne-vide');
@@ -749,35 +900,20 @@ function updateLigneInTable(data, isEdit) {
         tbody.appendChild(tr);
     }
 
-    const index = isEdit ? tr.cells[0].textContent : (tbody.rows.length + 1);
+    const index = isEdit ? tr.cells[0].textContent : tbody.rows.length;
 
     tr.innerHTML = `
         <td class="text-muted small">${index}</td>
         <td><div class="fw-medium">${data.designation}</div></td>
-        
-        <!-- Stock actuel -->
         <td class="text-center small" data-stock-id="${data.produit_id || 'null'}">
             ${data.stock_apres !== null ? truncate3(data.stock_apres) : '—'}
         </td>
-        
-        <!-- TVA % -->
         <td class="text-center small">${data.taux_tva}%</td>
-        
-        <!-- Prix TVAC -->
         <td class="text-end small">${Number(data.prix_tvac).toFixed(3)}</td>
-        
-        <!-- Quantité -->
         <td class="text-end fw-medium">${Number(data.quantite).toFixed(3)}</td>
-        
-        <!-- HT -->
         <td class="text-end small">${Number(data.montant_ht).toFixed(3)}</td>
-        
-        <!-- TVA -->
         <td class="text-end small">${Number(data.montant_tva).toFixed(3)}</td>
-        
-        <!-- TTC -->
         <td class="text-end fw-bold text-primary">${Number(data.montant_ttc).toFixed(3)}</td>
-        
         <td class="text-end">
             <div class="btn-group">
                 <button class="btn btn-sm btn-outline-primary"
@@ -842,14 +978,169 @@ async function supprimerLigne(ligneId, btn) {
     }
 }
 
-// ==================== ENVOYER OBR ====================
-async function envoyerOBR() {
-    if (!confirm("Confirmez-vous l'envoi à l'OBR ?")) return;
+// ==================== TOAST OBR ====================
+let obrDebugData = null;
 
+function showObrToast(data) {
+    const container = document.getElementById('obr-toast-container');
+    if (!container) return;
+
+    if (data.payload_sent || data.obr_response) {
+        obrDebugData = {
+            payload_sent: data.payload_sent,
+            obr_response: data.obr_response
+        };
+        fillObrDebugPanel(data.payload_sent, data.obr_response);
+    }
+
+    const hasDebug = data.payload_sent || data.obr_response;
+    const debugBtn = hasDebug
+        ? `<button class="btn btn-sm btn-outline-primary ms-2" onclick="showObrDebugModal()">
+                <i class="bi bi-bug me-1"></i>Voir payload/réponse
+           </button>`
+        : '';
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        padding: 0; max-width: 520px; width: 90vw; margin-bottom: 12px;
+        border-left: 5px solid #27ae60; overflow: hidden; pointer-events: auto;
+        animation: slideDown 0.4s ease;
+    `;
+    toast.innerHTML = `
+        <div style="padding: 16px 20px 12px; display: flex; align-items: flex-start; gap: 12px;">
+            <div style="flex-shrink:0; width: 40px; height: 40px; background: #e8f8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-check-circle-fill" style="color:#27ae60; font-size:1.2rem;"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight: 600; color: #1a6b3a; font-size: 0.95rem; margin-bottom: 4px;">
+                    ${data.message || 'Facture envoyée avec succès à l\'OBR'}
+                </div>
+                <div style="font-size: 0.8rem; color: #5a6a7a; line-height: 1.5;">
+                    ${data.registered_number ? '<div><span style="font-weight:500;">N° enregistrement OBR :</span> ' + data.registered_number + '</div>' : ''}
+                    ${data.registered_date ? '<div><span style="font-weight:500;">Date enregistrement :</span> ' + new Date(data.registered_date).toLocaleString('fr-FR') + '</div>' : ''}
+                </div>
+            </div>
+        </div>
+        <div style="padding: 8px 20px; background: #f9fafb; font-size: 0.75rem; color: #8a9aaa; display: flex; justify-content: space-between; align-items: center;">
+            <span>Redirection vers la liste dans 3s...</span>
+            ${debugBtn}
+        </div>
+    `;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.4s, transform 0.4s';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => toast.remove(), 400);
+    }, 5000);
+}
+
+function fillObrDebugPanel(payloadSent, obrResponse) {
+    const section = document.getElementById('obr-debug-section');
+    if (!section) return;
+    section.style.display = 'block';
+
+    const payloadEl = document.getElementById('obr-payload-content');
+    if (payloadEl && payloadSent) {
+        payloadEl.textContent = JSON.stringify(payloadSent, null, 2);
+    }
+
+    const responseEl = document.getElementById('obr-response-content');
+    const badgeEl = document.getElementById('obr-status-badge');
+    if (responseEl && obrResponse) {
+        responseEl.textContent = JSON.stringify(obrResponse, null, 2);
+        if (badgeEl) {
+            const status = obrResponse.status_code;
+            badgeEl.textContent = 'HTTP ' + (status || 'N/A');
+            badgeEl.className = 'badge ' + (status === 200 ? 'bg-success' : 'bg-danger');
+        }
+    }
+}
+
+function showObrDebugModal() {
+    const data = window.obrDebugData;
+    if (!data) return;
+
+    const modalHtml = `
+    <div class="modal fade" id="obrDebugModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title"><i class="bi bi-bug me-2"></i>Debug OBR - Facture envoyée</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="tab-container">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-payload">Payload envoyé</button></li>
+                            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-response">Réponse OBR</button></li>
+                        </ul>
+                        <div class="tab-content p-3">
+                            <div class="tab-pane fade show active" id="tab-payload">
+                                <pre class="bg-dark text-light p-3 rounded mb-0" style="font-size:0.75rem;max-height:500px;overflow:auto;">${JSON.stringify(data.payload_sent, null, 2)}</pre>
+                            </div>
+                            <div class="tab-pane fade" id="tab-response">
+                                <div class="mb-2">
+                                    <span class="badge bg-${data.obr_response?.status_code === 200 ? 'success' : 'danger'} me-2">HTTP ${data.obr_response?.status_code || 'N/A'}</span>
+                                </div>
+                                <pre class="bg-dark text-light p-3 rounded mb-0" style="font-size:0.75rem;max-height:500px;overflow:auto;">${JSON.stringify(data.obr_response, null, 2)}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    const existing = document.getElementById('obrDebugModal');
+    if (existing) existing.remove();
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('obrDebugModal'));
+    modal.show();
+
+    document.getElementById('obrDebugModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// ==================== ENVOYER OBR (deux étapes : preview → confirmation) ====================
+async function envoyerOBR() {
     const btn = document.getElementById('btn-envoyer-obr');
-    isSubmitting  = true;
     btn.disabled  = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Préparation...';
+
+    try {
+        const response = await fetch(BASE_URLS.preview_obr);
+        const data = await response.json();
+
+        if (data.ok) {
+            const previewEl = document.getElementById('obr-preview-content');
+            previewEl.textContent = JSON.stringify(data.payload, null, 2);
+            document.getElementById('obr-preview-section').style.display = 'block';
+            document.getElementById('obr-preview-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            alert(data.error || "Erreur de prévisualisation du payload OBR");
+        }
+    } catch (e) {
+        alert("Erreur réseau lors de la préparation");
+    } finally {
+        btn.disabled  = false;
+        btn.innerHTML = '<i class="bi bi-send me-2"></i>Envoyer à OBR';
+    }
+}
+
+function cacherPreviewOBR() {
+    document.getElementById('obr-preview-section').style.display = 'none';
+}
+
+async function confirmerEnvoiOBR() {
+    const btnConfirm = document.getElementById('btn-confirmer-envoi');
+    isSubmitting  = true;
+    btnConfirm.disabled  = true;
+    btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
 
     try {
         const response = await fetch(BASE_URLS.envoyer_obr, {
@@ -859,7 +1150,16 @@ async function envoyerOBR() {
         const data = await response.json();
 
         if (data.ok) {
-            window.location.href = "{% url 'facturer:liste' %}";
+            cacherPreviewOBR();
+            window.obrDebugData = {
+                payload_sent: data.payload_sent,
+                obr_response: data.obr_response
+            };
+            showObrToast(data);
+            fillObrDebugPanel(data.payload_sent, data.obr_response);
+            setTimeout(() => {
+                window.location.href = "{% url 'facturer:liste' %}";
+            }, 3000);
         } else {
             isSubmitting  = false;
             alert(data.error || "Erreur d'envoi");
@@ -868,8 +1168,8 @@ async function envoyerOBR() {
         isSubmitting = false;
         alert("Erreur réseau");
     } finally {
-        btn.disabled  = false;
-        btn.innerHTML = '<i class="bi bi-send me-2"></i>Envoyer à OBR';
+        btnConfirm.disabled  = false;
+        btnConfirm.innerHTML = '<i class="bi bi-send me-1"></i>Confirmer l\'envoi à OBR';
     }
 }
 
@@ -879,8 +1179,8 @@ async function confirmerAnnulation() {
     const motif  = document.getElementById('motifAnnulation').value.trim();
     const statut = (btn.dataset.statut || '').toUpperCase();
 
-    if (statut === 'ENVOYE' && !motif) {
-        alert("Le motif est obligatoire pour une facture envoyée à l'OBR.");
+    if ((statut === 'ENVOYE' || statut === 'RENVOYER') && !motif) {
+        alert("Le motif est obligatoire pour cette opération.");
         return;
     }
 
@@ -892,8 +1192,12 @@ async function confirmerAnnulation() {
     const formData = new FormData();
     formData.append('motif', motif);
 
+    const annulerUrl = statut === 'RENVOYER'
+        ? "{% url 'facturer:renvoyer-annulation' facture.pk %}"
+        : BASE_URLS.annuler;
+
     try {
-        const response = await fetch(BASE_URLS.annuler, {
+        const response = await fetch(annulerUrl, {
             method:  'POST',
             headers: { 'X-CSRFToken': CSRF_TOKEN },
             body:    formData
@@ -902,8 +1206,15 @@ async function confirmerAnnulation() {
         const data = await response.json();
 
         if (data.ok) {
-            alert(data.message || "Opération réussie.");
-            window.location.href = "{% url 'facturer:liste' %}";
+            showObrToast({
+                message: data.obr_message || data.message || "Facture annulée avec succès",
+                registered_number: '',
+                registered_date: '',
+                signature: ''
+            });
+            setTimeout(() => {
+                window.location.href = "{% url 'facturer:liste' %}";
+            }, 4000);
         } else {
             alert(data.error || "Erreur lors de l'opération.");
         }

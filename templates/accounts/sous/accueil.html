@@ -14,7 +14,7 @@
         <div class="page-subtitle">Bienvenue, {{ request.user.get_full_name|default:request.user.username }} — {{ today|date:"l d F Y" }}</div>
     </div>
     <div class="d-flex gap-2 flex-wrap">
-        <a href="{% url 'factures:nouvelle' %}" class="btn-primary-custom">
+        <a href="{% url 'facturer:liste' %}" class="btn-primary-custom">
             <i class="bi bi-plus-lg"></i> Nouvelle facture
         </a>
         <a href="{% url 'rapports:ventes' %}" class="btn-outline-custom">

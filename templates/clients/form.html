@@ -100,6 +100,34 @@
                         {% endif %}
                     </div>
 
+                    {# ── Téléphone ── #}
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            Téléphone
+                            <span style="color:#aab;font-weight:400;">(optionnel)</span>
+                        </label>
+                        {{ form.telephone }}
+                        {% if form.telephone.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.telephone.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# ── Email ── #}
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            Email
+                            <span style="color:#aab;font-weight:400;">(optionnel)</span>
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.email.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
                     {# ── TVA ── #}
                     <div class="col-12">
                         <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8f9fb;border-radius:10px;border:1.5px solid #eef0f4;">

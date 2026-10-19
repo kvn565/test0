@@ -2,8 +2,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import TauxTVA          # ← Corrigé
-from .forms import TauxForm
+from .models import TauxTVA, TauxTC, TauxPFL
+from .forms import TauxForm, FORMS_PAR_TYPE, TYPE_TAUX_CHOICES
+
+MODELES_PAR_TYPE = {'TVA': TauxTVA, 'TC': TauxTC, 'PFL': TauxPFL}
+
+
+def _normaliser_type(type_taux):
+    t = (type_taux or 'TVA').upper()
+    return t if t in MODELES_PAR_TYPE else 'TVA'
 
 
 def _check_droit(request):
@@ -23,70 +30,97 @@ def taux_liste(request):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    liste = TauxTVA.objects.filter(societe=societe)   # ← Corrigé
+    mode_production = societe.obr_mode_production
+    liste_tva = TauxTVA.objects.filter(societe=societe, obr_mode_envoye=mode_production)
+    liste_tc = TauxTC.objects.filter(societe=societe, obr_mode_envoye=mode_production)
+    liste_pfl = TauxPFL.objects.filter(societe=societe, obr_mode_envoye=mode_production)
+    combines = (
+        [{'obj': t, 'type': 'TVA'} for t in liste_tva] +
+        [{'obj': t, 'type': 'TC'} for t in liste_tc] +
+        [{'obj': t, 'type': 'PFL'} for t in liste_pfl]
+    )
     return render(request, 'taux/liste.html', {
-        'taux':  liste,
-        'total': liste.count(),
+        'taux':  combines,
+        'total': len(combines),
     })
 
 
 @login_required
-def taux_creer(request):
+def taux_creer(request, type_taux='TVA'):
     societe, erreur = _check_droit(request)
     if erreur:
         messages.error(request, erreur)
         return redirect('accueil')
 
     if request.method == 'POST':
-        form = TauxForm(request.POST, societe=societe)
+        type_taux = _normaliser_type(request.POST.get('type_taux', type_taux))
+    else:
+        type_taux = _normaliser_type(request.GET.get('type', type_taux))
+    form_class = FORMS_PAR_TYPE[type_taux]
+
+    if request.method == 'POST':
+        form = form_class(request.POST, societe=societe)
         if form.is_valid():
             t = form.save()
-            messages.success(request, f"Taux « {t.nom} » créé avec succès.")
+            messages.success(request, f"Taux {type_taux} « {t.nom} » créé avec succès.")
             return redirect('taux:liste')
     else:
-        form = TauxForm(societe=societe)
+        form = form_class(societe=societe)
 
     return render(request, 'taux/form.html', {
         'form':   form,
-        'titre':  'Nouveau taux TVA',
+        'titre':  f'Nouveau taux {type_taux}',
         'action': 'Créer',
+        'type_taux': type_taux,
+        'types_taux': TYPE_TAUX_CHOICES,
+        'creation': True,
     })
 
 
 @login_required
-def taux_modifier(request, pk):
+def taux_modifier(request, pk, type_taux='TVA'):
     societe, erreur = _check_droit(request)
     if erreur:
         messages.error(request, erreur)
         return redirect('accueil')
 
-    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe)   # ← Corrigé
+    type_taux = _normaliser_type(type_taux)
+    modele = MODELES_PAR_TYPE[type_taux]
+    form_class = FORMS_PAR_TYPE[type_taux]
+    mode_production = societe.obr_mode_production
+    taux = get_object_or_404(modele, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
-        form = TauxForm(request.POST, instance=taux, societe=societe)
+        form = form_class(request.POST, instance=taux, societe=societe)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Taux « {taux.nom} » modifié avec succès.")
+            messages.success(request, f"Taux {type_taux} « {taux.nom} » modifié avec succès.")
             return redirect('taux:liste')
     else:
-        form = TauxForm(instance=taux, societe=societe)
+        form = form_class(instance=taux, societe=societe)
 
     return render(request, 'taux/form.html', {
         'form':   form,
-        'titre':  'Modifier le taux TVA',
+        'titre':  f'Modifier le taux {type_taux}',
         'action': 'Enregistrer',
         'taux':   taux,
+        'type_taux': type_taux,
+        'types_taux': TYPE_TAUX_CHOICES,
+        'creation': False,
     })
 
 
 @login_required
-def taux_supprimer(request, pk):
+def taux_supprimer(request, pk, type_taux='TVA'):
     societe, erreur = _check_droit(request)
     if erreur:
         messages.error(request, erreur)
         return redirect('accueil')
 
-    taux = get_object_or_404(TauxTVA, pk=pk, societe=societe)   # ← Corrigé
+    type_taux = _normaliser_type(type_taux)
+    modele = MODELES_PAR_TYPE[type_taux]
+    mode_production = societe.obr_mode_production
+    taux = get_object_or_404(modele, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         # Protection : vérifier si des produits ou services utilisent ce taux
@@ -102,4 +136,4 @@ def taux_supprimer(request, pk):
         messages.success(request, f"Taux « {nom} » supprimé.")
         return redirect('taux:liste')
 
-    return render(request, 'taux/supprimer.html', {'taux': taux})
+    return render(request, 'taux/supprimer.html', {'taux': taux, 'type_taux': type_taux})

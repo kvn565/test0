@@ -7,52 +7,19 @@ WC = {'class': 'form-check-input'}
 
 
 # ===================================================================
-# Formulaire de mise à jour (utilisé dans le modal)
+# 4. Formulaire principal de mise à jour (utilisé dans le modal)
 # ===================================================================
 class SocieteUpdateForm(forms.ModelForm):
     """
     Formulaire utilisé dans le modal de modification
     """
-    
-    # Champs avec contraintes améliorées
-    forme = forms.CharField(
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Ex: SARL, SA, SAS, EI...'
-        })
-    )
-
-    secteur = forms.CharField(
-        max_length=150,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Ex: Commerce général, Import-export...'
-        })
-    )
-
-    nom_complet_gerant = forms.CharField(
-        max_length=150,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
-
-    facture_pied_page = forms.CharField(
-        required=False,
-        widget=forms.Textarea(attrs={
-            'class': 'form-control',
-            'rows': 5,
-            'placeholder': 'Mentions légales, RIB, conditions générales, etc.'
-        })
-    )
-
     class Meta:
         model = Societe
         fields = [
             'nom', 'nif', 'registre', 'boite_postal', 'telephone',
-            'email_societe', 'logo', 'facture_logo', 'facture_pied_page',
+            'email_societe', 'logo', 
+            'facture_logo',
+            'facture_pied_page',      # ← Champ concerné
             'province', 'commune', 'quartier', 'avenue', 'numero',
             'centre_fiscale',
             'assujeti_tva', 'assujeti_tc', 'assujeti_pfl',
@@ -66,10 +33,8 @@ class SocieteUpdateForm(forms.ModelForm):
         for field in self.fields.values():
             field.required = False
 
-        # Widgets par défaut
+        # Widgets uniformes (ne touche à rien d'autre)
         for field_name, field in self.fields.items():
-            if field_name in ['forme', 'secteur', 'nom_complet_gerant', 'facture_pied_page']:
-                continue
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.update(WS)
             elif isinstance(field.widget, forms.CheckboxInput):
@@ -77,9 +42,17 @@ class SocieteUpdateForm(forms.ModelForm):
             else:
                 field.widget.attrs.update(W)
 
+        # ====================== CORRECTION UNIQUEMENT POUR PIED DE PAGE ======================
+        self.fields['facture_pied_page'].widget = forms.Textarea(attrs={
+            'class': 'form-control',      # Même classe que les autres champs
+            'rows': 4,
+            'style': 'width: 100%; max-width: 100%;',   # Même largeur que les autres
+            'placeholder': 'Mentions légales, RIB, conditions de paiement, etc.'
+        })
+
 
 # ===================================================================
-# Autres formulaires (obligatoires pour éviter l'ImportError)
+# Autres formulaires (laisser tels quels)
 # ===================================================================
 class SocieteInscriptionChefForm(forms.ModelForm):
     class Meta:
@@ -90,11 +63,6 @@ class SocieteInscriptionChefForm(forms.ModelForm):
             'centre_fiscale', 'assujeti_tva', 'assujeti_tc', 'assujeti_pfl',
             'secteur', 'forme', 'nom_complet_gerant',
         ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.required = False
 
 
 class SocieteForm(forms.ModelForm):

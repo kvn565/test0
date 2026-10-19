@@ -148,6 +148,8 @@
                         <th>Unité</th>
                         <th class="text-end">Prix vente</th>
                         <th class="text-end">TVA</th>
+                        {% if assujeti_tc %}<th class="text-end">TC</th>{% endif %}
+                        {% if assujeti_pfl %}<th class="text-end">PFL</th>{% endif %}
                         <th class="text-end">Prix TVAC</th>
                         <th class="text-end">Stock</th>
                         <th>Statut</th>
@@ -184,6 +186,32 @@
                                 <span class="text-muted">0 %</span>
                             {% endif %}
                         </td>
+
+                        <!-- TC (seulement si assujetti TC, 0 sinon) -->
+                        {% if assujeti_tc %}
+                        <td class="text-end">
+                            {% if p.societe and not p.societe.assujeti_tc %}
+                                <span class="text-muted">0 %</span>
+                            {% elif p.taux_tc and p.taux_tc.valeur %}
+                                {{ p.taux_tc.valeur|floatformat:2 }} %
+                            {% else %}
+                                <span class="text-muted">0 %</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+
+                        <!-- PFL (seulement si assujetti PFL, 0 sinon) -->
+                        {% if assujeti_pfl %}
+                        <td class="text-end">
+                            {% if p.societe and not p.societe.assujeti_pfl %}
+                                <span class="text-muted">0 %</span>
+                            {% elif p.taux_pfl and p.taux_pfl.valeur %}
+                                {{ p.taux_pfl.valeur|floatformat:2 }} %
+                            {% else %}
+                                <span class="text-muted">0 %</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
 
                         <!-- Prix TVAC -->
                         <td class="text-end fw-medium text-primary">

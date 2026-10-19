@@ -1,4 +1,5 @@
 # superadmin/models.py — VERSION FINALE CORRIGÉE
+import datetime
 import hashlib
 import hmac
 import secrets
@@ -278,8 +279,22 @@ class CleActivation(models.Model):
         if not self.date_debut:
             self.date_debut = timezone.now()
 
+        # ✅ Sécurité : forcer les datetimes en objet aware (fuseau correct) pour
+        # éviter le stockage naïf (avertissement Django + décalage CONVERT_TZ MySQL).
+        if self.date_debut is not None:
+            if not isinstance(self.date_debut, datetime.datetime):
+                self.date_debut = datetime.datetime.combine(self.date_debut, datetime.time.min)
+            if self.date_debut.tzinfo is None:
+                self.date_debut = timezone.make_aware(self.date_debut)
+
         if self.type_plan != 'AUTRE' or not self.date_fin:
             self.date_fin = self.date_debut + timedelta(days=duree_jours)
+
+        if self.date_fin is not None:
+            if not isinstance(self.date_fin, datetime.datetime):
+                self.date_fin = datetime.datetime.combine(self.date_fin, datetime.time.min)
+            if self.date_fin.tzinfo is None:
+                self.date_fin = timezone.make_aware(self.date_fin)
 
         if not self.cle_visible:
             self.cle_visible = self.generer_cle_unique()

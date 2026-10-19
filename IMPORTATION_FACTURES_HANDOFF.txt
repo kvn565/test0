@@ -1,0 +1,183 @@
+========================================================================
+HANDOFF - IMPORTATION DES FACTURES HISTORIQUES DEPUIS EXCEL
+A destination d'un agent IA / developpeur pour reimplementer a l'identique
+la fonctionnalite sur une autre instance (ex. version cPanel en ligne),
+sans casser l'application en production.
+========================================================================
+
+
+1. OBJECTIF
+-----------
+Importer un fichier Excel "importation.xlsx" (historique de factures) dans
+le projet Django, en creant des factures exactement comme si elles avaient
+ete envoyees a l'OBR, SANS AUCUN appel reseau, en reutilisant le moteur de
+calcul existant du projet.
+
+Resultat attendu : les montants en base reproduisent le fichier
+    P.T HTTC + TVA + PF = PT TTC
+
+
+2. FAUT-IL UNE MIGRATION ?
+--------------------------
+NON. Aucun champ / modele n'est ajoute. Tout passe par les modeles existants.
+
+Commande de controle (doit dire "No changes detected") :
+    python manage.py makemigrations --check --dry-run
+
+=> Aucun "migrate" n'est requis sur le serveur cPanel, donc AUCUN risque de
+perturber l'application en ligne (changement de schema evite).
+
+
+3. FICHIERS CONCERNES
+---------------------
+A copier tel quel (aucune dependance nouvelle hors openpyxl, deja present) :
+
+    Role            Chemin
+    Moteur import   superadmin/importation.py
+    Vue             superadmin/views.py -> fonction importation_factures (~ligne 1253)
+    Route           superadmin/urls.py -> path('importation/', views.importation_factures, name='importation')
+    Template        templates/superadmin/importation.html
+    Lien menu       templates/base_superadmin.html -> balise URL 'superadmin:importation'
+
+Modeles reutilises (NE PAS modifier) :
+    facturer.models.Facture, facturer.models.LigneFacture,
+    produits.models.Produit, clients.models.Client,
+    societe.models.Societe, taux.models.TauxTVA/TauxTC/TauxPFL,
+    categories.models.Categorie, superadmin.models.Utilisateur.
+
+Reglage mineur dans la vue :
+    IMPORTATION_DIR = os.path.join(settings.MEDIA_ROOT, 'importations')  # views.py:1249
+Le dossier doit etre INSCRIPTIBLE sur cPanel.
+
+
+4. LE FICHIER EXCEL ATTENDU
+---------------------------
+- Format .xlsx, feuille "Table 1" (sinon 1ere feuille).
+- En-tete DETECTE AUTOMATIQUEMENT : ligne contenant a la fois "numero" et un "client".
+- Intitules non sensibles a la casse/accents, espaces normalises.
+
+Colonnes OBLIGATOIRES :
+    Numero, Type de factures, Produit, Qtes, P.T HTTC, TVA, PT TTC, Date, Client
+
+Colonnes OPTIONNELLES :
+    Type de paiement, Status, Unite, P.U HTTC, TC, PF, OTT, TSCE,
+    NIF du Client, Devise, Auteur
+
+- Lignes vides et lignes "TOTAL..." ignorees. Lignes de statut non "valide/valides" ignorees.
+- Si un Produit / Client / Taux / Categorie n'existe pas -> CREATION AUTOMATIQUE.
+
+
+5. REGLE DE CALCUL (POINT CRITIQUE - "Option B")
+-----------------------------------------------
+Pour chaque ligne du fichier :
+
+    montant HT enregistre = P.T HTTC                   (la TC est DEJA incluse)
+    taux TVA              = TVA / P.T HTTC x 100
+    taux PFL              = PF  / P.T HTTC x 100
+    prix unitaire (HT)    = P.T HTTC / Qtes
+    prix TVAC (ligne)     = prix_unitaire_ht x (1 + taux_TVA/100)
+
+Consequences voulues :
+- La TC n'est JAMAIS appliquee une 2e fois (elle est fondue dans le HT) => taux_tc = 0.
+- Le taux TVA est conserve LIGNE PAR LIGNE (0 %, 10 % ou 18 %), meme si le produit a un
+  autre taux principal. Le taux domine par produit ne sert qu'a la config produit/OBR.
+- Cas particulier verifie : FN/25/2025 (Hebergement) -> TVA = 0, TTC = 75999.95 exact.
+
+Pourquoi ce choix : la TVA du fichier est calculee sur P.T HTTC ; pour reproduire
+P.T HTTC + TVA + PF = PT TTC a l'identique, il faut donc enregistrer P.T HTTC comme base HT.
+
+
+6. LOGIQUE DU MOTEUR (superadmin/importation.py)
+------------------------------------------------
+Fonctions cles (fichier de 790 lignes) :
+
+- parse_fichier(path)          -> lit l'Excel, construit invoices, produits_rates,
+                                  assujetti, errors, warnings. Ne touche pas la base.
+- analyser_fichier(path, societe, mode)  -> PREVIEW : compare aux numeros/clients/produits
+                                  existants, renvoie doublons, nouveaux clients, nouveaux
+                                  produits, apercu. N'ECRIT RIEN.
+- importer_fichier(path, societe, mode, user) -> ECRITURE reelle, transaction.atomic()
+                                  par facture, idempotent (un numero deja en base est
+                                  skipped_existing).
+
+Helpers : _norm, _clean, _to_decimal (gere virgule/point, espaces, espace insecable),
+_parse_datetime, _index, _taux, _dominer, _read_rows (openpyxl read_only),
+_get_or_create_*, _activer_assujettissement, _resoudre_categorie, _creer_facture,
+_creer_ligne.
+
+!!! PIEGE MAJEUR - LigneFacture.save() force le taux du produit !!!
+LigneFacture.save() reapplique produit.taux_tva et recalcule HT/TVA depuis prix_vente_tvac.
+Pour preserver le taux REEL de la ligne, _creer_ligne fait :
+
+    ligne_obj.save()                                    # passage par le moteur du projet
+    LigneFacture.objects.filter(pk=ligne_obj.pk).update(  # override en DB
+        taux_tva=taux_tva, prix_vente_tvac=prix_tvac, prix_unitaire_ht=pu_ht,
+    )
+    # puis on realigne l'instance en memoire et on purge les caches de proprietes
+
+Ne pas oublier facture.recalculer_totaux() apres les lignes.
+
+Facture creee :
+    statut_obr='ENVOYE', applique_tva=True, invoice_identifier via _build_identifier,
+    date_envoi_obr / obr_registered_date = date de la facture,
+    message_obr = "Importe depuis un fichier Excel".
+
+Societe :
+    _activer_assujettissement active assujeti_tva (et tc/pfl si detectes) selon le fichier.
+    assujetti est calcule LIGNE PAR LIGNE dans parse_fichier.
+
+
+7. FLUX DE LA VUE (2 ETAPES - ne pas simplifier)
+------------------------------------------------
+1) GET  -> formulaire (societe + fichier).
+2) POST action=preview -> analyser_fichier : affiche resultats + bouton
+   "Confirmer l'importation".
+3) POST action=import  -> importer_fichier : ecrit en base, puis supprime le fichier
+   temporaire importe dans MEDIA_ROOT/importations/.
+
+Le fichier uploade est stocke temporairement sous :
+    import_{YYYYmmdd_HHMMSS}_{user_pk}.xlsx
+(controle par prefixe/suffixe avant import).
+
+UX : le bouton d'import N'APPARAIT QU'APRES L'ANALYSE. Le 1er bouton visible est
+"Analyser le fichier". C'est volontaire (securite : preview avant ecriture).
+
+Mode : PRODUCTION uniquement (mode = True code en dur, selecteur retire).
+
+
+8. PERSONNALISER POUR UNE AUTRE INSTANCE (CHECKLIST CPANEL)
+-----------------------------------------------------------
+1. Copier les 5 fichiers de la section 3 (ou seulement moteur + vue + url + template).
+2. Verifier que openpyxl est dans requirements (deja le cas ici).
+3. Verifier MEDIA_ROOT inscriptible et que MEDIA_ROOT/importations/ peut etre cree.
+4. Controler que les noms de champs modeles sont identiques (statut_obr, obr_mode_envoye,
+   assujeti_tva/tc/pfl, cree_par, taux_*_valeur, etc.).
+5. python manage.py makemigrations --check --dry-run -> doit dire "No changes detected".
+6. Aucun migrate a lancer. Deployer.
+7. Tester : analyse -> confirmer -> re-import (doit ignorer les doublons).
+
+
+9. RESULTATS DES TESTS (REFERENCE)
+----------------------------------
+Avec le fichier importation.xlsx fourni :
+- 610 factures, 1032 lignes, 210 clients, 24 produits, 0 erreur.
+- Re-import : 610 ignorees (idempotent). taux_created = 2 (0 % et 10 %).
+- Comparaison ligne a ligne : 811 exactes, 221 ecarts <= 0,055 BIF (arrondi 2 decimales
+  de l'Excel) - total ecart 2,509 BIF sur environ 1,645 milliard. Ce ne sont PAS des erreurs.
+
+
+10. PIEGES D'ENVIRONNEMENT RENCONTRES (A EVITER)
+-----------------------------------------------
+- Windows console cp1252 -> utiliser set PYTHONUTF8=1 + PYTHONIOENCODING=utf-8 pour les
+  prints / manage.py.
+- Ne JAMAIS modifier facturation/settings.py (DB MySQL de prod). Pour tester en local,
+  utiliser un settings SQLite temporaire ISOLE.
+- Le code fait os.remove(chemin) en finally : s'assurer des droits sur le dossier temp.
+
+
+11. RESUME EN UNE PHRASE
+------------------------
+On lit l'Excel, on enregistre P.T HTTC comme base HT, on derive le taux TVA par ligne
+(TVA / P.T HTTC), on cree la facture via le moteur existant avec statut_obr='ENVOYE',
+le tout sans migration ni appel OBR, en preview puis confirmation.
+========================================================================

@@ -8,7 +8,7 @@ from django.db.models.functions import Cast, Substr
 
 from .models import Produit
 from categories.models import Categorie
-from taux.models import TauxTVA
+from taux.models import TauxTVA, TauxTC, TauxPFL
 
 
 class ProduitForm(forms.ModelForm):
@@ -17,7 +17,7 @@ class ProduitForm(forms.ModelForm):
         model = Produit
         fields = [
             'categorie', 'code', 'designation', 'unite',
-            'prix_vente', 'devise', 'taux_tva', 'statut',
+            'prix_vente', 'devise', 'taux_tva', 'taux_tc', 'taux_pfl', 'statut',
             'reference_dmc', 'rubrique_tarifaire',
             'nombre_par_paquet', 'description_paquet',
         ]
@@ -37,6 +37,8 @@ class ProduitForm(forms.ModelForm):
             
             'devise':             forms.Select(attrs={'class': 'form-select'}),
             'taux_tva':           forms.Select(attrs={'class': 'form-select'}),
+            'taux_tc':            forms.Select(attrs={'class': 'form-select'}),
+            'taux_pfl':           forms.Select(attrs={'class': 'form-select'}),
             'statut':             forms.Select(attrs={'class': 'form-select'}),
             'reference_dmc':      forms.TextInput(attrs={'class': 'form-control'}),
             'rubrique_tarifaire': forms.TextInput(attrs={'class': 'form-control'}),
@@ -52,12 +54,14 @@ class ProduitForm(forms.ModelForm):
 
         # ── Queryset catégories ───────────────────────────────────────────────
         if societe:
+            mode_production = getattr(societe, 'obr_mode_production', False)
             self.fields['categorie'].queryset = (
-                Categorie.objects.filter(societe=societe).order_by('nom')
+                Categorie.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
             )
 
             # Gestion taux TVA
-            tous_les_taux = TauxTVA.objects.filter(societe=societe).order_by('valeur')
+            mode_production = getattr(societe, 'obr_mode_production', False)
+            tous_les_taux = TauxTVA.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
 
             if getattr(societe, 'assujeti_tva', False):
                 self.taux_qs = tous_les_taux
@@ -76,7 +80,31 @@ class ProduitForm(forms.ModelForm):
                     if taux_zero:
                         self.fields['taux_tva'].initial = taux_zero.pk
 
+            # Gestion taux TC (visible seulement si assujetti TC)
+            tous_les_tc = TauxTC.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
+            if getattr(societe, 'assujeti_tc', False):
+                self.fields['taux_tc'].queryset = tous_les_tc
+            else:
+                self.fields['taux_tc'].queryset = tous_les_tc.filter(valeur=Decimal('0.00'))
+            if not self.instance.pk:
+                tc_defaut = self.fields['taux_tc'].queryset.filter(est_defaut=True).first() or self.fields['taux_tc'].queryset.first()
+                if tc_defaut:
+                    self.fields['taux_tc'].initial = tc_defaut.pk
+
+            # Gestion taux PFL (visible seulement si assujetti PFL)
+            tous_les_pfl = TauxPFL.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
+            if getattr(societe, 'assujeti_pfl', False):
+                self.fields['taux_pfl'].queryset = tous_les_pfl
+            else:
+                self.fields['taux_pfl'].queryset = tous_les_pfl.filter(valeur=Decimal('0.00'))
+            if not self.instance.pk:
+                pfl_defaut = self.fields['taux_pfl'].queryset.filter(est_defaut=True).first() or self.fields['taux_pfl'].queryset.first()
+                if pfl_defaut:
+                    self.fields['taux_pfl'].initial = pfl_defaut.pk
+
         self.fields['taux_tva'].empty_label = '— Sélectionner un taux TVA —'
+        self.fields['taux_tc'].empty_label = '— Sélectionner un taux TC —'
+        self.fields['taux_pfl'].empty_label = '— Sélectionner un taux PFL —'
 
         # Gestion selon origine (LOCAL / IMPORTE)
         if self.origine == 'LOCAL':

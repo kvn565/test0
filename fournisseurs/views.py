@@ -24,8 +24,9 @@ def fournisseur_liste(request):
         messages.error(request, erreur)
         return redirect('accueil')
 
+    mode_production = societe.obr_mode_production
     q = request.GET.get('q', '')
-    fournisseurs = Fournisseur.objects.filter(societe=societe)
+    fournisseurs = Fournisseur.objects.filter(societe=societe, obr_mode_envoye=mode_production)
     if q:
         fournisseurs = fournisseurs.filter(
             Q(nom__icontains=q) | Q(telephone__icontains=q) | Q(adresse__icontains=q)
@@ -33,7 +34,7 @@ def fournisseur_liste(request):
     return render(request, 'fournisseurs/liste.html', {
         'fournisseurs': fournisseurs,
         'q':            q,
-        'total':        Fournisseur.objects.filter(societe=societe).count(),
+        'total':        Fournisseur.objects.filter(societe=societe, obr_mode_envoye=mode_production).count(),
     })
 
 
@@ -67,7 +68,8 @@ def fournisseur_modifier(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    fournisseur = get_object_or_404(Fournisseur, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    fournisseur = get_object_or_404(Fournisseur, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         form = FournisseurForm(request.POST, instance=fournisseur, societe=societe)
@@ -93,7 +95,8 @@ def fournisseur_supprimer(request, pk):
         messages.error(request, erreur)
         return redirect('accueil')
 
-    fournisseur = get_object_or_404(Fournisseur, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    fournisseur = get_object_or_404(Fournisseur, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         # Protection : vérifier s'il y a des produits liés

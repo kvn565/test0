@@ -49,6 +49,20 @@ def _formater_periode(date_debut=None, date_fin=None):
         return f"Période : jusqu'au {fmt(date_fin)}"
 
 
+ABREVIATIONS_PDF = {
+    'Numero': 'N°', 'Type de factures': 'Type', 'Type de paiement': 'Paiemt',
+    'Status': 'Statut', 'Produit': 'Prod.', 'Qtés': 'Qté', 'P.U HTT': 'P.U',
+    'Devise': 'Dev.', 'NIF du Client': 'NIF Client', 'Client': 'Client',
+    'Auteur': 'Aut.', 'Date': 'Date', 'TOTAL': 'Total', 'Code': 'Code',
+}
+
+def _court(texte, limite):
+    t = str(texte if texte is not None else '—')
+    if len(t) > limite:
+        return t[:max(limite - 1, 1)] + '…'
+    return t
+
+
 def generer_pdf(titre, colonnes, lignes, type_rapport, orientation="landscape",
                 date_debut=None, date_fin=None):
     """Génère un PDF en paysage avec métadonnées de période en en-tête"""
@@ -59,15 +73,31 @@ def generer_pdf(titre, colonnes, lignes, type_rapport, orientation="landscape",
     supprimer_ancien_fichier(chemin_complet)
 
     pagesize = landscape(A4)
+    nb_cols = len(colonnes)
+    tres_large = nb_cols > 15
+    large = nb_cols > 10
+    if tres_large:
+        colonnes = [ABREVIATIONS_PDF.get(str(c), _court(c, 8)) for c in colonnes]
+        marge_lr, marge_tb = 12, 15
+        taille_cell, taille_head = 5, 5.5
+        pad_v, pad_h = 2, 2
+    elif large:
+        marge_lr, marge_tb = 18, 20
+        taille_cell, taille_head = 6.5, 7
+        pad_v, pad_h = 3, 3
+    else:
+        marge_lr, marge_tb = 30, 30
+        taille_cell, taille_head = 9, 9
+        pad_v, pad_h = 6, 6
 
     try:
         doc = SimpleDocTemplate(
             chemin_complet,
             pagesize=pagesize,
-            rightMargin=30,
-            leftMargin=30,
+            rightMargin=marge_lr,
+            leftMargin=marge_lr,
             topMargin=40,
-            bottomMargin=30
+            bottomMargin=marge_tb
         )
 
         styles = getSampleStyleSheet()
@@ -75,11 +105,12 @@ def generer_pdf(titre, colonnes, lignes, type_rapport, orientation="landscape",
         cell_style = ParagraphStyle(
             'CellStyle',
             parent=styles['Normal'],
-            fontSize=9,
-            leading=11,
+            fontSize=taille_cell,
+            leading=taille_cell + 1.5,
             alignment=TA_LEFT,
             wordWrap='CJK',
-            spaceAfter=2,
+            spaceAfter=0,
+            spaceBefore=0,
             allowWidows=0,
             allowOrphans=0,
             splitLongWords=True,
@@ -88,8 +119,8 @@ def generer_pdf(titre, colonnes, lignes, type_rapport, orientation="landscape",
         header_style = ParagraphStyle(
             'HeaderStyle',
             parent=styles['Normal'],
-            fontSize=9,
-            leading=12,
+            fontSize=taille_head,
+            leading=taille_head + 1.5,
             alignment=TA_CENTER,
             fontName='Helvetica-Bold',
             textColor=colors.whitesmoke,
@@ -129,24 +160,40 @@ def generer_pdf(titre, colonnes, lignes, type_rapport, orientation="landscape",
         elements.append(Paragraph(f"Généré le : {date_gen}", meta_style))
         elements.append(Spacer(1, 16))
 
-        # Données du tableau
-        data = [[]]
-        for col in colonnes:
-            data[0].append(Paragraph(str(col), header_style))
+        # Données du tableau — tout en Paragraph pour forcer le retour à la ligne
+        limite_cell = 14 if tres_large else (20 if large else 60)
+        data = [[Paragraph(_court(c, 12 if tres_large else 30), header_style) for c in colonnes]]
 
         for row in lignes:
             new_row = []
-            for i, cell in enumerate(row):
-                cell_str = str(cell) if cell is not None else '—'
-                if i in [2, 3, 7, 8]:
-                    new_row.append(Paragraph(cell_str, cell_style))
-                else:
-                    new_row.append(cell_str)
+            for cell in row:
+                cell_str = _court(cell, limite_cell)
+                cell_str = cell_str.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                new_row.append(Paragraph(cell_str, cell_style))
             data.append(new_row)
+
+        largeur_dispo = pagesize[0] - (marge_lr * 2)
+        if tres_large or large:
+            echantillon = lignes[:200]
+            largeurs = []
+            for i in range(nb_cols):
+                m = len(str(colonnes[i]))
+                for r in echantillon:
+                    try:
+                        m = max(m, len(str(r[i] if i < len(r) else '')))
+                    except Exception:
+                        pass
+                largeurs.append(min(m, 18 if tres_large else 25))
+            total = sum(largeurs) or 1
+            col_widths = [max(22, largeur_dispo * w / total) for w in largeurs]
+            facteur = largeur_dispo / (sum(col_widths) or 1)
+            col_widths = [w * facteur for w in col_widths]
+        else:
+            col_widths = None
 
         table = Table(
             data,
-            colWidths=None,
+            colWidths=col_widths,
             repeatRows=1,
             splitByRow=True
         )
@@ -158,13 +205,15 @@ def generer_pdf(titre, colonnes, lignes, type_rapport, orientation="landscape",
             ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('TOPPADDING', (0, 1), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('FONTSIZE', (0, 0), (-1, 0), taille_head),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), pad_v + 2),
+            ('TOPPADDING', (0, 1), (-1, -1), pad_v),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), pad_v),
+            ('LEFTPADDING', (0, 0), (-1, -1), pad_h),
+            ('RIGHTPADDING', (0, 0), (-1, -1), pad_h),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9fafb')]),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('FONTSIZE', (0, 1), (-1, -1), taille_cell),
         ]))
 
         elements.append(table)

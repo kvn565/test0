@@ -1,5 +1,6 @@
 # Django
 *.log
+logs/
 *.pot
 *.pyc
 __pycache__/
@@ -11,11 +12,14 @@ collected_static/
 
 # Python
 *.py[cod]
+*$py.class
 *.so
 .Python
 env/
 venv/
 ENV/
+env.bak/
+venv.bak/
 .python-version
 
 # Environment variables
@@ -23,7 +27,7 @@ ENV/
 .env.local
 .env.*.local
 
-# IDE
+# IDE / Editor
 .vscode/
 .idea/
 *.swp
@@ -34,10 +38,39 @@ ENV/
 .DS_Store
 Thumbs.db
 
+# Virtual environments
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Coverage and testing
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+
 # Django specific
 *.sqlite3
 local_settings.py
 
-# Dumps SQL locaux - jamais en ligne (MySQL utilise en prod)
+# Build / packaging artifacts (PyInstaller)
+build/
+dist/
+build_code/
+*.spec
+*.exe
+key.bin
+restart.txt
+
+# Fichiers de sauvegarde locaux
+*.backup
+*.origine-backup
+*.bak
+tmp/
+
+# Donnees sensibles / volumineuses (ne pas pousser)
 wibabidb.sql
-*.sql
+*.docx
+*.xlsx
+~$*

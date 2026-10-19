@@ -323,6 +323,11 @@
             <i class="bi bi-box-arrow-up"></i> Suivi des Sorties
         </a>
 
+        <div class="nav-section">Facturation</div>
+        <a href="{% url 'superadmin:importation' %}" class="nav-link-item {% block nav_importation %}{% endblock %}">
+            <i class="bi bi-file-earmark-arrow-up-fill"></i> Importation
+        </a>
+
         <div class="nav-section">Maintenance</div>
         <a href="{% url 'superadmin:backup' %}" class="nav-link-item {% block nav_backup %}{% endblock %}">
             <i class="bi bi-cloud-arrow-down-fill"></i> Sauvegardes

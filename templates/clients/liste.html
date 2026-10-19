@@ -90,6 +90,7 @@
                             <th>NIF</th>
                             <th>Type</th>
                             <th>TVA</th>
+                            <th>Contact</th>
                             <th>Adresse</th>
                             <th>Inscrit le</th>
                             <th style="text-align:right;">Actions</th>
@@ -136,6 +137,12 @@
                                 {% else %}
                                 <span class="badge-inactive">Non</span>
                                 {% endif %}
+                            </td>
+                            <td style="font-size:0.82rem;">
+                                {% if client.telephone %}{{ client.telephone }}{% endif %}
+                                {% if client.telephone and client.email %}<br>{% endif %}
+                                {% if client.email %}{{ client.email }}{% endif %}
+                                {% if not client.telephone and not client.email %}<span style="color:#ccc;">—</span>{% endif %}
                             </td>
                             <td style="font-size:0.82rem;color:#5a6a7a;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                                 {{ client.adresse|default:"—" }}

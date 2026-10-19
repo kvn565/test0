@@ -75,7 +75,7 @@
     </div>
 
     <div class="center" style="font-size:8pt;">
-        {{ facture.date_facture|date:"d/m/Y" }} &nbsp; {{ facture.heure_facture|time:"H:i" }}
+        {% if date_identifier %}{{ date_identifier|date:"d/m/Y" }} &nbsp; {{ date_identifier|date:"H:i" }}{% else %}{{ facture.date_facture|date:"d/m/Y" }} &nbsp; {{ facture.heure_facture|time:"H:i" }}{% endif %}
     </div>
 
     <div class="separateur"></div>
@@ -121,9 +121,11 @@
             <span>Qté × PV HTT :</span>
             <span>{{ ligne.quantite|truncate3 }} × {{ ligne.prix_unitaire_ht|truncate3 }}</span>
         </div>
+        {% if societe.assujeti_tc %}
         <div style="display: flex; justify-content: space-between;">
-            <span>TC :</span><span>0.000</span>
+            <span>TC :</span><span>{{ ligne.montant_ct|truncate3 }}</span>
         </div>
+        {% endif %}
         <div style="display: flex; justify-content: space-between;">
             <span>OTT :</span><span>0.000</span>
         </div>
@@ -133,9 +135,11 @@
         <div style="display: flex; justify-content: space-between;">
             <span>TVA :</span><span>{{ ligne.montant_tva|truncate3 }}</span>
         </div>
+        {% if societe.assujeti_pfl %}
         <div style="display: flex; justify-content: space-between; font-weight:700;">
-            <span>PF :</span><span>0.000</span>
+            <span>PF :</span><span>{{ ligne.montant_tl|truncate3 }}</span>
         </div>
+        {% endif %}
     </div>
     {% endfor %}
 
@@ -144,7 +148,9 @@
     <!-- Totaux -->
     <table style="width:100%; font-size:8.4pt;">
         <tr><td>Sous-total HT</td><td style="text-align:right;">{{ facture.total_ht|truncate3 }} {{ facture.devise }}</td></tr>
+        {% if societe.assujeti_tc %}<tr><td>TC</td><td style="text-align:right;">{{ facture.total_ct|truncate3 }} {{ facture.devise }}</td></tr>{% endif %}
         <tr><td>TVA</td><td style="text-align:right;">{{ facture.total_tva|truncate3 }} {{ facture.devise }}</td></tr>
+        {% if societe.assujeti_pfl %}<tr><td>PFL</td><td style="text-align:right;">{{ facture.total_tl|truncate3 }} {{ facture.devise }}</td></tr>{% endif %}
         <tr style="font-weight:800; font-size:10.1pt; border-top:2px solid #000;">
             <td>TOTAL TTC</td>
             <td style="text-align:right;">{{ facture.total_ttc|truncate3 }} {{ facture.devise }}</td>

@@ -18,10 +18,12 @@ urlpatterns = [
     #    Si /setup/ est ici → URL = /superadmin/setup/ → middleware ne le reconnaît PAS.
     path('saisir-cle-payante/', views.saisir_cle_payante, name='saisir_cle_payante'),
     path('licence-expiree/',   views.licence_expiree,     name='licence_expiree'),
+    path('dismiss-notification-licence/', views.dismiss_notification_licence, name='dismiss_notification_licence'),
 
     # ── Sociétés ──────────────────────────────────────────────────
     path('societes/',                           views.societes_liste,    name='societes_liste'),
     path('societes/creer/',                     views.societe_creer,     name='societe_creer'),
+    path('ajax/verifier-nif/',                  views.ajax_verifier_nif, name='verifier_nif'),
     path('societes/<int:pk>/',                  views.societe_detail,    name='societe_detail'),
     path('societes/<int:pk>/modifier/',         views.societe_modifier,  name='societe_modifier'),
     path('societes/<int:pk>/toggle/',           views.societe_toggle,    name='societe_toggle'),
@@ -55,7 +57,12 @@ urlpatterns = [
     path('reinitialisation/',                   views.reinitialisation_page,      name='reinitialisation'),
     path('reinitialisation/confirmer/',         views.reinitialisation_confirmer, name='reinitialisation_confirmer'),
 
+    # ── Importation de factures (Excel) ───────────────────────────
+    path('importation/',                        views.importation_factures,       name='importation'),
+
     # ── Suivi Stock Global ────────────────────────────────────────
-    path('transactions/entrees/',               views.stock_entrees,      name='stock_entrees'),
-    path('transactions/sorties/',               views.stock_sorties,      name='stock_sorties'),
+    path('transactions/entrees/',               views.stock_entrees,          name='stock_entrees'),
+    path('transactions/sorties/',               views.stock_sorties,          name='stock_sorties'),
+    path('transactions/sorties/<int:pk>/compenser-obr/', views.sortie_compenser_obr, name='sortie_compenser_obr'),
+    path('transactions/entrees/<int:pk>/compenser-obr/', views.entree_compenser_obr, name='entree_compenser_obr'),
 ]

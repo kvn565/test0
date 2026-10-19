@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Sum
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 from societe.models import Societe
 from produits.models import Produit
@@ -58,6 +58,12 @@ class EntreeStock(models.Model):
     message_obr    = models.TextField(blank=True)
     date_envoi_obr = models.DateTimeField(null=True, blank=True)
 
+    obr_mode_envoye = models.BooleanField(
+        default=False,
+        verbose_name="Mode PRODUCTION",
+        editable=False
+    )
+
     date_creation     = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -65,7 +71,7 @@ class EntreeStock(models.Model):
         verbose_name        = "Entrée stock"
         verbose_name_plural = "Entrées stock"
         ordering            = ['-date_creation']
-        unique_together     = [('societe', 'produit', 'facture', 'type_entree')]
+        unique_together     = [('societe', 'produit', 'facture', 'type_entree', 'obr_mode_envoye')]
         indexes = [
             models.Index(fields=['societe', 'produit', 'date_entree']),
             models.Index(fields=['statut_obr']),
@@ -76,6 +82,9 @@ class EntreeStock(models.Model):
         return f"{self.type_entree} | {self.produit.designation} | {self.quantite} {self.devise}"
 
     def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+
         if self.produit_id:
             # Copier automatiquement la devise du produit
             if not self.devise:
@@ -101,7 +110,7 @@ class EntreeStock(models.Model):
 
     @property
     def quantite_disponible(self) -> Decimal:
-        return self.quantite - self.quantite_sortie
+        return (self.quantite - self.quantite_sortie).quantize(Decimal('0.001'), rounding=ROUND_DOWN)
 
     @property
     def type_produit(self) -> str:
@@ -164,6 +173,12 @@ class SortieStock(models.Model):
     message_obr    = models.TextField(blank=True)
     date_envoi_obr = models.DateTimeField(null=True, blank=True)
 
+    obr_mode_envoye = models.BooleanField(
+        default=False,
+        verbose_name="Mode PRODUCTION",
+        editable=False
+    )
+
     date_creation     = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
 
@@ -180,6 +195,9 @@ class SortieStock(models.Model):
         return f"{self.type_sortie} | {designation} | {self.quantite} {self.devise}"
 
     def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+
         if self.entree_stock_id:
             if not self.devise:
                 self.devise = self.entree_stock.devise
@@ -206,4 +224,4 @@ class SortieStock(models.Model):
         ).exclude(pk=self.pk).aggregate(
             total=Sum('quantite')
         )['total'] or Decimal('0')
-        return self.entree_stock.quantite - total_sorti
+        return (self.entree_stock.quantite - total_sorti).quantize(Decimal('0.001'), rounding=ROUND_DOWN)

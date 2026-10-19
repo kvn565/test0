@@ -48,7 +48,8 @@ def types_clients(request):
         messages.error(request, err)
         return redirect('accueil')
 
-    types = TypeClient.objects.filter(societe=societe).order_by('nom')
+    mode_production = societe.obr_mode_production
+    types = TypeClient.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
 
     return render(request, 'clients/types.html', {
         'types': types,
@@ -86,7 +87,8 @@ def edit_type_client(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    type_client = get_object_or_404(TypeClient, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    type_client = get_object_or_404(TypeClient, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         form = TypeClientForm(societe=societe, data=request.POST, instance=type_client)
@@ -112,7 +114,8 @@ def delete_type_client(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    type_client = get_object_or_404(TypeClient, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    type_client = get_object_or_404(TypeClient, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         if type_client.nb_clients > 0:
@@ -146,7 +149,8 @@ def liste_clients(request):
     tva_filtre = request.GET.get('tva', '')
     page_num = request.GET.get('page', 1)
 
-    clients = Client.objects.filter(societe=societe)\
+    mode_production = societe.obr_mode_production
+    clients = Client.objects.filter(societe=societe, obr_mode_envoye=mode_production)\
         .select_related('type_client')\
         .order_by('-date_creation', 'nom')
 
@@ -173,7 +177,7 @@ def liste_clients(request):
     except (PageNotAnInteger, EmptyPage):
         clients_page = paginator.page(1)
 
-    types = TypeClient.objects.filter(societe=societe).order_by('nom')
+    types = TypeClient.objects.filter(societe=societe, obr_mode_envoye=mode_production).order_by('nom')
 
     return render(request, 'clients/liste.html', {
         'clients': clients_page,
@@ -181,7 +185,7 @@ def liste_clients(request):
         'q': q,
         'type_filtre': type_filtre,
         'tva_filtre': tva_filtre,
-        'total': Client.objects.filter(societe=societe).count(),
+        'total': Client.objects.filter(societe=societe, obr_mode_envoye=mode_production).count(),
         'paginator': paginator,
         'page_obj': clients_page,
     })
@@ -217,7 +221,8 @@ def edit_client(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    client = get_object_or_404(Client, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    client = get_object_or_404(Client, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         form = ClientForm(societe=societe, data=request.POST, instance=client)
@@ -243,7 +248,8 @@ def delete_client(request, pk):
         messages.error(request, err)
         return redirect('accueil')
 
-    client = get_object_or_404(Client, pk=pk, societe=societe)
+    mode_production = societe.obr_mode_production
+    client = get_object_or_404(Client, pk=pk, societe=societe, obr_mode_envoye=mode_production)
 
     if request.method == 'POST':
         if hasattr(client, 'nb_factures') and client.nb_factures > 0:

@@ -9,7 +9,8 @@ class TauxTVAManager(models.Manager):
         """Tous les taux de la société"""
         if not societe:
             return self.none()
-        return self.filter(societe=societe).order_by('valeur')
+        mode_production = getattr(societe, 'obr_mode_production', False)
+        return self.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
 
     def for_formulaire(self, societe):
         """Pour le formulaire : montre tous les taux (important pour OBR)"""
@@ -68,6 +69,7 @@ class TauxTVA(models.Model):
     )
     
     est_defaut = models.BooleanField(default=False, verbose_name="Taux par défaut")
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     objects = TauxTVAManager()
@@ -76,10 +78,10 @@ class TauxTVA(models.Model):
         verbose_name = "Taux TVA"
         verbose_name_plural = "Taux TVA"
         ordering = ['valeur']
-        unique_together = [('societe', 'nom')]
+        unique_together = [('societe', 'nom', 'obr_mode_envoye')]
         constraints = [
             models.UniqueConstraint(
-                fields=['societe', 'valeur'],
+                fields=['societe', 'valeur', 'obr_mode_envoye'],
                 name='unique_taux_valeur_par_societe'
             )
         ]
@@ -87,10 +89,131 @@ class TauxTVA(models.Model):
     def __str__(self):
         return f"{self.nom} ({self.valeur}%)"
 
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
+
     # Méthodes existantes conservées
     @classmethod
     def get_default(cls, societe):
         return cls.objects.filter(societe=societe).order_by('-est_defaut', 'valeur').first()
+
+    @classmethod
+    def get_taux_zero(cls, societe):
+        return cls.objects.filter(societe=societe, valeur=Decimal('0.000')).first()
+
+
+class TauxTCManager(models.Manager):
+    def for_societe(self, societe):
+        if not societe:
+            return self.none()
+        mode_production = getattr(societe, 'obr_mode_production', False)
+        return self.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
+
+    def for_facture(self, societe):
+        if not societe:
+            return self.none()
+        if getattr(societe, 'assujeti_tc', False):
+            return self.for_societe(societe)
+        return self.for_societe(societe).filter(valeur=Decimal('0.00'))
+
+    def get_taux_defaut(self, societe):
+        if not societe:
+            return None
+        qs = self.for_societe(societe)
+        return qs.filter(est_defaut=True).first() or qs.order_by('-valeur').first()
+
+    def resolve_for_obr(self, societe):
+        if not societe:
+            return None
+        if not getattr(societe, 'assujeti_tc', False):
+            return self.for_societe(societe).filter(valeur=Decimal('0.00')).first()
+        taux = self.get_taux_defaut(societe)
+        return taux or self.for_societe(societe).first()
+
+
+class TauxTC(models.Model):
+    societe = models.ForeignKey(Societe, on_delete=models.CASCADE, related_name='taux_tc', verbose_name="Société")
+    nom = models.CharField(max_length=100, verbose_name="Nom du taux")
+    valeur = models.DecimalField(max_digits=6, decimal_places=3, verbose_name="Taux (%)", help_text="Exemple : 5.000 pour 5%")
+    est_defaut = models.BooleanField(default=False, verbose_name="Taux par défaut")
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
+    date_creation = models.DateTimeField(auto_now_add=True)
+    objects = TauxTCManager()
+
+    class Meta:
+        verbose_name = "Taux TC"
+        verbose_name_plural = "Taux TC"
+        ordering = ['valeur']
+        unique_together = [('societe', 'nom', 'obr_mode_envoye')]
+        constraints = [models.UniqueConstraint(fields=['societe', 'valeur', 'obr_mode_envoye'], name='unique_taux_tc_valeur_par_societe')]
+
+    def __str__(self):
+        return f"{self.nom} ({self.valeur}%)"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_taux_zero(cls, societe):
+        return cls.objects.filter(societe=societe, valeur=Decimal('0.000')).first()
+
+
+class TauxPFLManager(models.Manager):
+    def for_societe(self, societe):
+        if not societe:
+            return self.none()
+        mode_production = getattr(societe, 'obr_mode_production', False)
+        return self.filter(societe=societe, obr_mode_envoye=mode_production).order_by('valeur')
+
+    def for_facture(self, societe):
+        if not societe:
+            return self.none()
+        if getattr(societe, 'assujeti_pfl', False):
+            return self.for_societe(societe)
+        return self.for_societe(societe).filter(valeur=Decimal('0.00'))
+
+    def get_taux_defaut(self, societe):
+        if not societe:
+            return None
+        qs = self.for_societe(societe)
+        return qs.filter(est_defaut=True).first() or qs.order_by('-valeur').first()
+
+    def resolve_for_obr(self, societe):
+        if not societe:
+            return None
+        if not getattr(societe, 'assujeti_pfl', False):
+            return self.for_societe(societe).filter(valeur=Decimal('0.00')).first()
+        taux = self.get_taux_defaut(societe)
+        return taux or self.for_societe(societe).first()
+
+
+class TauxPFL(models.Model):
+    societe = models.ForeignKey(Societe, on_delete=models.CASCADE, related_name='taux_pfl', verbose_name="Société")
+    nom = models.CharField(max_length=100, verbose_name="Nom du taux")
+    valeur = models.DecimalField(max_digits=6, decimal_places=3, verbose_name="Taux (%)", help_text="Exemple : 2.000 pour 2%")
+    est_defaut = models.BooleanField(default=False, verbose_name="Taux par défaut")
+    obr_mode_envoye = models.BooleanField(default=False, verbose_name="Mode PRODUCTION", editable=False)
+    date_creation = models.DateTimeField(auto_now_add=True)
+    objects = TauxPFLManager()
+
+    class Meta:
+        verbose_name = "Taux PFL"
+        verbose_name_plural = "Taux PFL"
+        ordering = ['valeur']
+        unique_together = [('societe', 'nom', 'obr_mode_envoye')]
+        constraints = [models.UniqueConstraint(fields=['societe', 'valeur', 'obr_mode_envoye'], name='unique_taux_pfl_valeur_par_societe')]
+
+    def __str__(self):
+        return f"{self.nom} ({self.valeur}%)"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and getattr(self, 'societe', None):
+            self.obr_mode_envoye = self.societe.obr_mode_production
+        super().save(*args, **kwargs)
 
     @classmethod
     def get_taux_zero(cls, societe):

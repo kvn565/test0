@@ -12,10 +12,23 @@ import os
 #  CHEMINS
 # ═══════════════════════════════════════════════════════════════
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+import sys as _sys
+_FROZEN = getattr(_sys, 'frozen', False)
+_MEIPASS = getattr(_sys, '_MEIPASS', None)
+
+if _FROZEN:
+    # Mode figé (PyInstaller onefile) : les ressources en lecture seule
+    # (templates, static) sont extraites dans _MEIPASS. Les données écrites
+    # (media, logs, staticfiles) vont dans un dossier persistant (AppData).
+    _APP_DIR = Path(os.environ.get('APPDATA', os.path.dirname(_sys.executable))) / 'Facturation'
+    BASE_DIR = _APP_DIR
+    SRC_DIR = Path(_MEIPASS) if _MEIPASS else _APP_DIR
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    SRC_DIR = BASE_DIR
 
 LOGS_DIR = BASE_DIR / 'logs'
-LOGS_DIR.mkdir(exist_ok=True)
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -29,7 +42,8 @@ SECRET_KEY = 'django-insecure-ovya$oc&=ta*$40t556#1f2kh$c6ubnjfcfs!$2z=-6a*e-d$+
 DEBUG = False
 # ⚠️ METTRE À False EN PRODUCTION
 
-ALLOWED_HOSTS = ['app.facturation.bi', 'www.app.facturation.bi']
+#ALLOWED_HOSTS = ['app.facturation.bi', 'www.app.facturation.bi']
+ALLOWED_HOSTS = ['*']
 
 #ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 # En production : ALLOWED_HOSTS = ['votre-domaine.bi', 'www.votre-domaine.bi']
@@ -66,6 +80,7 @@ INSTALLED_APPS = [
     'services',
     'stock',
     'facturer',
+    'sync',
     'rapports',
     'equipe',
 ]
@@ -83,6 +98,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'facturer.obr_auto_retry.OBRAutoRetryMiddleware',    # Reprise auto OBR (hors-ligne → attente)
     'superadmin.middleware.LicenceMiddleware',           # Vérif licence à chaque requête
     'superadmin.middleware.RateLimitMiddleware',         # Anti brute-force
     'superadmin.middleware.AuditLogMiddleware',          # Journal sécurité
@@ -112,7 +128,7 @@ LICENCE_EXPIRED_URL = '/superadmin/licence-expiree/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],   # ✅ Dossier templates/ à la racine du projet
+        'DIRS': [SRC_DIR / 'templates'],   # ✅ Dossier templates/ (racine projet ou _MEIPASS figé)
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,6 +136,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'superadmin.context_processors.licence_notification',
+                'superadmin.context_processors.obr_mode',
             ],
         },
     },
@@ -136,12 +154,13 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'gcbvghdlauy_app_wibabi',           # Nom de ta base de données (minuscule recommandé)
-        'USER': 'gcbvghdlauy',               # Change en production par un utilisateur dédié
-        'PASSWORD': '28rAQhMqp66Gk5',               # Mets ton mot de passe MySQL ici
+        'USER': 'root',               # Change en production par un utilisateur dédié
+        'PASSWORD': '',               # Mets ton mot de passe MySQL ici
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
+            'init_command': "SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'",
         },
         # Options recommandées pour éviter les problèmes de connexion
         'CONN_MAX_AGE': 300,          # Garde la connexion ouverte 5 minutes
@@ -260,13 +279,17 @@ SHORT_DATETIME_FORMAT = 'd/m/Y H:i'
 
 STATIC_URL  = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',                         # Dossier static à la racine du projet
+    SRC_DIR / 'static',                          # Dossier static (racine projet ou _MEIPASS figé)
 ]
 
-STATIC_ROOT = BASE_DIR / 'staticfiles' 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL   = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if _FROZEN:
+    # En mode figé, sert les fichiers statiques directement depuis les finders
+    # (STATICFILES_DIRS / _MEIPASS) sans dépendre d'un collectstatic préalable.
+    WHITENOISE_USE_FINDERS = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
